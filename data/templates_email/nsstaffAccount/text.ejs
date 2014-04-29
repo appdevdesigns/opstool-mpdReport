@@ -1,0 +1,29 @@
+
+
+NS Staff Account Summary 
+========================
+ 
+This is the staff account summary for NS staff living in your region.
+
+Please review this information and contact any staff needing to address their MPD.
+    
+
+Account Num : Name : Chinese Name : Base Salary : Account Bal : Avg Bal :  Avg Local Contrib : Avg Foreign Contrib : Months In Deficit : Months until deficit : Phone : eMail 
+<%
+
+    var getAlert = function(person) {
+    
+        var al = "";
+        if (person.accountBal < 0) { al = '<<<<'; }
+        return al;
+    }
+    
+    
+    for (var acct in people) {
+    
+        var person = people[acct];
+%>
+<%= person.accountNum %> : <%= person.name %> : <%= person.chineseName %> : <%= person.baseSalary %> : <%= person.accountBal %> : <%= person.avgAccountBal %> :  <%= person.avgLocalContrib %> : <%= person.avgForeignContrib %> : <%= person.monthsInDeficit %> : ??? : <%= person.phone %> : <%= person.email %> <%- getAlert(person) %>
+<%        
+    }
+%>

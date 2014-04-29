@@ -1,0 +1,86 @@
+
+<div class="jumbotron" id="jumbo">
+  <div class="container">
+    
+    <h1>NS Staff Account Summary</h1>
+    <p>Staff account summary for NS staff living in your region.</p>
+    <p>Please review this information and contact any staff needing to address their MPD.</p>
+  </div>
+</div>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Account Num</th>
+            <th>Name</th>
+            <th>Chinese Name</th>
+            <th>Base Salary Amount</th>
+            <th>Current Account Balance</th>
+            <th>Average* Monthly Balance</th>
+            <th>Average* Local Contributions</th>
+            <th>Local Percentage of Salary</th>
+            <th>Average* Foreign Contributions</th>
+            <th>Foreign Percentage of Salary</th>
+            <th># Months in deficit</th>
+            <th># Months till deficit</th>
+            <th>Phone</th>
+            <th>Email</th>
+        </tr>
+    </thead>
+    <tbody>
+<%
+
+    var getRowClass = function(person) {
+    
+        var retClass = '';
+        
+         if (person.accountBal <= 0) { retClass = ' class="danger" '; }
+         
+         return retClass;
+    }
+    
+    
+    var getClassGreater = function(field,value) {
+        var retClass = '';
+        
+         if (field > value) { retClass = ' class="danger" '; }
+         
+         return retClass;
+    }
+    
+    var getClassLess = function(field,value) {
+        var retClass = '';
+         
+         if (field < value) { retClass = ' class="danger" '; }
+         
+         return retClass;
+    }
+
+    for (var acct in people) {
+    
+        var person = people[acct];
+%>
+        <tr <%- getRowClass(person) %> >
+            <td><%= person.accountNum %></td>
+            <td><%= person.name %></td>
+            <td><%= person.chineseName %></td>
+            <td><%= person.baseSalary %></td>
+            <td><%= person.accountBal %></td>
+            <td><%= person.avgAccountBal %></td>
+            <td><%= person.avgLocalContrib %></td>
+            <td><%= person.localPercent %></td>
+            <td><%= person.avgForeignContrib %></td>
+            <td><%= person.foreignPercent %></td>
+            <td <%- getClassGreater(person.monthsInDeficit,0) %> ><%= person.monthsInDeficit %></td>
+            <td <%- getClassLess(person.monthsTilDeficit,5) %> ><%= person.monthsTilDeficit %></td>
+            <td><%= person.phone %></td>
+            <td><%= person.email %></td>
+        </tr>
+<%        
+    }
+%>
+	    <tr>
+    		<th colspan=13>Average* = Average for the last 12 months</th>
+    	</tr>
+    </tbody>
+</table>    
+    

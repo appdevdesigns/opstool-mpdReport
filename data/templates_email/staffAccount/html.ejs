@@ -1,0 +1,65 @@
+
+<div class="jumbotron" id="jumbo">
+  <div class="container">
+    
+    <h1>US Staff Account Summary</h1>
+    <p>Staff account summary for US staff living in your region.</p>
+    <p>Please review this information and contact any staff needing to address their MPD.</p>
+  </div>
+</div>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Account Num</th>
+            <th>Name</th>
+            <th>Current Account Balance</th>
+            <th>Avg Monthly Balance</th>
+            <th># Months in deficit</th>
+            <th>Months till deficit</th>
+            <th>Phone</th>
+            <th>Email</th>
+        </tr>
+    </thead>
+    <tbody>
+<%
+
+    var getRowClass = function(person) {
+    
+        var retClass = '';
+        
+        if (person.accountBal <= 2000) { retClass = ' class="warning" '; }
+        if (person.accountBal <= 0) { retClass = ' class="danger" '; }
+         
+        return retClass;
+    }
+    
+    
+    var getFieldClass = function(person) {
+        var retClass = '';
+        
+         if (person.monthsInDeficit > 0) { retClass = ' class="danger" '; }
+         
+         return retClass;
+    }
+
+//    for (var acct in people) {
+    
+//        var person = people[acct];
+    people.forEach(function(person) {
+%>
+        <tr <%- getRowClass(person) %> >
+            <td><%= person.accountNum %></td>
+            <td><%= person.hrisName %></td>
+            <td><%= person.accountBal %></td>
+            <td><%= person.avgAccountBal %></td>
+            <td <%- getFieldClass(person) %> ><%= person.monthsInDeficit %></td>
+            <td> ??? </td>
+            <td><%= person.phone %></td>
+            <td><%= person.email %></td>
+        </tr>
+<%        
+    });
+%>
+    </tbody>
+</table>    
+ 

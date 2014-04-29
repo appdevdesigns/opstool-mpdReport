@@ -1,0 +1,30 @@
+{
+  "name": "opstool-mpdReport",
+  "version": "0.0.0",
+  "description": "(plugin) An Ops Portal tool to generate MPD reports for our staff.",
+  "main": "module.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "make test",
+    "postinstall": "node setup/setup.js",
+    "postupdate": "node setup/setup.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/appdevdesigns/opstool-mpdReport.git"
+  },
+  "author": "Johnny Hausman",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/appdevdesigns/opstool-mpdReport/issues"
+  },
+  "homepage": "https://github.com/appdevdesigns/opstool-mpdReport",
+  "dependencies": {
+    "ad-utils": "git://github.com/appdevdesigns/ad-utils",
+    "email-templates": "^0.1.8",
+    "csv": "^0.3.7",
+    "async": "^0.7.0"
+  }
+}

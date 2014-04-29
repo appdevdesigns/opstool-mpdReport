@@ -1,0 +1,52 @@
+.danger {
+    color: #FF0000;
+}
+
+.jumbotron {
+    background-color: #333333;
+    color: #EEEEEE;
+    font-size: 21px;
+    font-weight: 200;
+    line-height: 2.14286;
+    margin-bottom: 30px;
+    padding: 30px;
+}
+
+.jumbotron h1 {
+    color: inherit;
+    line-height: 1;
+}
+
+
+h1 {
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-weight: 500;
+    line-height: 1;
+    font-size: 2em;
+    margin: 0.67em 0;
+}
+
+
+
+
+.table thead > tr > th, .table tbody > tr > th, .table tfoot > tr > th, .table thead > tr > td, .table tbody > tr > td, .table tfoot > tr > td {
+    border-top: 1px solid #DDDDDD;
+    line-height: 1.42857;
+    padding: 8px;
+    vertical-align: top;
+}
+
+.table thead > tr > th {
+    border-bottom: 2px solid #DDDDDD;
+    vertical-align: bottom;
+}
+
+th {
+    text-align: left;
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+

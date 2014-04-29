@@ -1,0 +1,27 @@
+
+
+US Staff Account Summary 
+========================
+ 
+These Staff did not have proper assignment information in the HRIS.
+
+Please review their assignments and make sure they are properly set if they are in your Region.
+    
+
+Account Num : HRiS Name : Account Bal : Avg Bal : Months In Deficit : Months until deficit : Phone : eMail 
+<%
+
+    var getAlert = function(person) {
+    
+        var al = "";
+        if (person.accountBal < 0) { al = '<<<<'; }
+        return al;
+    }
+    
+    
+    people.forEach(function(person) {
+%>
+<%= person.accountNum %> : <%= person.hrisName %> : <%= person.accountBal %> : <%= person.avgAccountBal %> : <%= person.monthsInDeficit %> : ??? : <%= person.phone %> : <%= person.email %> <%- getAlert(person) %>
+<%        
+    });
+%>

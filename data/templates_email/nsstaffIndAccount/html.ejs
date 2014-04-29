@@ -1,0 +1,72 @@
+
+<div class="jumbotron" id="jumbo">
+  <div class="container">
+    
+    <h1>Your NS Staff Account Summary</h1>
+    <p>Please review this information:</p>
+  </div>
+</div>
+<table class="table">	
+        <tr>
+        	<td>Account Num:  </td>
+            <td><%= person.accountNum %></td>
+        </tr>
+        <tr>
+        	<td>Name:  </td>
+            <td><%= person.name %></td>
+        </tr>
+        <tr>
+        	<td>Chinese Name:  </td>
+            <td><%= person.chineseName %></td>
+        </tr>
+        <tr>
+        	<td>Base Salary Amount:  </td>
+            <td><%= person.baseSalary %></td>
+        </tr>
+        <tr>
+        	<td>Current Account Balance:  </td>
+            <td><%= person.accountBal %></td>
+        </tr>
+        <tr>
+        	<td>Average* Monthly Balance:  </td>
+            <td><%= person.avgAccountBal %></td>
+        </tr>
+        <tr>
+        	<td>Average* Local Contributions:  </td>
+            <td><%= person.avgLocalContrib %></td>
+        </tr>
+        <tr>
+        	<td>Local Percentage of Salary:  </td>
+            <td><%= person.localPercent %></td>
+        </tr>
+        <tr>
+        	<td>Average* Foreign Contributions:  </td>
+            <td><%= person.avgForeignContrib %></td>
+        </tr>
+        <tr>
+        	<td>Foreign Percentage of Salary:  </td>
+            <td><%= person.foreignPercent %></td>
+        </tr>
+        <tr>
+        	<td>Months in Deficit:  </td>
+            <td><%= person.monthsInDeficit %></td>
+        </tr>
+        <tr>
+        	<td>Months Until Deficit:  </td>
+            <td><%= person.monthsTilDeficit %></td>
+        </tr>
+        <tr>
+        	<td>Phone Number:  </td>
+            <td><%= person.phone %></td>
+        </tr>
+        <tr>
+        	<td>Email Address:  </td>
+            <td><%= person.email %></td>
+        </tr>
+        <tr></tr>
+	    <tr>
+    		<th>Average* = Average for the last 12 months</th>
+    	</tr>
+    </tbody>
+</table>    
+    

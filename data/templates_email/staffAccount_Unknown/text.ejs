@@ -1,0 +1,27 @@
+
+
+Missing US Staff Accounts  
+=========================
+ 
+These US Staff could not be found in the HRIS.
+
+Please review this information and update their HRIS info if they are in your Region.
+    
+
+Account Num : HRiS Name : Account Bal : Avg Bal : Months In Deficit 
+<%
+
+    var getAlert = function(person) {
+    
+        var al = "";
+        if (person.accountBal < 0) { al = '<<<<'; }
+        return al;
+    }
+    
+    
+    people.forEach(function(person) {
+%>
+<%= person.accountNum %> : <%= person.name %> : <%= person.accountBal %> : <%= person.avgAccountBal %> : <%= person.monthsInDeficit %>  <%- getAlert(person) %>
+<%        
+    });
+%>

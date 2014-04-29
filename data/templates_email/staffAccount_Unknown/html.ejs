@@ -1,0 +1,55 @@
+
+<div class="jumbotron" id="jumbo">
+  <div class="container">
+    
+    <h1>Missing US Staff Accounts </h1>
+    <p>These US Staff could not be found in the HRIS.</p>
+    <p>Please review this information and update their HRIS info if they are in your Region.</p>
+  </div>
+</div>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Account Num</th>
+            <th>Name</th>
+            <th>Current Account Balance</th>
+            <th>Avg Monthly Balance</th>
+            <th># Months in deficit</th>
+        </tr>
+    </thead>
+    <tbody>
+<%
+
+    var getRowClass = function(person) {
+    
+        var retClass = '';
+        
+        if (person.accountBal <= 2000) { retClass = ' class="warning" '; }
+        if (person.accountBal <= 0) { retClass = ' class="danger" '; }
+         
+        return retClass;
+    }
+    
+    
+    var getFieldClass = function(person) {
+        var retClass = '';
+        
+         if (person.monthsInDeficit > 0) { retClass = ' class="danger" '; }
+         
+         return retClass;
+    }
+
+    people.forEach(function(person) {
+%>
+        <tr <%- getRowClass(person) %> >
+            <td><%= person.accountNum %></td>
+            <td><%= person.name %></td>
+            <td><%= person.accountBal %></td>
+            <td><%= person.avgAccountBal %></td>
+            <td <%- getFieldClass(person) %> ><%= person.monthsInDeficit %></td>
+        </tr>
+<%        
+    });
+%>
+    </tbody>
+</table>

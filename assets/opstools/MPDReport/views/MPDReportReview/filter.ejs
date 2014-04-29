@@ -1,0 +1,17 @@
+
+        <ul class="nav">
+            <li class="opsportal-filter-label">Filter: </li>
+<%
+
+    regions.forEach(function(region){
+
+        var isOn = '';
+        if (region == selected) {
+            isOn = 'filter-on';
+        }
+%>            <li><a href="#" class="balrep-filter-tag <%=isOn%>" data-balrep-filter="<%=region%>"><%=region%></a></li>
+<%
+
+    })
+
+%>        </ul>

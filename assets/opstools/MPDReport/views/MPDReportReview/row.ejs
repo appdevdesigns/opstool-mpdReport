@@ -1,0 +1,66 @@
+<%
+    var arryDataItems = [];
+    for (var d in dataSet) {
+        arryDataItems.push(dataSet[d]);
+    }
+%>
+
+
+                <table class="table opsportal-table" id="balreport-review-table">
+                    <thead>
+                        <tr>
+                            <th>Account Number</th>
+                            <th>Name</th>
+                            <th>Current Account Balance</th>
+                            <th>Avg Monthly Balance</th>
+                            <th># Months in Deficit</th>
+                            <th>Months until Deficit</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+<%
+var fields = [ 'accountNum', 'name', 'accountBal', 'avgAccountBal', 'monthsInDeficit', 'monthsTilDeficit', 'phone', 'email' ];
+
+arryDataItems.forEach(function(data){
+
+%>                        <tr>
+<%
+
+    fields.forEach(function(field){
+
+        var value = data[field];
+
+        if (field == 'email') {
+    %>                            <td field="<%=field%>"><a href="mailto:<%= value %>"><%= value %></a></td>
+    <%
+        } else {
+
+            // figure out any class attachments.
+            var rowClass = '';
+
+            // when accountBal < 0 then should be red
+            if ((field == 'accountBal') && ( value < 0)) {
+                rowClass = 'class="balrep-deficit" ';
+            }
+
+            // when monthsInDeficit > 0 then should be red
+            if ((field == 'monthInDeficit') && ( value > 0)) {
+                rowClass = 'class="balrep-months-deficit" ';
+            }
+
+    %>                            <td <%=rowClass%> field="<%=field%>"><%= data[field] %></td>
+    <%
+        }
+    });
+
+
+%>                       </tr>
+
+<%
+});
+%>
+                    </tbody>
+                </table>

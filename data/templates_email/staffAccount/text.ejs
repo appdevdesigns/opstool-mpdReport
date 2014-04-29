@@ -1,0 +1,27 @@
+
+
+US Staff Account Summary 
+========================
+ 
+This is the staff account summary for US staff living in your region.
+
+Please review this information and contact any staff needing to address their MPD.
+    
+
+Account Num : HRiS Name : Account Bal : Avg Bal : Months In Deficit : Months until deficit : Phone : eMail 
+<%
+
+    var getAlert = function(person) {
+    
+        var al = "";
+        if (person.accountBal < 0) { al = '<<<<'; }
+        return al;
+    }
+    
+    
+    people.forEach(function(person) {
+%>
+<%= person.accountNum %> : <%= person.hrisName %> : <%= person.accountBal %> : <%= person.avgAccountBal %> : <%= person.monthsInDeficit %> : ??? : <%= person.phone %> : <%= person.email %> <%- getAlert(person) %>
+<%        
+    });
+%>
