@@ -718,22 +718,7 @@ module.exports= {
 
                 // load emailDefs
                 var emailDefs = sails.config.opstool_mpdReport.ns.emails;
-                /*
-                {
-                        // Region Txt : Email
-                        'AOA'   : 'eaopp-ldhr@dodomail.net',
-                        'Int\'l': 'eaopp-ldhr@dodomail.net',
-                        'BJ'    : 'bj-ldhr@dodomail.net',
-                        'NE'    : 'ne-ldhr@dodomail.net',
-                        'NW'    : 'nw-ldhr@dodomail.net',
-                        'MC'    : 'mc-ldhr@dodomail.net',
-                        'YR'    : 'rol-ldhr@dodomail.net',
-                        'SE'    : 'se-ldhr@dodomail.net',
-                        'SR'    : 'sr-ldhr@dodomail.net',
-                        'SW'    : 'sw-ldhr@dodomail.net',
-                        'SH'    : 'zone-ldhr@dodomail.net',
-                };
-                */
+
 
 //// TODO: both, AOA and Intl have the same value, wont this overwrite each other below?
 
