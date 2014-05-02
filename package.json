@@ -25,6 +25,7 @@
     "ad-utils": "git://github.com/appdevdesigns/ad-utils",
     "email-templates": "^0.1.8",
     "csv": "^0.3.7",
-    "async": "^0.7.0"
+    "async": "^0.7.0",
+    "jquery-deferred": "^0.3.0"
   }
 }
