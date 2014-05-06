@@ -694,7 +694,7 @@ module.exports= {
 
 
 
-        compileEmailData: function(done) {
+        compileRegionData: function(done) {
             var dfd = $.Deferred();
 
             if (Log == null) Log = MPDReportGen.Log;
@@ -702,23 +702,33 @@ module.exports= {
             NSStaffProcessor.compileStaffData(function(data) {
 
                 // Data should be 'Region' : { accounts }
-                var emailData = {};
+                var regionData = {
+                /*
+                    regionCode: { 
+                        acct1: { ... }, 
+                        acct2: { ... }, 
+                        ... 
+                    },
+                    "AOA": { 
+                        "0123": { ... },
+                        "0200": { ... },
+                        ...
+                    },
+                    ...
+                */
+                };
 
-                // load emailDefs
-                var emailDefs = sails.config.opstool_mpdReport.ns.emails;
-
-
-//// TODO: both, AOA and Intl have the same value, wont this overwrite each other below?
 
                 // for each region in staff data
-                var foundData = data.staffByRegion;
-                for (var region in foundData){
-                    emailData[ emailDefs[region]] = foundData[region];
+                var staffByRegion = data.staffByRegion;
+                for (var region in staffByRegion) {
+                    //regionData[ emailDefs[region]] = staffByRegion[region];
+                    var regionStaff = staffByRegion[region];
+                    regionData[region] = regionStaff;
                 }
 
-
-                if (done) done(emailData);
-                dfd.resolve(emailData);
+                if (done) done(regionData);
+                dfd.resolve(regionData);
 
             });
 
@@ -727,12 +737,21 @@ module.exports= {
 
 
 
-        compileRenderedEmails: function(templatesDir, emailData, done) {
+        // @param string templatesDir
+        // @param object regionData
+        //     Basic object containing staff data as generated 
+        //     by compileRegionData().
+        // @param function done
+        //     Callback function.
+        compileRenderedEmails: function(templatesDir, regionData, done) {
             var dfd = $.Deferred();
+
+            // load regional email addresses
+            var emailDefs = sails.config.opstool_mpdReport.ns.emails;
 
             if (Log == null) Log = MPDReportGen.Log;
 
-            var renderedEmails = {};
+            var renderedEmails = [];
 
             emailTemplates(templatesDir, function(err, template) {
 
@@ -753,15 +772,16 @@ module.exports= {
 
                         } else {
 
-//console.log();
-//console.log('Email Data:');
-//console.log(emailData);
-
-                            // for each regional email address:
-                            for (var emailAddr in emailData) {
-
+                            for (var region in regionData) {
+                                
+                                var emailAddr = emailDefs[region];
+                                if (!emailAddr) {
+                                    Log.error(LogKey, 'No email address for region: [' + region + ']');
+                                    continue;
+                                }
+                                
                                 // NOTE: this is NOT asynchronous...
-                                renderEmail({ people:emailData[emailAddr] }, templatesDir, function(err, html, text) {
+                                renderEmail({ people:regionData[emailAddr] }, templatesDir, function(err, html, text) {
 
                                     if (err) {
                                         Log.error(LogKey+' error rendering email:', err);
@@ -778,18 +798,15 @@ module.exports= {
                                                 to: emailOptions.To(emailAddr),
                                                 cc: emailOptions.CC(),
                                                 bcc: emailOptions.BCC(),
-                                                subject:'Current: NS Staff Account Info ('+emailAddr+')',
+                                                subject:'Current: ' + region + ' NS Staff Account Info ('+emailAddr+')',
                                                 html:html,
                                                 text:text
                                         };
-                                        renderedEmails[emailAddr] = email;
+                                        renderedEmails.push( email );
                                     }
                                 });
 
                             } // next region
-
-//console.log('rendered emails:');
-//console.log(renderedEmails);
 
                             if (done) done(null, renderedEmails);
                             dfd.resolve(renderedEmails);
@@ -803,8 +820,13 @@ module.exports= {
         },
 
 
-
-        compileRenderedIndividualEmails: function(templatesDir, emailData, done) {
+        // @param string templatesDir
+        // @param object staffData
+        //     Basic object containing staff data as generated 
+        //     by compileStaffData().
+        // @param function done
+        //     Callback function.
+        compileRenderedIndividualEmails: function(templatesDir, staffData, done) {
             var dfd = $.Deferred();
 
             if (Log == null) Log = MPDReportGen.Log;
@@ -830,15 +852,11 @@ module.exports= {
 
                         } else {
 
-//console.log();
-//console.log('Email Data:');
-//console.log(emailData);
-
                             //
-                            for (var a=0;a<emailData.staff.length;a++) {
+                            for (var a=0;a<staffData.staff.length;a++) {
 
                                 // NOTE: this is NOT asynchronous...
-                                renderEmail({ person:emailData.staff[a] }, templatesDir, function(err, html, text) {
+                                renderEmail({ person:staffData.staff[a] }, templatesDir, function(err, html, text) {
 
                                     if (err) {
                                         Log.error(LogKey+' error rendering email:', err);
@@ -852,10 +870,10 @@ module.exports= {
 
                                         var email = {
                                                 from: emailOptions.From(),
-                                                to: emailOptions.To(emailData.staff[a].email),
+                                                to: emailOptions.To(staffData.staff[a].email),
                                                 cc: emailOptions.CC(),
                                                 bcc: emailOptions.BCC(),
-                                                subject:'NS Staff Account Info ('+emailData.staff[a].email+')',
+                                                subject:'NS Staff Account Info ('+staffData.staff[a].email+')',
                                                 html:html,
                                                 text:text
                                         };
@@ -865,9 +883,6 @@ module.exports= {
 
 
                             } // next region
-
-//console.log('rendered emails:');
-//console.log(renderedEmails);
 
                             if (done) done(null, renderedEmails);
                             dfd.resolve(renderedEmails);

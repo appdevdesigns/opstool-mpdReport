@@ -33,7 +33,7 @@ module.exports = {
 
         var templatesDir = MPDReportGen.pathTemplates(); //path.join(sails.config.appPath, 'data', 'templates_email');
 
-        NSStaffProcessor.compileEmailData(function(regionData) {
+        NSStaffProcessor.compileRegionData(function(regionData) {
 
             NSStaffProcessor.compileRenderedEmails(templatesDir, regionData, function(err, emails) {
 
@@ -60,10 +60,9 @@ module.exports = {
 
                 var numSent = 0;
                 var numDone = 0;
-                for (var emailAddr in emails) {
+                for (var i=0; i<emails.length; i++) {
 
-                    var emailData = emails[emailAddr];
-//console.log('Controller:: sending to email:'+emailAddr);
+                    var emailData = emails[i];
 
                     numSent++;
 
@@ -78,7 +77,6 @@ module.exports = {
                             if (numDone >= numSent) {
                                 Log(logKey+'<bold> ... sending complete! </bold>');
                                 ADCore.comm.success(res, response);
- //                               res.send(response);
                             }
                         }
                     });
