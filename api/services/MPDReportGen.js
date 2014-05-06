@@ -56,12 +56,6 @@ var emailFn = function(system, field, emailAddr) {
 }
 
 var emailOptionsUS = {
- //   debug:true,
- //   from: 'jhausman@dodomail.net',
- //   //to: 'jchan@zteam.biz',
- //   to: 'Ed Graham <egraham@zonemail.net>',
- //   cc: 'rpoolman@zteam.biz',
- //   bcc: 'jchan@zteam.biz',
     To:   function( addr ) { return emailFn('us', 'to',   addr); },
     From: function( addr ) { return emailFn('us', 'from', addr); },
     CC:   function( addr ) { return emailFn('us', 'cc',   addr); },
@@ -70,7 +64,6 @@ var emailOptionsUS = {
 
 
 var emailOptionsNS = {
-
     To:   function( addr ) { return emailFn('ns', 'to',   addr); },
     From: function( addr ) { return emailFn('ns', 'from', addr); },
     CC:   function( addr ) { return emailFn('ns', 'cc',   addr); },

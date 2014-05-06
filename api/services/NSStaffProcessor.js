@@ -5,18 +5,6 @@ var $ = require('jquery-deferred');
 //// Node-Email-Templates:
 var emailTemplates = require('email-templates');
 
-//////
-// CONFIG
-//
-/*
-var emailOptions = {
-    from: 'jhausman@dodomail.net',
-    to: 'jchan@zteam.biz',
-    // to: 'Ed Graham <egraham@zonemail.net>',
-    cc: undefined,
-    bcc: undefined
-};
-*/
 //// NOTE: at loading time, MPDReportGen might not be available yet.
 ////       so for now set to null and reassign before we use it.
 var emailOptions = null;
