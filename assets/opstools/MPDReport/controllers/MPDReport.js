@@ -34,18 +34,17 @@ function(){
 
             this.dataSource = this.options.dataSource; // AD.models.Projects;
 
-			// this.shouldUpdateUI = true;     // we have not updated our UI for the work area yet.
-
             this.initDOM();
 
 			//new AD.controllers.opstools.MPDReport.MPDReportType(this.element.find('.tool-balance-report-type'), {toolState: self.toolState});
 			self.toolUpload = new AD.controllers.opstools.MPDReport.MPDReportUpload(this.element.find('.tool-balance-report-upload'), {toolState: self.toolState});
 			self.toolReview = new AD.controllers.opstools.MPDReport.MPDReportReview(this.element.find('.tool-balance-report-review'), {toolState: self.toolState});
 			self.toolSend = new AD.controllers.opstools.MPDReport.MPDReportSend(this.element.find('.tool-balance-report-send'), {toolState: self.toolState});
-			//new AD.controllers.opstools.MPDReport.MPDReportSendNational(this.element.find('.tool-balance-report-send-national'), {toolState: self.toolState});
+			self.toolSendNS = new AD.controllers.opstools.MPDReport.MPDReportSendNational(this.element.find('.tool-balance-report-send-national'), {toolState: self.toolState});
 
+
+            // Initial state is US MPD report
             this.toggleStaffType('#US');
-
 
 			// listen for resize notifications
             AD.comm.hub.subscribe('opsportal.resize', function (key, data) {
@@ -56,24 +55,46 @@ function(){
             // Show the Review panel after a file is uploaded
             //AD.comm.hub.subscribe('ad.mpdreport.file.uploaded', function(msg, data){
             can.bind.call(self.toolUpload, 'uploaded', function() {
-                self.showTool(self.toolReview);
+                self.showTool('#review');
             });
             
             // Show the Send panel after a review is approved
             can.bind.call(self.toolReview, 'approved', function() {
-                self.showTool(self.toolSend);
+                self.showTool('#email');
             });
 
         },
         
         // Show a tool and hide its siblings
-        showTool: function(tool) {
+        // @param string toolKey
+        showTool: function(toolKey) {
             // Toggle the tool's nav button state
             this.element.find('.tool-balance-report-nav li a.active-btn').removeClass('active-btn');
-            this.element.find(".tool-balance-report-nav li a[href='"+tool.key+"']").addClass('active-btn');
+            this.element.find(".tool-balance-report-nav li a[href='"+toolKey+"']").addClass('active-btn');
             // Toggle the tool's panel visibility
             this.element.find('.tool-balance-container').hide();
-            tool.show();
+
+            switch (toolKey) {
+                case '#upload':
+                    this.toolUpload.show();
+                    break;
+
+                case '#review':
+                    this.toolReview.show();
+                    break;
+
+                case '#email':
+                    if (this.toolState.staffType == '#US') {
+                        this.toolSend.show();
+                    } else {
+                        this.toolSendNS.show();
+                    }
+                    break;
+                    
+                default:
+                    console.log('Invalid tool key: ' + toolKey);
+                    break;
+            }
         },
         
         // @param string type
@@ -83,14 +104,14 @@ function(){
             if (type == '#US') {
                 this.element.find('ul.national-report-steps').hide();
                 this.element.find('ul.us-report-steps').show();
-                this.showTool(this.toolUpload);
+                this.showTool('#upload');
                 // Reset the review table
                 this.toolReview.clearData();
             } else {
                 this.element.find('ul.us-report-steps').hide();
                 this.element.find('ul.national-report-steps').show();
-                this.showTool(this.toolReview);
-                // Reset the review table
+                this.showTool('#review');
+                // Load the review table
                 this.toolReview.loadResults();
             }
         },
@@ -101,11 +122,8 @@ function(){
 
         },
 
-        '.ad-item-add click': function($el, ev) {
 
-            ev.preventDefault();
-        },
-        
+        // Toggle between US and National staff reports
         '.opsportal-stage-title a click': function($el, ev) {
             this.element.find('.opsportal-stage-title a.active-btn').removeClass('active-btn');
             $el.addClass('active-btn');
@@ -113,22 +131,14 @@ function(){
             ev.preventDefault();
         },
         
+
+        // Navigation between Upload / Review / Send
         '.tool-balance-report-nav li a.btn click': function($el, ev) {
             var self = this;
-            var href = $el.attr('href');
-            switch (href) {
-                case '#upload':
-                    self.showTool(self.toolUpload);
-                    break;
-
-                case '#review':
-                    self.showTool(self.toolReview);
-                    break;
-                
-                case '#email':
-                    self.showTool(self.toolSend);
-                    break;
-            }
+            
+            // The link HREF contains the tool key
+            var toolKey = $el.attr('href');
+            self.showTool(toolKey);
             ev.preventDefault();
         }
         

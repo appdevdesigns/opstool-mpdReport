@@ -47,13 +47,7 @@ function(){
             var self = this;
             ev.preventDefault();
             
-            var serviceURL;
-            if (self.toolState.staffType == '#US') {
-                serviceURL = '/mpdreport/email/send';
-            } else {
-                serviceURL = '/nsmpdreport/email/send';
-            }
-            
+            var serviceURL = '/mpdreport/email/send';
 
             self.busyIndicator.show();
             $.ajax({

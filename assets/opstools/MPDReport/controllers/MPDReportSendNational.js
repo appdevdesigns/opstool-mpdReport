@@ -15,9 +15,13 @@ function(){
                     templateDOM: '//opstools/MPDReport/views/MPDReportSendNational/MPDReportSendNational.ejs',
             }, options);
 
+            // This must be an object reference and should not be copied by
+            // value via defaults()
+            self.toolState = options.toolState;
+
+            this.key = '#email';
             this.initDOM();
 
-			//this.element.find('#idOfPassportDiv').hide();
 
 			// listen for resize notifications
             AD.comm.hub.subscribe('opsportal.resize', function (key, data) {
@@ -27,19 +31,47 @@ function(){
 
 
         },
+        
+        
+        show: function() {
+            this.element.show();
+        },
 
-		//nextStep: function(argStep) {
-
-            //AD.comm.hub.publish('hris.form.object.new', {});
-
-        //},
 
         initDOM: function() {
             var self = this;
 
             // insert our base DOM with the Column contents: objectlist, and bottom elements
             this.element.html(can.view(this.options.templateDOM, {} ));
+        },
+        
+        
+        ".balrep-send a click": function ($el, ev) {
+            var self = this;
+            var serviceURL;
+
+            var action = $el.attr('href');
+            if (action == '#send-individual') {
+                serviceURL = '/nsmpdreport/email/send/individual';
+            } else if (action == '#send-regional') {
+                serviceURL = '/nsmpdreport/email/send';
+            }
+            
+            self.busyIndicator.show();
+            $.ajax({
+                url: serviceURL,
+                dataType:'json'
+            })
+            .always(function(){
+                self.busyIndicator.hide();
+            })
+            .fail(function(err){
+                console.log(err);
+            });
+            
+            ev.preventDefault();
         }
+        
     });
 
 
