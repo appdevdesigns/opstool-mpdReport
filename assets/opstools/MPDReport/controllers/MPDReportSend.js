@@ -28,11 +28,11 @@ function(){
 
         },
 
-		//nextStep: function(argStep) {
 
-            //AD.comm.hub.publish('hris.form.object.new', {});
+        show: function() {
+            this.element.show();
+        },
 
-        //},
 
         initDOM: function() {
             var self = this;

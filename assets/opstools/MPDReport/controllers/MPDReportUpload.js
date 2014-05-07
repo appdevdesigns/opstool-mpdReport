@@ -4,8 +4,6 @@ steal(
         'appdev',
 function(){
 
-    //if (typeof AD.controllers.opstools == 'undefined') AD.controllers.opstools = {};
-    //if (typeof AD.controllers.opstools.HrisUserProfile == 'undefined') AD.controllers.opstools.HrisUserProfile = {};
     AD.controllers.opstools.MPDReport.MPDReportUpload = can.Control.extend({
 
 
@@ -18,8 +16,6 @@ function(){
             this.key = '#upload';
             this.initDOM();
 
-			//this.element.find('#idOfPassportDiv').hide();
-
 
             //
             // attach dropzone to the file uplader
@@ -31,16 +27,19 @@ function(){
         
             myDrop.on('success', function(file, response){
                 // notify any other widgets about the file.uploaded event
-                AD.comm.hub.publish('ad.mpdreport.file.uploaded',{ file:file});
+                //AD.comm.hub.publish('ad.mpdreport.file.uploaded',{ file:file});
+
+                // Notify the parent controller about the upload
+                can.trigger(this, 'uploaded');
             })
 
         },
+        
+        
+        show: function() {
+            this.element.show();
+        },
 
-		//nextStep: function(argStep) {
-
-            //AD.comm.hub.publish('hris.form.object.new', {});
-
-        //},
 
         initDOM: function() {
             var self = this;

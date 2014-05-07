@@ -65,10 +65,14 @@ function(){
         },
         
 
+        show: function() {
+            
+            this.element.show();
+        },
+
 
         clearData: function () {
             // Clear out any old data from the table
- //           this.element.find('#balreport-review-table tbody tr').not('.template-row').remove();
             this.element.find('#balreport-review-table tbody tr').remove();
         },
 
@@ -202,21 +206,21 @@ function(){
         },
 
 
-        
+        // Handle clicks on the "Reload" button
         "a[href='#balrep-report-reload'] click": function($el, ev) {
             this.loadResults();
             ev.preventDefault();
         },
         
 
-        
+        // Handle clicks on the "Approve" button
         "a[href='#balrep-report-approve'] click": function($el, ev) {
             can.trigger(this, 'approved');
             //this.trigger('approved');
         },
         
 
-        
+        // Handle clicks on a filter tag
         'a.balrep-filter-tag click': function ($el, ev) {
             var self = this;
             var regionKey = $el.attr('data-balrep-filter');

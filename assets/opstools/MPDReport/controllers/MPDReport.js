@@ -46,32 +46,19 @@ function(){
             this.toggleStaffType('#US');
 
 
-/*			this.element.find('.tt').tooltip(options);
-			this.element.find('.tt-field').tooltip({placement: 'left'});
-
-			this.element.find('.po-help').popover(options);
-			this.element.find('.po').popover({
-			    html : true,
-			    title: function() {
-			      return self.element.find('.po-title').html();
-			    },
-			    content: function() {
-			      return self.element.find('.po-content').html();
-			    }
-			});
-			
-			this.element.find('.hris-form-datepicker').datepicker({}); */
-
 			// listen for resize notifications
             AD.comm.hub.subscribe('opsportal.resize', function (key, data) {
 				self.element.css("height", data.height + "px");
 				self.element.find(".opsportal-stage-container").css("height", data.height + "px");
             });
-
-            AD.comm.hub.subscribe('ad.mpdreport.file.uploaded', function(msg, data){
+            
+            // Show the Review panel after a file is uploaded
+            //AD.comm.hub.subscribe('ad.mpdreport.file.uploaded', function(msg, data){
+            can.bind.call(self.toolUpload, 'uploaded', function() {
                 self.showTool(self.toolReview);
             });
             
+            // Show the Send panel after a review is approved
             can.bind.call(self.toolReview, 'approved', function() {
                 self.showTool(self.toolSend);
             });
@@ -85,7 +72,7 @@ function(){
             this.element.find(".tool-balance-report-nav li a[href='"+tool.key+"']").addClass('active-btn');
             // Toggle the tool's panel visibility
             this.element.find('.tool-balance-container').hide();
-            tool.element.show();
+            tool.show();
         },
         
         // @param string type
@@ -96,13 +83,15 @@ function(){
                 this.element.find('ul.national-report-steps').hide();
                 this.element.find('ul.us-report-steps').show();
                 this.showTool(this.toolUpload);
+                // Reset the review table
+                this.toolReview.clearData();
             } else {
                 this.element.find('ul.us-report-steps').hide();
                 this.element.find('ul.national-report-steps').show();
                 this.showTool(this.toolReview);
+                // Reset the review table
+                this.toolReview.loadResults();
             }
-            // Reset the review table
-            this.toolReview.clearData();
         },
         
         initDOM: function() {
