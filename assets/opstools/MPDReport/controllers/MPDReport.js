@@ -2,6 +2,7 @@
 steal(
         // List your Controller's dependencies here:
         'appdev',
+        '//opstools/MPDReport/balancereport-scratch.css',
 function(){
 
 

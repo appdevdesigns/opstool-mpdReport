@@ -1,0 +1,40 @@
+#balrep-type-list { float: none; text-align: center; margin: 3em auto; }
+#balrep-type-list > li { float: none; display: inline; }
+#balrep-type-list li a, #balrep-type-list li a:hover { 
+	display: inline-block; width: 150px; height: 150px; border-radius: 50%; background-color: #737373; line-height: 150px; color: #fff; text-decoration: none; margin: 0 30px; font-weight: bold;
+}
+#balrep-type-list li a { opacity: 0.75; }
+
+td.balrep-deficit, td.balrep-months-deficit, td.balrep-12-deficit { background: #f00 !important; font-weight: bold; }
+td.balrep-3-deficit { background: #ffff00 !important; font-weight: bold; }
+
+.balrep-send-container {
+  position: relative;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: #f0f0f0;
+  padding: 60px 60px 0 60px;
+  min-height: 275px;
+}
+
+.balrep-send-container .balrep-send { 
+	border: 1px solid transparent;
+	position: relative;
+	background-color: transparent;
+	background-image: url('/images/icon-mail.png');
+	background-repeat: no-repeat;
+	background-position: top center;
+	background-size: auto 100px;
+	width: 100% !important;
+	min-height: 100% !important; 
+	opacity: 0.5;
+}
+
+.balrep-send-container .balrep-indicator {
+    height: 60px;
+    text-align: center;
+    vertical-align: middle;
+    padding: 5px;
+}
+
+.balrep-send span { display: block; text-align: center; text-align: center; font-weight: bold; line-height: 2em; }
+.balrep-send span.first { margin-top: 100px; }
