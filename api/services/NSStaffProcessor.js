@@ -123,14 +123,14 @@ module.exports= {
                                 var avgContributions = parseInt(clone.avgLocalContrib) + parseInt(clone.avgForeignContrib);
 
                                 //Pass the int value of avgPayroll, avgContributions, and accountBal
-                                clone.monthsTilDeficit = self.getMonthsTilDeficit(parseInt(clone.avgPayroll), avgContributions, parseInt(clone.accountBal));
+                                clone.monthsTilDeficit = self.getMonthsTilDeficit(clone.baseSalary, avgContributions, parseInt(clone.accountBal));
 
                                 clone.phone = hrdbRenInfo[renId].ren_mobilephone + " (m)";
                                 clone.email = hrdbRenInfo[renId].ren_secureemail;
 
                                 //Retrieve the first characters of the territory_desc to display as region
                                 clone.hris_region = territory[t].territory_desc.split('-',1);
-
+                                
                                 //format numbers with commas
                                 clone.avgForeignContrib = self.formatNumber(clone.avgForeignContrib);
                                 clone.avgLocalContrib = self.formatNumber(clone.avgLocalContrib);
@@ -624,7 +624,7 @@ module.exports= {
 
         //Calculate the monthsTilDeficit using the averages of payroll, contributions
         //and the current account balance
-        getMonthsTilDeficit: function(avgPayroll, avgContributions, accountBalance){
+        getMonthsTilDeficit: function(payroll, avgContributions, accountBalance){
 
             var monthsTilDeficit = 1;
 
@@ -632,19 +632,31 @@ module.exports= {
             if (accountBalance < 0){
                 return "1";
             }
-
-            //the account will never be in deficit since avgContributions > avgPayroll or they are equal
-            if (avgContributions > avgPayroll || avgContributions == avgPayroll) {
+            
+            // Ed Graham's formula
+            var accountTrend = avgContributions - payroll;
+            if (accountTrend >= 0) {
+                monthsTilDeficit = 'NA';
+            } else {
+                monthsTilDeficit = Math.ceil(accountBalance / (accountTrend * -1));
+                if (monthsTilDeficit >= 13) {
+                    monthsTilDeficit = 'NA';
+                }
+            }
+            
+            /*
+            //the account will never be in deficit since avgContributions > payroll or they are equal
+            if (avgContributions > payroll || avgContributions == avgPayroll) {
                 monthsTilDeficit = "NA";
             } else {
-                //Continue to add avgContributions and subtract avgPayroll to accountBalance
+                //Continue to add avgContributions and subtract payroll to accountBalance
                 //until accountBalance is in deficit (negative)
                 while (accountBalance > 0) {
-                    accountBalance = accountBalance + avgContributions - avgPayroll;
+                    accountBalance = accountBalance + avgContributions - payroll;
                     monthsTilDeficit++;
                 }
             }
-
+            */
             return monthsTilDeficit;
         },
 
