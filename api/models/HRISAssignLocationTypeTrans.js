@@ -1,45 +1,42 @@
 /**
- * HRISAssignLocationTypeTrans
- *
- * @module      :: Model
- * @description :: A short summary of how this model works and what it represents.
- *
- */
+* HRISAssignLocationTypeTrans
+*
+* @module      :: Model
+* @description :: A short summary of how this model works and what it represents.
+*
+*/
 
 module.exports = {
 
-  tableName:"hris_assign_locationtype_trans",
-  autoCreatedAt:false,
-  autoUpdatedAt:false,
-  autoPK:false,
-  migrate:'safe',
-
-  config:{
-//    database:'test_hris',
-    pool:false
-  },
+    tableName:"hris_assign_locationtype_trans",
+    autoCreatedAt:false,
+    autoUpdatedAt:false,
+    autoPK:false,
+    migrate:'safe',
 
 
-  adapter:"hris",
+    connection: ['hris'],
+    config:{
+        pool:false
+    },
 
 
+    attributes: {
 
-  attributes: {
+        /* e.g.
+        nickname: 'string'
+        */
 
-  	/* e.g.
-  	nickname: 'string'
-  	*/
-
-    Trans_id	: 'INTEGER',
-
-
-    locationtype_id	: 'INTEGER',
+        Trans_id    : 'INTEGER',
 
 
-    language_code	: 'STRING',
+        locationtype_id : 'INTEGER',
 
 
-    locationtype_label	: 'STRING'
-  }
+        language_code   : 'STRING',
+
+
+        locationtype_label  : 'STRING'
+    }
 
 };

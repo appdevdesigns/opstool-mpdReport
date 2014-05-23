@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/appdevdesigns/opstool-mpdReport",
   "dependencies": {
-    "ad-utils": "git://github.com/appdevdesigns/ad-utils",
+    "ad-utils": "git://github.com/appdevdesigns/ad-utils#v10",
     "email-templates": "^0.1.8",
     "csv": "^0.3.7",
     "async": "^0.7.0",

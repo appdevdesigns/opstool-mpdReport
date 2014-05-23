@@ -8,46 +8,44 @@
 
 module.exports = {
 
-  tableName:"nss_payroll_transactions",
-  autoCreatedAt:false,
-  autoUpdatedAt:false,
-  autoPK:false,
-  migrate:'safe',
+    tableName:"nss_payroll_transactions",
+    autoCreatedAt:false,
+    autoUpdatedAt:false,
+    autoPK:false,
+    migrate:'safe',
 
 
-  adapter:"nss",
+    connection: ['nss'],
 
 
+    attributes: {
 
+        /* e.g.
+        nickname: 'string'
+        */
 
-  attributes: {
+        nsstransaction_id: 'INTEGER',
 
-  	/* e.g.
-  	nickname: 'string'
-  	*/
+        nssren_id: 'INTEGER',
 
-    nsstransaction_id: 'INTEGER',
+        nsstransaction_baseSalary: 'DOUBLE',
 
-    nssren_id: 'INTEGER',
+        nsstransaction_allowance: 'DOUBLE',
 
-	nsstransaction_baseSalary: 'DOUBLE',
+        nsstransaction_deduction: 'DOUBLE',
 
-	nsstransaction_allowance: 'DOUBLE',
+        nsstransaction_totalSalary: 'DOUBLE',
 
-	nsstransaction_deduction: 'DOUBLE',
+        nsstransaction_date: 'DATE',
 
-	nsstransaction_totalSalary: 'DOUBLE',
+        requestcutoff_id: 'INTEGER',
 
-	nsstransaction_date: 'DATE',
+        nsstransaction_processedBy: 'STRING',
 
-	requestcutoff_id: 'INTEGER',
+        nsstransaction_territory_id: 'INTEGER',
 
-	nsstransaction_processedBy: 'STRING',
+        glbatch_id: 'INTEGER'
 
-	nsstransaction_territory_id: 'INTEGER',
-
-	glbatch_id: 'INTEGER'
-
-  }
+    }
 
 };

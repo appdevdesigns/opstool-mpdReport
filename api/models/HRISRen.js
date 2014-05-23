@@ -1,90 +1,87 @@
 /**
- * HRISRenData
- *
- * @module      :: Model
- * @description :: A short summary of how this model works and what it represents.
- *
- */
+* HRISRenData
+*
+* @module      :: Model
+* @description :: A short summary of how this model works and what it represents.
+*
+*/
 
 module.exports = {
 
-  tableName:"hris_ren_data",
-  autoCreatedAt:false,
-  autoUpdatedAt:false,
-  autoPK:false,
-  migrate:'safe',
-
-  config:{
-//    database:'test_hris',
-    pool:false
-  },
+    tableName:"hris_ren_data",
+    autoCreatedAt:false,
+    autoUpdatedAt:false,
+    autoPK:false,
+    migrate:'safe',
 
 
-  adapter:"hris",
+    connection: ['nss'],
+    config:{
+        pool:false
+    },
 
 
+    attributes: {
 
-  attributes: {
+        /* e.g.
+        nickname: 'string'
+        */
 
-  	/* e.g.
-  	nickname: 'string'
-  	*/
-
-    ren_id	: 'INTEGER',
-
-
-    ren_guid	: 'STRING',
+        ren_id  : 'INTEGER',
 
 
-    rentype_id	: 'INTEGER',
+        ren_guid    : 'STRING',
 
 
-    family_id	: 'INTEGER',
+        rentype_id  : 'INTEGER',
 
 
-    ren_surname	: 'STRING',
+        family_id   : 'INTEGER',
 
 
-    ren_givenname	: 'STRING',
+        ren_surname : 'STRING',
 
 
-    ren_namecharacters	: 'STRING',
+        ren_givenname   : 'STRING',
 
 
-    ren_namepinyin	: 'STRING',
+        ren_namecharacters  : 'STRING',
 
 
-    ren_preferredname	: 'STRING',
+        ren_namepinyin  : 'STRING',
 
 
-    ren_birthdate	: 'DATE',
+        ren_preferredname   : 'STRING',
 
 
-    ren_deathdate	: 'DATE',
+        ren_birthdate   : 'DATE',
 
 
-    gender_id	: 'INTEGER',
+        ren_deathdate   : 'DATE',
 
 
-    maritalstatus_id	: 'INTEGER',
+        gender_id   : 'INTEGER',
 
 
-    ethnicity_id	: 'INTEGER',
+        maritalstatus_id    : 'INTEGER',
 
 
-    ren_primarycitizenship	: 'INTEGER',
+        ethnicity_id    : 'INTEGER',
 
 
-    statustype_id	: 'INTEGER',
+        ren_primarycitizenship  : 'INTEGER',
 
 
-    ren_isfamilypoc	: '?TINYINT?',
+        statustype_id   : 'INTEGER',
 
 
-    ren_preferredlang	: 'INTEGER',
+        ren_isfamilypoc : 'INTEGER',
 
 
-    ren_picture	: '?BLOB?'
-  }
+        ren_preferredlang   : 'INTEGER',
+
+
+        ren_picture : '?BLOB?'
+    }
 
 };

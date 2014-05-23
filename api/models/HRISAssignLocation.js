@@ -8,38 +8,35 @@
 
 module.exports = {
 
-  tableName:"hris_assign_location_data",
-  autoCreatedAt:false,
-  autoUpdatedAt:false,
-  autoPK:false,
-  migrate:'safe',
-
-  config:{
-//    database:'test_hris',
-    pool:false
-  },
+    tableName:"hris_assign_location_data",
+    autoCreatedAt:false,
+    autoUpdatedAt:false,
+    autoPK:false,
+    migrate:'safe',
 
 
-  adapter:"hris",
+    connection: ['hris'],
+    config:{
+        pool:false
+    },
 
 
+    attributes: {
 
-  attributes: {
+        /* e.g.
+        nickname: 'string'
+        */
 
-  	/* e.g.
-  	nickname: 'string'
-  	*/
-
-    location_id	: 'INTEGER',
-
-
-    location_guid	: 'STRING',
+        location_id   : 'INTEGER',
 
 
-    locationtype_id	: 'INTEGER',
+        location_guid : 'STRING',
 
 
-    parent_id	: 'INTEGER'
-  }
+        locationtype_id   : 'INTEGER',
+
+
+        parent_id : 'INTEGER'
+    }
 
 };

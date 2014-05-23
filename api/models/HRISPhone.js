@@ -1,51 +1,48 @@
 /**
- * HRISPhone
- *
- * @module      :: Model
- * @description :: A short summary of how this model works and what it represents.
- * @docs		:: http://sailsjs.org/#!documentation/models
- */
+* HRISPhone
+*
+* @module      :: Model
+* @description :: A short summary of how this model works and what it represents.
+* @docs        :: http://sailsjs.org/#!documentation/models
+*/
 
 module.exports = {
 
-  tableName:"hris_phone_data",
-  autoCreatedAt:false,
-  autoUpdatedAt:false,
-  autoPK:false,
-  migrate:'safe',
-
-  config:{
-//    database:'test_hris',
-    pool:false
-  },
+    tableName:"hris_phone_data",
+    autoCreatedAt:false,
+    autoUpdatedAt:false,
+    autoPK:false,
+    migrate:'safe',
 
 
-  adapter:"hris",
+    connection: ['hris'],
+    config:{
+        pool:false
+    },
 
 
+    attributes: {
 
-  attributes: {
+        /* e.g.
+        nickname: 'string'
+        */
 
-  	/* e.g.
-  	nickname: 'string'
-  	*/
-
-    phone_id	: 'INTEGER',
-
-
-    phone_guid	: 'STRING',
+        phone_id    : 'INTEGER',
 
 
-    ren_id	: 'INTEGER',
+        phone_guid  : 'STRING',
 
 
-    phonetype_id	: 'INTEGER',
+        ren_id  : 'INTEGER',
 
 
-    phone_countrycode	: 'INTEGER',
+        phonetype_id    : 'INTEGER',
 
 
-    phone_number	: 'STRING'
-  }
+        phone_countrycode   : 'INTEGER',
+
+
+        phone_number    : 'STRING'
+    }
 
 };

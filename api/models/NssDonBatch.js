@@ -8,45 +8,44 @@
 
 module.exports = {
 
-  tableName:"nss_don_donBatch",
-  autoCreatedAt:false,
-  autoUpdatedAt:false,
-  autoPK:false,
-  migrate:'safe',
+    tableName:"nss_don_donBatch",
+    autoCreatedAt:false,
+    autoUpdatedAt:false,
+    autoPK:false,
+    migrate:'safe',
 
 
-  adapter:"nss",
+    connection: ['nss'],
 
 
+    attributes: {
 
-  attributes: {
+        /* e.g.
+        nickname: 'string'
+        */
+        donBatch_id: 'INTEGER',
 
-  	/* e.g.
-  	nickname: 'string'
-  	*/
-	donBatch_id: 'INTEGER',
+        nssren_id: 'INTEGER',
 
-	nssren_id: 'INTEGER',
+        ren_id: 'INTEGER',
 
-	ren_id: 'INTEGER',
+        donBatch_dateCreated: 'DATE',
 
-	donBatch_dateCreated: 'DATE',
+        donBatch_dateProcessed: 'DATE',
 
-	donBatch_dateProcessed: 'DATE',
+        donBatch_nscName: 'STRING',
 
-	donBatch_nscName: 'STRING',
+        nsc_territory_id: 'INTEGER',
 
-	nsc_territory_id: 'INTEGER',
+        donBatch_amount: 'DOUBLE',
 
-	donBatch_amount: 'DOUBLE',
+        donBatch_fee: 'DOUBLE',
 
-	donBatch_fee: 'DOUBLE',
+        donBatch_status: 'STRING',
 
-	donBatch_status: 'STRING',
+        glbatch_id: 'INTEGER',
 
-	glbatch_id: 'INTEGER',
-
-	donBatch_look:  'INTEGER'
-  }
+        donBatch_look:  'INTEGER'
+    }
 
 };

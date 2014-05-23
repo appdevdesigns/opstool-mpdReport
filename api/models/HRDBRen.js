@@ -1,178 +1,176 @@
 /**
- * HRISRenData
- *
- * @module      :: Model
- * @description :: A short summary of how this model works and what it represents.
- *
- */
+* HRISRenData
+*
+* @module      :: Model
+* @description :: A short summary of how this model works and what it represents.
+*
+*/
 
 module.exports = {
 
-  tableName:"ren",
-  autoCreatedAt:false,
-  autoUpdatedAt:false,
-  autoPK:false,
-  migrate:'safe',
+    tableName:"ren",
+    autoCreatedAt:false,
+    autoUpdatedAt:false,
+    autoPK:false,
+    migrate:'safe',
 
-  config:{
-    pool:false
-  },
 
+    connection: ['hrdb'],
+    config:{
+        pool:false
+    },
 
-  adapter:"hrdb",
 
+    attributes: {
 
+        /* e.g.
+        nickname: 'string'
+        */
 
-  attributes: {
+        ren_id: 'INTEGER',
 
-  	/* e.g.
-  	nickname: 'string'
-  	*/
+        family_id:  'INTEGER',
 
-	ren_id: 'INTEGER',
+        ren_surname: 'STRING',
 
-  	family_id:  'INTEGER',
+        ren_givenname: 'STRING',
 
-  	ren_surname: 'STRING',
+        ren_familyposition: 'STRING',
 
-  	ren_givenname: 'STRING',
+        ren_maritalStatus: 'STRING',
 
-  	ren_familyposition: 'STRING',
+        ren_namecharacters: 'STRING',
 
-    ren_maritalStatus: 'STRING',
+        ren_namepinyin: 'STRING',
 
-    ren_namecharacters: 'STRING',
+        ren_preferedname: 'STRING',
 
-	ren_namepinyin: 'STRING',
+        ren_ethnicity: 'STRING',
 
-  	ren_preferedname: 'STRING',
+        ren_citizenship: 'STRING',
 
-  	ren_ethnicity: 'STRING',
+        ren_birthday: 'DATE',
 
-    ren_citizenship: 'STRING',
+        ren_gender: 'STRING', //char(1)
 
-    ren_birthday: 'DATE',
+        ren_educationlevel:  'STRING',
 
-    ren_gender: 'STRING', //char(1)
+        ren_major: 'STRING',
 
-    ren_educationlevel:  'STRING',
+        ren_schoolingmethod: 'STRING',
 
-    ren_major: 'STRING',
+        ren_mobilephone:  'STRING',
 
-    ren_schoolingmethod: 'STRING',
+        ren_workphone: 'STRING',
 
-    ren_mobilephone:  'STRING',
+        ren_pager: 'STRING',
 
-    ren_workphone: 'STRING',
+        ren_emailother: 'STRING',
 
-    ren_pager: 'STRING',
+        ren_passportcountry: 'STRING',
 
-    ren_emailother: 'STRING',
+        ren_passport: 'STRING',
 
-    ren_passportcountry: 'STRING',
+        ren_passportissuedate: 'DATE',
 
-    ren_passport: 'STRING',
+        ren_passportexpiredate: 'DATE',
 
-    ren_passportissuedate: 'DATE',
+        ren_visatype: 'STRING',
 
-	ren_passportexpiredate: 'DATE',
+        ren_employeestatus: 'STRING',
 
-    ren_visatype: 'STRING',
+        ren_sendingcountry: 'STRING',
 
-    ren_employeestatus: 'STRING',
+        assignment_id: 'INTEGER',
 
-    ren_sendingcountry: 'STRING',
+        ren_datejoined: 'DATE',
 
-	assignment_id: 'INTEGER',
+        ren_dateasiaimpact: 'DATE',
 
-    ren_datejoined: 'DATE',
+        ren_staffaccount:  'STRING',
 
-    ren_dateasiaimpact: 'DATE',
+        ren_accountcountry: 'STRING',
 
-    ren_staffaccount:  'STRING',
+        ren_nltc: 'STRING', //char(1)
 
-    ren_accountcountry: 'STRING',
+        ren_newstafftraining: 'STRING', //char(1)
 
-    ren_nltc: 'STRING', //char(1)
+        ren_localleaderstraining: 'STRING', // char(1)
 
-    ren_newstafftraining: 'STRING', //char(1)
+        ren_trainerstraining: 'STRING', // char(1)
 
-    ren_localleaderstraining: 'STRING', // char(1)
+        ren_ibs: 'STRING',
 
-    ren_trainerstraining: 'STRING', // char(1)
+        ren_languagelevel: 'STRING',
 
-    ren_ibs: 'STRING',
+        ren_enrolled: 'STRING', // char(1)
 
-    ren_languagelevel: 'STRING',
+        ren_talentadmin: 'STRING', //char(1)
 
-	ren_enrolled: 'STRING', // char(1)
+        ren_talentcomm: 'STRING', // char(1)
 
-    ren_talentadmin: 'STRING', //char(1)
+        ren_talentit: 'STRING', // char(1),
 
-    ren_talentcomm: 'STRING', // char(1)
+        ren_talentprog: 'STRING', //char(1)
 
-    ren_talentit: 'STRING', // char(1),
+        ren_talentdrama: 'STRING', // char(1)
 
-    ren_talentprog: 'STRING', //char(1)
+        ren_talentfinance: 'STRING',  // char(1)
 
-    ren_talentdrama: 'STRING', // char(1)
+        ren_talentgraphics: 'STRING',  // char(1)
 
-    ren_talentfinance: 'STRING',  // char(1)
+        ren_talentmedical: 'STRING', // char(1)
 
-    ren_talentgraphics: 'STRING',  // char(1)
+        ren_talentmusic: 'STRING', // char(1)
 
-    ren_talentmedical: 'STRING', // char(1)
+        ren_talentphotography: 'STRING', // char(1)
 
-    ren_talentmusic: 'STRING', // char(1)
+        ren_talentwebdesign: 'STRING',  //char(1)
 
-    ren_talentphotography: 'STRING', // char(1)
+        ren_talentother: 'STRING', //char(1),
 
-	ren_talentwebdesign: 'STRING',  //char(1)
+        ren_talentdesc: 'STRING',
 
-    ren_talentother: 'STRING', //char(1),
+        ren_healthissues: 'STRING',
 
-    ren_talentdesc: 'STRING',
+        ren_bloodtype: 'STRING', // char(2)
 
-    ren_healthissues: 'STRING',
+        ren_rhfactor: 'STRING', //char(2)
 
-    ren_bloodtype: 'STRING', // char(2)
+        ren_fatherattitude: 'STRING',
 
-    ren_rhfactor: 'STRING', //char(2)
+        ren_motherattitude: 'STRING',
 
-    ren_fatherattitude: 'STRING',
+        ren_registeredembassy: 'STRING', // char(2)
 
-    ren_motherattitude: 'STRING',
+        ren_webuserid: 'STRING',
 
-    ren_registeredembassy: 'STRING', // char(2)
+        ren_badgename: 'STRING',
 
-    ren_webuserid: 'STRING',
+        ren_badgelastname: 'STRING',
 
-    ren_badgename: 'STRING',
+        track_id: 'INTEGER',
 
-    ren_badgelastname: 'STRING',
+        ren_photoCounter: 'INTEGER',
 
-    track_id: 'INTEGER',
+        ren_secureemail: 'STRING',
 
-    ren_photoCounter: 'INTEGER',
+        ren_imid: 'STRING',
 
-    ren_secureemail: 'STRING',
+        drupal_uid: 'INTEGER',
 
-    ren_imid: 'STRING',
+        location_id: 'INTEGER',
 
-    drupal_uid: 'INTEGER',
+        ren_administer:  'INTEGER',
 
-    location_id: 'INTEGER',
+        global_uid: 'STRING',
 
-    ren_administer:  '?TINYINT?',
+        ren_staffStatus: 'STRING',
 
-    global_uid: 'STRING',
+        ren_stageOfLife: 'STRING',
 
-    ren_staffStatus: 'STRING',
+        ren_shenfenzhen: 'STRING'
 
-    ren_stageOfLife: 'STRING',
-
-    ren_shenfenzhen: 'STRING'
-
-  }
+    }
 
 };
