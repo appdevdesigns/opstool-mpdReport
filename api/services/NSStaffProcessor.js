@@ -33,7 +33,11 @@ module.exports= {
 //console.log('- both getFiscalPeriod() & getMinPeriod() done.');
 
               //Retrieve the regions
-              NssCoreTerritory.find().sort('territory_desc asc').done(function(err,territory){
+              NssCoreTerritory.find().sort('territory_desc asc')
+              .fail(function(err) { 
+
+              })
+              .then(function(territory){
 
                 //Process through all the ren tables
                 var allSWRens = self.getSWRenData();
@@ -248,7 +252,11 @@ module.exports= {
 //console.log('- in getFiscalPeriod() ');
             var endDate = "";
 
-            NssCoreFiscalPeriod.find({requestcutoff_isClosed: 1}).sort("requestcutoff_id desc").done(function(error,period){
+            NssCoreFiscalPeriod.find({requestcutoff_isClosed: 1}).sort("requestcutoff_id desc")
+            .fail(function(err) {
+                dfd.reject(err);
+            })
+            .then(function(period){
 //console.log('  -  fiscalPeriods found ... ');
 
                 //Retrieve the requestcutoff_date from 12 months ago and load into the Date() function
@@ -276,7 +284,13 @@ module.exports= {
 
             var nssRenCoreData = {};
 
-            NssRen.find({nssren_isActive: 1}).sort('nssren_ytdBalance asc').done(function(error,rens){
+            NssRen.find({nssren_isActive: 1}).sort('nssren_ytdBalance asc')
+            .fail(function(err){
+
+                Log.error(LogKey+' failed to lookup NssRen(nssren_isActive:1):', err);
+                dfd.reject(err);
+            })
+            .then(function(rens){
                 for (var b=0;b<rens.length;b++){
 
                     if (!nssRenCoreData[rens[b].territory_id]){
@@ -299,7 +313,12 @@ module.exports= {
 
             var hrdbRenData = {};
 
-            HRDBRen.find().done(function(err,hrdbrens){
+            HRDBRen.find()
+            .fail(function(err){
+                Log.error(LogKey+' failed to lookup HRDBRen:', err);
+                dfd.reject(err);
+            })
+            .then(function(hrdbrens){
                 for (var a=0;a<hrdbrens.length;a++){
 
                     //Put all the ren in an object to retrieve based off of ren_id
@@ -323,7 +342,12 @@ module.exports= {
             var payrollData = {};
 
             NssPayrollTransactions.find({glbatch_id:{'!': 0}})
-                .where({nsstransaction_date:{'>': endDate}}).done(function(err,payrollRows){
+            .where({nsstransaction_date:{'>': endDate}})
+            .fail(function(err){ 
+                Log.error(LogKey+' failed to lookup NssPayrollTransactions.find({glbatch_id:{!: 0}}):', err);
+                dfd.reject(err);
+            })
+            .then(function(payrollRows){
                     for (var d=0;d<payrollRows.length;d++){
 
                         var nssRenId = payrollRows[d].nssren_id;
@@ -351,7 +375,12 @@ module.exports= {
 
             var accountBalData = {};
 
-            NssCoreAccountHistory.find().done(function(err,accountBalRows){
+            NssCoreAccountHistory.find()
+            .fail(function(err){
+                Log.error(' failed to lookup NssCoreAccountHistory:', err);
+                dfd.reject(err);
+            })
+            .then(function(accountBalRows){
                 for (var a=0;a<accountBalRows.length;a++){
                     //Cut the account number down to 4 digit to look up based off of hrdb.ren.ren_staffaccount
                     var accountNum = accountBalRows[a].subaccounts_accountNum.slice(2,6);
@@ -381,7 +410,12 @@ module.exports= {
             var glTransData = {};
 
             NssCoreGLTran.find({gltran_acctnum: 5000})
-            .where({gltran_perpost: {'>': endPeriodDate}}).done(function(err,gltrans){
+            .where({gltran_perpost: {'>': endPeriodDate}})
+            .fail(function(err){
+                Log.error(logKey+' failed to lookup NssCoreGLTran:', err);
+                dfd.reject(err);
+            })
+            .then(function(gltrans){
 
                 for (var g=0;g<gltrans.length;g++){
                     //Cut the account number down to 4 digit to look up based off of hrdb.ren.ren_staffaccount
@@ -415,7 +449,12 @@ module.exports= {
                                 {gltran_acctnum: 4000},
                                 {gltran_acctnum: 4010}
                                 ]})
-            .where({gltran_perpost: {'>': endPeriodDate}}).done(function(err,gltrans){
+            .where({gltran_perpost: {'>': endPeriodDate}})
+            .fail(function(err){
+                Log.error(logKey+' failed to lookup NssCoreGLTran:',err);
+                dfd.reject(err);
+            })
+            .then(function(gltrans){
                 for (var g=0;g<gltrans.length;g++){
                     //Cut the account number down to 4 digit to look up based off of hrdb.ren.ren_staffaccount
                     var accountNum = gltrans[g].gltran_subacctnum.slice(2,6);
@@ -443,7 +482,12 @@ module.exports= {
 //console.log('  - in getMinPeriod() ');
             var minPeriodDate = "";
 
-            NssCoreGLTran.find().limit(1).sort("gltran_perpost desc").done(function(err,gltran){
+            NssCoreGLTran.find().limit(1).sort("gltran_perpost desc")
+            .fail(function(err){
+                Log.error(logKey+' failed to lookup NssCoreGLTran:',err);
+                dfd.reject(err);
+            })
+            .then(function(gltran){
 //console.log('    - NssCoreGLTran.find()  returned');
 //console.log(gltran);
 
