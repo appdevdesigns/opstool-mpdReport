@@ -15,7 +15,7 @@ module.exports = {
     migrate:'safe',
 
 
-    connection: ['nss'],
+    connection: ['hris'],
     config:{
         pool:false
     },
