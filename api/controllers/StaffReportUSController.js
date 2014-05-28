@@ -24,6 +24,7 @@ module.exports = {
         Log(logKey+'... in uploadFile()');
 
 
+        // using skipper for file uploads now:
         req.file('csvFile').upload(function (err, files) {
             
             if (err) return res.serverError(err);
