@@ -2,6 +2,7 @@
 steal(
         // List your Controller's dependencies here:
         'appdev',
+        'appdev/widgets/ad_icon_busy/ad_icon_busy.js',
 function(){
 
     //if (typeof AD.controllers.opstools == 'undefined') AD.controllers.opstools = {};
@@ -22,6 +23,8 @@ function(){
             this.key = '#email';
             this.initDOM();
 
+            var busyIcon = this.element.find('.balrep-indicator span');
+			this.busyIndicator = new AD.widgets.ad_icon_busy(busyIcon);
 
 			// listen for resize notifications
             AD.comm.hub.subscribe('opsportal.resize', function (key, data) {
