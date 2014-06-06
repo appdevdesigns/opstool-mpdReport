@@ -793,7 +793,7 @@ module.exports= {
                                 }
                                 
                                 // NOTE: this is NOT asynchronous...
-                                renderEmail({ people:regionData[emailAddr] }, templatesDir, function(err, html, text) {
+                                renderEmail({ people:regionData[region] }, templatesDir, function(err, html, text) {
 
                                     if (err) {
                                         Log.error(LogKey+' error rendering email:', err);
