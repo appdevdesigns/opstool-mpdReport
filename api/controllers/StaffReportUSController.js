@@ -22,37 +22,69 @@ module.exports = {
         var logKey = '<green><bold>US:Regional:</bold></green>';
       
         Log(logKey+'... in uploadFile()');
- //     AD.log(req.files);
 
-        if (req.files.file) {
 
-            fs.readFile( req.files.file.path, function(err, data) {
-                if (err) {
+        // using skipper for file uploads now:
+        req.file('csvFile').upload(function (err, files) {
+            
+            if (err) return res.serverError(err);
+            
+            //// Format of files:
+            /*
+            "files": [
+                {
+                    "size": 467448,
+                    "type": "text/csv",
+                    "filename": "SAS010_4849319.csv",
+                    "status": "bufferingOrWriting",
+                    "field": "csvFile"
+                }
+            ]
+            */
 
-                    Log.error(logKey+' error reading uploaded file:', err );
-                    ADCore.comm.error(res, err, 500);
+            // if no file uploaded:
+            if (files.length == 0) {
 
-                } else {
+                Log.error(logKey+' no file provided: ', files );
+                var msg = new Error('no file provided!');
+                ADCore.comm.error(res, msg, 400);
 
-                    var filePath = path.join(process.cwd(), 'data', 'opstool-mpdReport',  'sas_curr.csv');
-                    fs.writeFile(filePath, data, function(err){
+            } else {
+
+                //// NOTE: we are really only expecting 1 .csv file to be uploaded.
+                //// if > 1 file appears, we simply use the last one ...
+                files.forEach(function(file) {
+
+                    fs.readFile( path.join('.tmp', 'uploads', file.filename) , function(err, data) {
                         if (err) {
 
-                            Log.error(logKey+' error writing upload file to directory:'+filePath, err);
+                            Log.error(logKey+' error reading uploaded file:', err );
                             ADCore.comm.error(res, err, 500);
 
                         } else {
-                            Log(logKey+' -> file successfully stored at: '+filePath);
-                            ADCore.comm.success(res, {ok:true});
+
+                            var filePath = path.join(process.cwd(), 'data', 'opstool-mpdReport',  'sas_curr.csv');
+                            fs.writeFile(filePath, data, function(err){
+                                if (err) {
+
+                                    Log.error(logKey+' error writing upload file to directory:'+filePath, err);
+                                    ADCore.comm.error(res, err, 500);
+
+                                } else {
+                                    Log(logKey+' -> file successfully stored at: '+filePath);
+                                    ADCore.comm.success(res, {ok:true});
+                                }
+                            })
                         }
                     })
-                }
-            })
 
-        } else {
-            Log.error(logKey+' upload(): no file provided');
-            ADCore.comm.error(res, 'no file provided', 400);
-        }
+                });
+
+            } // end if file.length==0  - else
+
+
+
+        });
 
     },
 

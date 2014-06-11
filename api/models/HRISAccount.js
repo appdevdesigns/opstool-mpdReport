@@ -1,50 +1,48 @@
 /**
- * HRISAccount
- *
- * @module      :: Model
- * @description :: A short summary of how this model works and what it represents.
- *
- */
+* HRISAccount
+*
+* @module      :: Model
+* @description :: A short summary of how this model works and what it represents.
+*
+*/
 
 module.exports = {
 
-  tableName:"hris_account",
-  autoCreatedAt:false,
-  autoUpdatedAt:false,
-  autoPK:false,
-  migrate:'safe',
+    tableName:"hris_account",
+    autoCreatedAt:false,
+    autoUpdatedAt:false,
+    autoPK:false,
+    migrate:'safe',
 
 
-  adapter:"hris",
-  config:{
-//      database:'test_hris',
-      pool:false
+    connection: ['hris'],
+    config:{
+        pool:false
     },
 
 
+    attributes: {
 
-  attributes: {
+        /* e.g.
+        nickname: 'string'
+        */
 
-  	/* e.g.
-  	nickname: 'string'
-  	*/
-
-    account_id	: 'INTEGER',
-
-
-    account_guid	: 'STRING',
+        account_id  : 'INTEGER',
 
 
-    family_id	: 'INTEGER',
+        account_guid    : 'STRING',
 
 
-    account_number	: 'STRING',
+        family_id   : 'INTEGER',
 
 
-    country_id	: 'INTEGER',
+        account_number  : 'STRING',
 
 
-    account_isprimary	: '?TINYINT?'
-  }
+        country_id  : 'INTEGER',
+
+
+        account_isprimary   : 'INTEGER'
+    }
 
 };

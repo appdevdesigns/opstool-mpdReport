@@ -1,43 +1,42 @@
 /**
- * HRISCountryData
- *
- * @module      :: Model
- * @description :: A short summary of how this model works and what it represents.
- *
- */
+* HRISCountryData
+*
+* @module      :: Model
+* @description :: A short summary of how this model works and what it represents.
+*
+*/
 
 module.exports = {
 
-  tableName:"hris_country_data",
-  autoCreatedAt:false,
-  autoUpdatedAt:false,
-  autoPK:false,
-  migrate:'safe',
+    tableName:"hris_country_data",
+    autoCreatedAt:false,
+    autoUpdatedAt:false,
+    autoPK:false,
+    migrate:'safe',
 
 
-  adapter:"hris",
-  config:{
-//      database:'test_hris',
-      pool:false
+    connection: ['hris'],
+    config:{
+        pool:false
     },
 
 
-  attributes: {
+    attributes: {
 
-  	/* e.g.
-  	nickname: 'string'
-  	*/
+        /* e.g.
+        nickname: 'string'
+        */
 
-    country_id	: 'INTEGER',
-
-
-    country_code	: 'STRING',
+        country_id  : 'INTEGER',
 
 
-    country_callingcode	: 'STRING',
+        country_code    : 'STRING',
 
 
-    country_weight	: 'INTEGER'
-  }
+        country_callingcode : 'STRING',
+
+
+        country_weight  : 'INTEGER'
+    }
 
 };

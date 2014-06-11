@@ -1,57 +1,54 @@
 /**
- * HRISAssignment
- *
- * @module      :: Model
- * @description :: A short summary of how this model works and what it represents.
- *
- */
+* HRISAssignment
+*
+* @module      :: Model
+* @description :: A short summary of how this model works and what it represents.
+*
+*/
 
 module.exports = {
 
-  tableName:"hris_assignment",
-  autoCreatedAt:false,
-  autoUpdatedAt:false,
-  autoPK:false,
-  migrate:'safe',
-
-  config:{
-//    database:'test_hris',
-    pool:false
-  },
+    tableName:"hris_assignment",
+    autoCreatedAt:false,
+    autoUpdatedAt:false,
+    autoPK:false,
+    migrate:'safe',
 
 
-  adapter:"hris",
+    connection: ['hris'],
+    config:{
+        pool:false
+    },
 
 
+    attributes: {
 
-  attributes: {
+        /* e.g.
+        nickname: 'string'
+        */
 
-  	/* e.g.
-  	nickname: 'string'
-  	*/
-
-    assignment_id	: 'INTEGER',
-
-
-    assignment_guid	: 'STRING',
+        assignment_id   : 'INTEGER',
 
 
-    ren_id	: 'INTEGER',
+        assignment_guid : 'STRING',
 
 
-    team_id	: 'INTEGER',
+        ren_id  : 'INTEGER',
 
 
-    position_id	: 'INTEGER',
+        team_id : 'INTEGER',
 
 
-    assignment_startdate	: 'DATE',
+        position_id : 'INTEGER',
 
 
-    assignment_enddate	: 'DATE',
+        assignment_startdate    : 'DATE',
 
 
-    assignment_isprimary	: 'INTEGER'
-  }
+        assignment_enddate  : 'DATE',
+
+
+        assignment_isprimary    : 'INTEGER'
+    }
 
 };

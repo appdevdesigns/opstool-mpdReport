@@ -22,7 +22,8 @@ function(){
             //
             var myDrop = new Dropzone('#staff-report-uploader', {
                 url:'/mpdreport/upload',
-                acceptedFiles:'.csv'
+                acceptedFiles:'.csv',
+                paramName:'csvFile'
             });
         
             myDrop.on('success', function(file, response){

@@ -1,45 +1,42 @@
 /**
- * HRISXrefTeamLocation
- *
- * @module      :: Model
- * @description :: A short summary of how this model works and what it represents.
- *
- */
+* HRISXrefTeamLocation
+*
+* @module      :: Model
+* @description :: A short summary of how this model works and what it represents.
+*
+*/
 
 module.exports = {
 
-  tableName:"hris_xref_team_location",
-  autoCreatedAt:false,
-  autoUpdatedAt:false,
-  autoPK:false,
-  migrate:'safe',
-
-  config:{
-//    database:'test_hris',
-    pool:false
-  },
+    tableName:"hris_xref_team_location",
+    autoCreatedAt:false,
+    autoUpdatedAt:false,
+    autoPK:false,
+    migrate:'safe',
 
 
-  adapter:"hris",
+    connection: ['hris'],
+    config:{
+        pool:false
+    },
 
 
+    attributes: {
 
-  attributes: {
+        /* e.g.
+        nickname: 'string'
+        */
 
-  	/* e.g.
-  	nickname: 'string'
-  	*/
-
-    tl_id	: 'INTEGER',
-
-
-    tl_guid	: 'STRING',
+        tl_id   : 'INTEGER',
 
 
-    team_id	: 'INTEGER',
+        tl_guid : 'STRING',
 
 
-    location_id	: 'INTEGER'
-  }
+        team_id : 'INTEGER',
+
+
+        location_id : 'INTEGER'
+    }
 
 };

@@ -291,49 +291,46 @@ module.exports= {
             // find which location type == Region
             HRISAssignLocationTypeTrans
             .find({ language_code:'en', locationtype_label:'Region'})
-            .done(function(err, locationType){
+            .fail(function(err){
+                Log.error(LogKey+' error looking up HRISAssignLocationTypeTrans:', err);
+                done(err);
+            })
+            .then(function(locationType){
 
-                if (err) {
+                // pull all locations_data with this locationType
+                get(HRISAssignLocation, 'locationtype_id', {}, locationType, function(err, locations){
 
-                    Log.error(LogKey+' error looking up HRISAssignLocationTypeTrans:', err);
-                    done(err);
+                    if (err) {
 
-                } else {
+                        Log.error(LogKey+' error looking up HRISAssignLocation:', err);
+                        done(err);
 
-                    // pull all locations_data with this locationType
-                    get(HRISAssignLocation, 'locationtype_id', {}, locationType, function(err, locations){
-
-                        if (err) {
-
-                            Log.error(LogKey+' error looking up HRISAssignLocation:', err);
-                            done(err);
-
-                        } else {
+                    } else {
 
 
-                            // pull the location_tran for these locations
-                            get(HRISAssignLocationTrans, 'location_id', { language_code:'en' },  locations, function(err, trans) {
+                        // pull the location_tran for these locations
+                        get(HRISAssignLocationTrans, 'location_id', { language_code:'en' },  locations, function(err, trans) {
 
-                                if (err) {
+                            if (err) {
 
-                                    Log.error(LogKey+' error looking up HRISAssignLocationTrans:', err);
-                                    done(err);
+                                Log.error(LogKey+' error looking up HRISAssignLocationTrans:', err);
+                                done(err);
 
-                                } else {
+                            } else {
 
 
-                                    var locationLookup = lookupTable(trans, 'location_id', 'location_label');
+                                var locationLookup = lookupTable(trans, 'location_id', 'location_label');
 //Log('location info found ...');
-                                    if (done) done(null, locationLookup);
+                                if (done) done(null, locationLookup);
 
-                                }
+                            }
 
-                            });
+                        });
 
-                        }
-                    });
+                    }
+                });
 
-                }
+                
             });
         },
 
@@ -356,41 +353,39 @@ module.exports= {
                 if (currentSet.length > 0 ) {
 
                     // pull all locations with parent_id in currentSet
-                    HRISAssignLocation.find({parent_id:currentSet}).done(function(err, locations) {
+                    HRISAssignLocation.find({parent_id:currentSet})
+                    .fail(function(err){
+                        Log.error(LogKey+'error searching sub locations: ',err, ' \ncurrSet: ',currentSet);
+//                        console.log(currentSet);
+                        if (cb) cb(err);
+                    })
+                    .then(function(locations) {
 
-                        if (err) {
-                            Log.error(LogKey+'error searching sub locations: ',err, ' \ncurrSet: ',currentSet);
-     //                       console.log(currentSet);
-                            if (cb) cb(err);
+                        if (locations.length > 0 ) {
+
+                            var nextSet = [];
+                            for (var l=0; l<locations.length; l++) {
+                                var element = locations[l];
+
+                                // insert into lookup table
+                                lookup[element.location_id] = lookup[element.parent_id];
+
+                                // store this id for the next call
+                                nextSet.push(element.location_id);
+                            }
+
+                            recursiveLookup(nextSet, function(err) {
+                                if (err) {
+                                    if (cb) cb(err);
+                                } else {
+                                    if (cb) cb();
+                                }
+                            });
 
                         } else {
-
-                            if (locations.length > 0 ) {
-
-                                var nextSet = [];
-                                for (var l=0; l<locations.length; l++) {
-                                    var element = locations[l];
-
-                                    // insert into lookup table
-                                    lookup[element.location_id] = lookup[element.parent_id];
-
-                                    // store this id for the next call
-                                    nextSet.push(element.location_id);
-                                }
-
-                                recursiveLookup(nextSet, function(err) {
-                                    if (err) {
-                                        if (cb) cb(err);
-                                    } else {
-                                        if (cb) cb();
-                                    }
-                                });
-
-                            } else {
-                                if (cb) cb();
-                            }
+                            if (cb) cb();
                         }
-
+                        
                     });
 
                 } else {
@@ -416,14 +411,12 @@ module.exports= {
  //           console.log(sails.config.adapters);
             HRISCountryData
             .find({ country_code:'US'})
-            .done(function (err, countries) {
-
-                if (err) {
-                    Log.error(LogKey+'error finding countries:', err);
+            .fail(function(err){
+                Log.error(LogKey+'error finding countries:', err);
 console.log(err);
-                    dfd.reject(err);
-
-                } else {
+                dfd.reject(err);
+            })
+            .then(function (countries) {
 
 
                     get(HRISAccount, 'country_id', {}, countries, function(err, accounts){
@@ -470,7 +463,7 @@ console.log(err);
 
                     }); // end get(HRISAccount);
 
-                }
+                
 
 
             });  // end HRISCountryData.find()
@@ -484,51 +477,48 @@ console.log(err);
             // create a lookup to relate a ren => location_id (by assignment)
             var dfd = $.Deferred();
 
-            HRISAssignment.find({ assignment_isprimary:1 }).done( function(err, assignments) {
+            HRISAssignment.find({ assignment_isprimary:1 })
+            .fail(function(err){
+                Log.error(LogKey+'error finding assignments:',err);
+                console.log(err);
+                dfd.reject(err);
+            })
+            .then( function(assignments) {
 
-                if (err) {
-                    Log.error(LogKey+'error finding assignments:',err);
-                    console.log(err);
-                    dfd.reject(err);
+                Log(LogKey+' assignments found ['+assignments.length+']');
+
+                if (assignments.length > 0 ) {
+
+                    var ren2assign = lookupTable(assignments, 'ren_id', 'team_id');
+//console.log('ren2assign:');
+//console.log(ren2assign);
+                    get( HRISXrefTeamLocation, 'team_id', {}, assignments, function( err, tlocations) {
+//console.log('tlocations:');
+//console.log(tlocations);
+                        if (err) {
+                            Log.error(LogKey+'error finding team X location:', err);
+                            console.log(err);
+                            dfd.reject(err);
+
+                        } else {
+
+
+                            var team2Loc = lookupTable(tlocations, 'team_id', 'location_id');
+//console.log('team2loc:');
+//console.log(team2Loc);
+                            var combinedLookup = {};
+
+                            for (var rid in ren2assign) {
+                                combinedLookup[rid] = team2Loc[ren2assign[rid]];
+                            }
+
+                            dfd.resolve(combinedLookup);
+                        }
+                    });
 
                 } else {
 
-                    Log(LogKey+' assignments found ['+assignments.length+']');
-
-                    if (assignments.length > 0 ) {
-
-                        var ren2assign = lookupTable(assignments, 'ren_id', 'team_id');
-//console.log('ren2assign:');
-//console.log(ren2assign);
-                        get( HRISXrefTeamLocation, 'team_id', {}, assignments, function( err, tlocations) {
-//console.log('tlocations:');
-//console.log(tlocations);
-                            if (err) {
-                                Log.error(LogKey+'error finding team X location:', err);
-                                console.log(err);
-                                dfd.reject(err);
-
-                            } else {
-
-
-                                var team2Loc = lookupTable(tlocations, 'team_id', 'location_id');
-//console.log('team2loc:');
-//console.log(team2Loc);
-                                var combinedLookup = {};
-
-                                for (var rid in ren2assign) {
-                                    combinedLookup[rid] = team2Loc[ren2assign[rid]];
-                                }
-
-                                dfd.resolve(combinedLookup);
-                            }
-                        });
-
-                    } else {
-
-                        dfd.resolve({});
-                    }
-
+                    dfd.resolve({});
                 }
 
             });
@@ -547,43 +537,37 @@ console.log(err);
             var phoneLookup = {};
 
             HRISPhoneTypeTrans.find({language_code:'en'})
-            .done(function(err, types){
-
-                if (err) {
-
-                    Log.error(LogKey+' error finding PHone types: ', err);
+            .fail(function(err) {
+                Log.error(LogKey+' error finding PHone types: ', err);
 //console.log(HRISPhoneTypeTrans);
+                dfd.reject(err);
+            })
+            .then(function(types){
+
+                types.forEach(function(type) {
+                    phoneTypes[type.phonetype_id] = type.phonetype_label;
+                });
+
+                HRISPhone.find()
+                .fail(function(err){
+
+                    Log.error(LogKey+' error finding phones:', err);
+                    console.log(err);
                     dfd.reject(err);
+                })
+                .then(function(phones){
 
-                } else {
 
+                    phones.forEach(function(phone) {
 
-                    for (var t=0; t<types.length; t++) {
-                        phoneTypes[types[t].phonetype_id] = types[t].phonetype_label;
-                    }
+                        var phoneNum = phone.phone_number + ' '+getPhoneTag(phoneTypes[phone.phonetype_id]);
+                        phoneLookup[phone.ren_id] = phoneNum;
 
-                    HRISPhone.find()
-                    .done(function(err, phones){
-
-                        if (err) {
-                            Log.error(LogKey+' error finding phones:', err);
-                            console.log(err);
-                            dfd.reject(err);
-                        } else {
-
-                            for (var p=0; p<phones.length; p++){
-
-                                var phone = phones[p];
-
-                                var phoneNum = phone.phone_number + ' '+getPhoneTag(phoneTypes[phone.phonetype_id]);
-                                phoneLookup[phone.ren_id] = phoneNum;
-                            }
-
-                            dfd.resolve(phoneLookup);
-                        }
                     });
 
-                }
+                    dfd.resolve(phoneLookup);
+                    
+                });
 
             });
 
@@ -599,23 +583,19 @@ console.log(err);
             var emailLookup = {};
 
             HRISEmail.find({email_issecure:1})
-            .done(function(err, emails){
+            .fail(function(err) {
+                Log.error(LogKey+' error finding emails:', err);
+                console.log(err);
+                dfd.reject(err);
+            })
+            .then(function(emails){
 
-                if (err) {
-                    Log.error(LogKey+' error finding emails:', err);
-                    console.log(err);
-                    dfd.reject(err);
+                emails.forEach(function(email) {
+                    emailLookup[email.ren_id] = email.email_address;
+                });
 
-                } else {
-
-
-                    for (var t=0; t<emails.length; t++) {
-                        emailLookup[emails[t].ren_id] = emails[t].email_address;
-                    }
-
-                    dfd.resolve(emailLookup);
-                }
-
+                dfd.resolve(emailLookup);
+                
             });
 
             return dfd;
@@ -808,8 +788,12 @@ var get = function( model, fkey, options, values, cb) {
         options = options || {};
         options[fkey]=listFKey;
 
-        model.find(options).done(function(err, values) {
-            if (cb) cb(err, values);
+        model.find(options)
+        .fail(function(err) {
+            if (cb) cb(err, []);
+        })
+        .then(function(values) {
+            if (cb) cb(null, values);
         });
 
     } else {

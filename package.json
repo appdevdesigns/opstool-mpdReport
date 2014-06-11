@@ -1,6 +1,6 @@
 {
   "name": "opstool-mpdReport",
-  "version": "0.0.0",
+  "version": "0.2.0",
   "description": "(plugin) An Ops Portal tool to generate MPD reports for our staff.",
   "main": "module.js",
   "directories": {
@@ -27,5 +27,11 @@
     "csv": "^0.3.7",
     "async": "^0.7.0",
     "jquery-deferred": "^0.3.0"
+  },
+  "devDependencies": {
+    "chai": "^1.9.1",
+    "mocha": "^1.20.1",
+    "mocha-phantomjs": "^3.4.1",
+    "phantomjs": "^1.9.7-8"
   }
 }
