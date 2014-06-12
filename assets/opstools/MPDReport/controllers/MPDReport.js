@@ -1,8 +1,9 @@
-
 steal(
-        // List your Controller's dependencies here:
-        'appdev',
-        '//opstools/MPDReport/balancereport-scratch.css',
+    // List your Controller's dependencies here:
+    'appdev',
+    '//js/GenericList.js'
+).then(
+
 function(){
 
 
