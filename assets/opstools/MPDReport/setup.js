@@ -1,6 +1,7 @@
 steal(
         // List your Page's dependencies here:
-        '/opstools/MPDReport/controllers/MPDReport.js'
+        '/opstools/MPDReport/controllers/MPDReport.js',
+        '/opstools/MPDReport/balancereport-scratch.css'
 ).then(
         '/opstools/MPDReport/controllers/MPDReportType.js'
 		, '/opstools/MPDReport/controllers/MPDReportUpload.js'

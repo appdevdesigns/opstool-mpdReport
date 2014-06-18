@@ -160,7 +160,33 @@ module.exports= {
                     }
                 }
 
-                if (done) done(compiledData);
+
+
+                //// sort this data by account Balance:
+                var sortedData = {
+                    staffByRegion: {},
+                    missing:{}
+                };
+
+                // sort all the regions
+                var sbr = compiledData.staffByRegion;
+                for (var region in sbr) {
+                    sortedData.staffByRegion[region] = {};
+                    var sortedRegion = arrayOrderedBy(sbr[region], 'accountBal');
+                    sortedRegion.forEach(function(item){
+                        sortedData.staffByRegion[region][item.accountNum] = item;
+                    });
+                }
+
+                // sort the missing entries
+                var sortedMissing = arrayOrderedBy(compiledData.missing, 'accountBal');
+                sortedMissing.forEach(function(item){
+                    sortedData.missing[item.accountNum] = item;
+                });
+
+
+
+                if (done) done(sortedData);
 
             });
 //// TODO:  need a .fail(function(err){  ... }); option here since one of these could fail.
@@ -1044,6 +1070,8 @@ ListEntry.prototype.add = function(data) {
         while (curr.next != null) {
 
             curr = curr.next;
+
+            // sort() should return true if newEntry should come before curr
             if (curr.sort(curr, newEntry)) {
                 newEntry.next = curr;
                 newEntry.prev = curr.prev;
@@ -1084,7 +1112,7 @@ ListEntry.prototype.toArray = function() {
 
 var arrayOrderedBy = function (objList, fieldName, sortBy) {
 
-    // objList:   'accountNum' : {object}  hash of values
+    // objList:     : {object}  hash of values
     // fieldName    : name of the object.property to sort by
     // sortBy       : [ 'asc', 'desc' ]  ascending or decending sort
     sortBy = sortBy || 'asc';

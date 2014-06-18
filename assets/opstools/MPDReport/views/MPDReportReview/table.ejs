@@ -41,17 +41,22 @@ arryDataItems.forEach(function(data){
             // figure out any class attachments.
             var rowClass = '';
 
+            // when accountBal < 2000 then should be yellow (warning)
+            if ((field == 'accountBal') && ( value < 2000)) {
+                rowClass = 'balrep-warn';
+            }
+
             // when accountBal < 0 then should be red
             if ((field == 'accountBal') && ( value < 0)) {
-                rowClass = 'class="balrep-deficit" ';
+                rowClass = 'balrep-deficit';
             }
 
             // when monthsInDeficit > 0 then should be red
-            if ((field == 'monthInDeficit') && ( value > 0)) {
-                rowClass = 'class="balrep-months-deficit" ';
+            if ((field == 'monthsInDeficit') && ( value > 0)) {
+                rowClass = 'balrep-months-deficit';
             }
 
-    %>                            <td <%=rowClass%> field="<%=field%>"><%= data[field] %></td>
+    %>                            <td class="<%== rowClass %>" field="<%=field%>"><%= data[field] %></td>
     <%
         }
     }); // next field

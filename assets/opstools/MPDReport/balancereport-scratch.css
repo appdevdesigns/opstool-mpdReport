@@ -5,7 +5,8 @@
 }
 #balrep-type-list li a { opacity: 0.75; }
 
-td.balrep-deficit, td.balrep-months-deficit, td.balrep-12-deficit { background: #f00 !important; font-weight: bold; }
+td.balrep-deficit, td.balrep-months-deficit, td.balrep-12-deficit { background: #f00 !important; font-weight: bold; color: #CC9900;}
+td.balrep-warn { background: #CC9900 !important; font-weight: bold; }
 td.balrep-3-deficit { background: #ffff00 !important; font-weight: bold; }
 
 .balrep-send-container {
