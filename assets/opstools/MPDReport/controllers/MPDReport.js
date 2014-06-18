@@ -57,6 +57,7 @@ function(){
             //AD.comm.hub.subscribe('ad.mpdreport.file.uploaded', function(msg, data){
             can.bind.call(self.toolUpload, 'uploaded', function() {
                 self.showTool('#review');
+                self.toolReview.loadResults();
             });
             
             // Show the Send panel after a review is approved

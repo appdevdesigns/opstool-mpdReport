@@ -26,13 +26,15 @@ function(){
                 paramName:'csvFile'
             });
         
+
             myDrop.on('success', function(file, response){
                 // notify any other widgets about the file.uploaded event
                 //AD.comm.hub.publish('ad.mpdreport.file.uploaded',{ file:file});
 
                 // Notify the parent controller about the upload
-                can.trigger(this, 'uploaded');
-            })
+                can.trigger(self, 'uploaded');
+            });
+
 
         },
         
