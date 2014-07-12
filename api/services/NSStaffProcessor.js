@@ -46,9 +46,17 @@ module.exports= {
                 var allAccountBal = self.getAccountBalRows();
                 var allForeignContrib = self.getForeignContribRows(periodDateInfo);
                 var allLocalContrib = self.getLocalContribRows(periodDateInfo);
+                var allStaffExpenditures = self.getStaffExpenditures(periodDateInfo);
 
                 //Wait until all the ren tables are retrieved from
-                $.when(allSWRens,allHRDBRens,allPayroll,allAccountBal,allForeignContrib,allLocalContrib).then(function(swRenInfo,hrdbRenInfo,payrollInfo,accountBalInfo,foreignContribInfo,localContribInfo){
+                $.when(
+                    allSWRens, allHRDBRens, allPayroll, allAccountBal, 
+                    allForeignContrib, allLocalContrib, allStaffExpenditures
+                )
+                .then(function(
+                    swRenInfo, hrdbRenInfo, payrollInfo, accountBalInfo, 
+                    foreignContribInfo, localContribInfo, staffExpenditures
+                ) {
 
                     //Process through each region
                     for (var t in territory){
@@ -72,6 +80,10 @@ module.exports= {
 
                                 //Retrieve all the foreign gltran rows for the staff account num
                                 var foreignContrib = foreignContribInfo[hrdbRenInfo[renId].ren_staffaccount];
+                                
+                                // Retrieve the monthly average expenditure for this staff
+                                var avgExpenditure = staffExpenditures[hrdbRenInfo[renId].ren_staffaccount];
+                                clone.avgExpenditure = self.formatNumber(avgExpenditure);
 
                                 //Retrieve all the payroll rows for the nssren_id
                                 var payInfo = payrollInfo[nssRenId];
@@ -122,7 +134,7 @@ module.exports= {
 
                                 //Pass the avg foreign contributions and current salary to get the percentage
                                 clone.foreignPercent = self.getPercent(clone.avgForeignContrib,currentSalary);
-
+                                
                                 //Add the local and foreign avg contributions together for monthsTilDeficit
                                 var avgContributions = parseInt(clone.avgLocalContrib) + parseInt(clone.avgForeignContrib);
 
@@ -339,7 +351,29 @@ module.exports= {
         getPayrollRows: function(endDate){
             var dfd = $.Deferred();
 
-            var payrollData = {};
+            var payrollData = {
+            /*
+                <nssren_id>: {
+                    <nsstransaction_id>: {
+                        "nsstransation_id": int,
+                        "nssren_id": int,
+                        "nsstransaction_baseSalary": double,
+                        "nsstransaction_allowance": double,
+                        "nsstransaction_deduction": double,
+                        "nsstransaction_totalSalary": double,
+                        "nsstransaction_date": string,
+                        "requestcutoff_id": int,
+                        "nsstransaction_processedby": string,
+                        "nsstransaction_territory_id": int,
+                        "glbatch_id": int
+                    },
+                    <nsstransaction_id>: { ... },
+                    ...
+                },
+                <nssren_id>: { ... },
+                ...
+            */
+            };
 
             NssPayrollTransactions.find({glbatch_id:{'!': 0}})
             .where({nsstransaction_date:{'>': endDate}})
@@ -468,6 +502,75 @@ module.exports= {
                     glTransData[accountNum][transId] = gltrans[g];
                 }
                 dfd.resolve(glTransData);
+            });
+
+            return dfd;
+        },
+
+
+
+        // Retrieve average of all expenditures from the nss_core_gltran table
+        // for the last 12 months
+        getStaffExpenditures: function(endPeriodDate) {
+            var dfd = $.Deferred();
+
+            /*
+                Basically, this is what we want to get:
+                    SELECT
+                        SUBSTR(gltran_subacctnum, 2) AS accountNum,
+                        ROUND(SUM(gltran_dramt) / 12) AS avgExpense
+                    FROM
+                        nss_core_gltran
+                    WHERE
+                        gltran_subacctnum LIKE '10____'
+                        AND gltran_dramt > 0
+                        AND gltran_cramt = 0
+                        AND gltran_perpost > $endPeriodDate
+                    GROUP BY
+                        gltran_subacctnum;
+            */
+
+            var expenseData = {
+            /*
+                <staffAccountNum>: <avgExpense>,
+                ...
+            */
+            };
+            
+            NssCoreGLTran.find(
+                { and: [
+                    // find only staff subaccounts
+                    { gltran_subacctnum: { 'like',  '10____' } },
+                    // find only expenditure transactions
+                    { gltran_dramt: { '>': 0 } },
+                    { gltran_cramt: 0 },
+                    // limit by date
+                    { gltran_perpost: { '>': endPeriodDate }
+                ] }
+            )
+            .fail(function(err){
+                Log.error(logKey+' failed to lookup NssCoreGLTran:',err);
+                dfd.reject(err);
+            })
+            .done(function(gltrans){
+                for (var g=0; g<gltrans.length; g++) {
+                    //Cut the account number down to 4 digit to look up based off of hrdb.ren.ren_staffaccount
+                    var accountNum = gltrans[g].gltran_subacctnum.slice(2,6);
+                    // Sum the amounts that are deducted from the account
+                    if (expenseData[accountNum]) {
+                        expenseData[accountNum] += gltrans[g].gltran_dramt;
+                    } else {
+                        expenseData[accountNum] = gltrans[g].gltran_dramt;
+                    }
+                }
+                // Average and round the final values
+                for (var accountNum in expenseData) {
+                    expenseData[accountNum] = Math.round(
+                        expenseData[accountNum] / 12
+                    );
+                }
+                
+                dfd.resolve(expenseData);
             });
 
             return dfd;
