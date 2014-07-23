@@ -540,12 +540,12 @@ module.exports= {
             NssCoreGLTran.find(
                 { and: [
                     // find only staff subaccounts
-                    { gltran_subacctnum: { 'like',  '10____' } },
+                    { gltran_subacctnum: { 'like':  '10____' } },
                     // find only expenditure transactions
                     { gltran_dramt: { '>': 0 } },
                     { gltran_cramt: 0 },
                     // limit by date
-                    { gltran_perpost: { '>': endPeriodDate }
+                    { gltran_perpost: { '>': endPeriodDate } }
                 ] }
             )
             .fail(function(err){
