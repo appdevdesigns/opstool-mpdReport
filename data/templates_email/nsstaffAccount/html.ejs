@@ -22,6 +22,7 @@
             <th>Foreign Percentage of Salary</th>
             <th># Months in deficit</th>
             <th># Months till deficit</th>
+            <th>Average* Expenditure</th>
             <th>Phone</th>
             <th>Email</th>
         </tr>
@@ -72,6 +73,7 @@
             <td><%= person.foreignPercent %></td>
             <td <%- getClassGreater(person.monthsInDeficit,0) %> ><%= person.monthsInDeficit %></td>
             <td <%- getClassLess(person.monthsTilDeficit,5) %> ><%= person.monthsTilDeficit %></td>
+            <td><%= person.avgExpenditure %></td>
             <td><%= person.phone %></td>
             <td><%= person.email %></td>
         </tr>
