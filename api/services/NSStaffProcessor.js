@@ -249,8 +249,11 @@ module.exports= {
         //Add a comma to the number where it is needed
         formatNumber: function(number){
 
-            while (/(\d+)(\d{3})/.test(number.toString())){
-                number = number.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2');
+            // if number is not undefined
+            if (number) {
+                while (/(\d+)(\d{3})/.test(number.toString())){
+                    number = number.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2');
+                }
             }
 
             return number;
