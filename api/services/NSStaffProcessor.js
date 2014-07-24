@@ -1,5 +1,6 @@
 var path = require('path');
 var $ = require('jquery-deferred');
+var AD = require('ad-utils');
 
 
 //// Node-Email-Templates:
@@ -18,6 +19,7 @@ module.exports= {
 
         compileStaffData:function(done) {
             var self = this;
+            var dfd = AD.sal.Deferred();
 
             if (Log == null) Log = MPDReportGen.Log;
 
@@ -68,6 +70,7 @@ module.exports= {
 
                             var renId = swRenInfo[territoryId][a].ren_id;
                             var nssRenId = swRenInfo[territoryId][a].nssren_id;
+                            var renGUID = swRenInfo[territoryId][a].ren_guid;
 
                             if (typeof hrdbRenInfo[renId] != 'undefined') {
 
@@ -93,6 +96,10 @@ module.exports= {
 
                                 //Save the currentSalary to be used for percentage of contributions
                                 var currentSalary = swRenInfo[territoryId][a].nssren_salaryAmount;
+
+
+                                // saving the GUID to the clone data as well. -Johnny
+                                clone.guid = renGUID;
 
                                 clone.accountNum = hrdbRenInfo[renId].ren_staffaccount;
                                 clone.name = self.getName(hrdbRenInfo[renId]);
@@ -179,15 +186,20 @@ module.exports= {
                         }
                     }
 
+                    for (var region in compiledData.staffByRegion) {
+                        compiledData.staffByRegion[region] = self.sortObj(compiledData.staffByRegion[region], 'value');
+                    }
+
                     if(done){
-                        for (var region in compiledData.staffByRegion) {
-                            compiledData.staffByRegion[region] = self.sortObj(compiledData.staffByRegion[region], 'value');
-                        }
                         done(compiledData);
                     }
+
+                    dfd.resolve(compiledData);
                 });
               });
             });
+
+            return dfd;
         },
 
 
