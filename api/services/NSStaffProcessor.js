@@ -501,7 +501,7 @@ module.exports= {
             NssCoreGLTran.find({gltran_acctnum: 5000})
             .where({gltran_perpost: {'>': endPeriodDate}})
             .fail(function(err){
-                Log.error(logKey+' failed to lookup NssCoreGLTran:', err);
+                Log.error(LogKey+' failed to lookup NssCoreGLTran:', err);
                 dfd.reject(err);
             })
             .then(function(gltrans){
@@ -540,7 +540,7 @@ module.exports= {
                                 ]})
             .where({gltran_perpost: {'>': endPeriodDate}})
             .fail(function(err){
-                Log.error(logKey+' failed to lookup NssCoreGLTran:',err);
+                Log.error(LogKey+' failed to lookup NssCoreGLTran:',err);
                 dfd.reject(err);
             })
             .then(function(gltrans){
@@ -605,7 +605,7 @@ module.exports= {
                 ] }
             )
             .fail(function(err){
-                Log.error(logKey+' failed to lookup NssCoreGLTran:',err);
+                Log.error(LogKey+' failed to lookup NssCoreGLTran:',err);
                 dfd.reject(err);
             })
             .done(function(gltrans){
@@ -642,7 +642,7 @@ module.exports= {
 
             NssCoreGLTran.find().limit(1).sort("gltran_perpost desc")
             .fail(function(err){
-                Log.error(logKey+' failed to lookup NssCoreGLTran:',err);
+                Log.error(LogKey+' failed to lookup NssCoreGLTran:',err);
                 dfd.reject(err);
             })
             .then(function(gltran){
