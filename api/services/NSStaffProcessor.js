@@ -17,6 +17,259 @@ var LogKey = '<green><bold>NSStaffProcessor:</bold></green>';
 module.exports= {
 
 
+//         compileStaffData:function(done) {
+//             var self = this;
+//             var dfd = AD.sal.Deferred();
+
+//             if (Log == null) Log = MPDReportGen.Log;
+
+//             var compiledData = {};
+//             compiledData.staffByRegion = {};
+//             compiledData.staff = [];
+
+//             var date = self.getFiscalPeriod();
+//             //var maxDate = self.getMinPeriod();
+            
+
+//             //Wait until the date fields are retrieved before continuing
+//             $.when(date).then(function(twelveMonthsAgo){
+              
+//               var fiscalDateInfo = twelveMonthsAgo.date;
+//               var periodDateInfo = twelveMonthsAgo.period;
+              
+//               //Retrieve the regions
+//               NssCoreTerritory.find().sort('territory_desc asc')
+//               .fail(function(err) { 
+
+//               })
+//               .then(function(territory){
+
+//                 //Process through all the ren tables
+//                 var allSWRens = self.getSWRenData();
+//                 var allHRDBRens = self.getHRDBRenData();
+//                 var allPayroll = self.getPayrollRows(fiscalDateInfo);
+//                 var allAccountBal = self.getAccountBalRows();
+//                 var allForeignContrib = self.getForeignContribRows(periodDateInfo);
+//                 var allLocalContrib = self.getLocalContribRows(periodDateInfo);
+//                 var allStaffExpenditures = self.getStaffExpenditures(periodDateInfo);
+
+//                 //Wait until all the ren tables are retrieved from
+//                 $.when(
+//                     allSWRens, allHRDBRens, allPayroll, allAccountBal, 
+//                     allForeignContrib, allLocalContrib, allStaffExpenditures
+//                 )
+//                 .then(function(
+//                     swRenInfo, hrdbRenInfo, payrollInfo, accountBalInfo, 
+//                     foreignContribInfo, localContribInfo, staffExpenditures
+//                 ) {
+
+//                     //Process through each region
+//                     for (var t in territory){
+//                         var territoryId = territory[t].territory_id;
+
+//                         //Process through each ren in the region
+//                         for (var a in swRenInfo[territoryId]) {
+//                             var clone = {};
+
+//                             var renId = swRenInfo[territoryId][a].ren_id;
+//                             var nssRenId = swRenInfo[territoryId][a].nssren_id;
+//                             var renGUID = swRenInfo[territoryId][a].ren_guid;
+
+//                             if (typeof hrdbRenInfo[renId] != 'undefined') {
+
+
+//                                 //Retrieve all the accthistory rows for the staff account num
+//                                 var accountInfo = accountBalInfo[hrdbRenInfo[renId].ren_staffaccount];
+
+//                                 //Retrieve all the local gltran rows for the staff account num
+//                                 var localContrib = localContribInfo[hrdbRenInfo[renId].ren_staffaccount];
+
+//                                 //Retrieve all the foreign gltran rows for the staff account num
+//                                 var foreignContrib = foreignContribInfo[hrdbRenInfo[renId].ren_staffaccount];
+
+//                                 // Retrieve the monthly average expenditure for this staff
+//                                 var avgExpenditure = staffExpenditures[hrdbRenInfo[renId].ren_staffaccount];
+//                                 if (avgExpenditure) {
+//                                     clone.avgExpenditure = self.formatNumber(avgExpenditure);
+//                                 } else {
+//                                     clone.avgExpenditure = 0;
+//                                 }
+
+//                                 //Retrieve all the payroll rows for the nssren_id
+//                                 var payInfo = payrollInfo[nssRenId];
+
+//                                 //Save the period to be used for retrieving the avg account balance
+//                                 var period = swRenInfo[territoryId][a].nssren_balancePeriod;
+
+//                                 //Save the currentSalary to be used for percentage of contributions
+//                                 var currentSalary = swRenInfo[territoryId][a].nssren_salaryAmount;
+
+
+//                                 // saving the GUID to the clone data as well. -Johnny
+//                                 clone.guid = renGUID;
+
+//                                 clone.accountNum = hrdbRenInfo[renId].ren_staffaccount;
+//                                 clone.name = self.getName(hrdbRenInfo[renId]);
+//                                 clone.baseSalary = currentSalary;
+
+//                                 //Pass the html entities for chinese name to get changed to chinese characters
+//                                 clone.chineseName = self.decodeHtmlEntity(hrdbRenInfo[renId].ren_namecharacters);
+
+//                                 clone.accountBal = swRenInfo[territoryId][a].nssren_ytdBalance.toFixed(0);
+
+//                                 //Pass the payroll rows to getPayrollAvg to retrieve avgPayroll
+//                                 clone.avgPayroll = self.getPayrollAvg(payInfo);
+
+
+//                                 if (accountInfo) {
+
+//                                     //Pass the acct bal rows and the period to retrieve avgAccountBal
+//                                     clone.avgAccountBal = self.getAccountBalAvg(accountInfo, period);
+//                                     clone.avgAccountBal = self.formatNumber(clone.avgAccountBal);
+
+//                                     //Pass the acct bal rows and the period to retrieve monthsInDeficit
+//                                     clone.monthsInDeficit = self.getMonthsInDeficit(accountInfo, period);
+
+//                                 } else {
+
+//                                     Log(LogKey+'<yellow><bold>warn:</bold> accountInfo undefined for :</yellow>', clone);
+//                                     clone.avgAccountBal = '???';
+//                                     clone.monthsInDeficit = '???';
+//                                 }
+
+//                                 //Pass the local contributions to get the avgLocalContrib
+//                                 clone.avgLocalContrib = self.getAvgContributions(localContrib);
+
+//                                 //Pass the avg local contributions and current salary to get the percentage
+//                                 clone.localPercent = self.getPercent(clone.avgLocalContrib,currentSalary);
+
+//                                 //Pass the foreign contributions to get the avgForeignContrib
+//                                 clone.avgForeignContrib = self.getAvgContributions(foreignContrib);
+
+//                                 //Pass the avg foreign contributions and current salary to get the percentage
+//                                 clone.foreignPercent = self.getPercent(clone.avgForeignContrib,currentSalary);
+                                
+//                                 //Add the local and foreign avg contributions together for monthsTilDeficit
+//                                 var avgContributions = parseInt(clone.avgLocalContrib) + parseInt(clone.avgForeignContrib);
+
+//                                 //Pass the int value of avgPayroll, avgContributions, and accountBal
+//                                 clone.monthsTilDeficit = self.getMonthsTilDeficit(clone.baseSalary, avgContributions, parseInt(clone.accountBal));
+
+//                                 clone.phone = hrdbRenInfo[renId].ren_mobilephone + " (m)";
+//                                 clone.email = hrdbRenInfo[renId].ren_secureemail;
+
+//                                 //Retrieve the first characters of the territory_desc to display as region
+//                                 clone.hris_region = territory[t].territory_desc.split('-',1);
+                                
+//                                 //format numbers with commas
+//                                 clone.avgForeignContrib = self.formatNumber(clone.avgForeignContrib);
+//                                 clone.avgLocalContrib = self.formatNumber(clone.avgLocalContrib);
+                                
+//                                 clone.avgPayroll = self.formatNumber(clone.avgPayroll);
+//                                 clone.accountBal = self.formatNumber(clone.accountBal);
+//                                 clone.baseSalary = self.formatNumber(clone.baseSalary);
+
+//                                 var sbr = compiledData.staffByRegion;
+
+//                                 if (!sbr[clone.hris_region]) {
+//                                     sbr[clone.hris_region] = {};
+//                                 }
+
+//                                 //Store the ren info in an object based off region and staff account num
+//                                 sbr[clone.hris_region][clone.accountNum] = clone;
+//                                 compiledData.staff.push(clone);
+
+//                             } else {
+//                                 Log.error(LogKey+' no hrdbRenInfo for renid['+renId+'] :', { renId:renId, nssRenId:nssRenId, a:a, territoryId:territoryId});
+
+// //                               console.log();
+// //                               console.log('*** Warn: no hrdbRenInfo for renid['+renId+'] ');
+// //                               console.log('    nssRenId:'+nssRenId);
+// //                               console.log('    a:'+a);
+// //                               console.log('    territoryId:'+territoryId);
+// //                              console.log(swRenInfo[territoryId]);
+// //                                console.log();
+//                             }
+//                         }
+//                     }
+
+//                     for (var region in compiledData.staffByRegion) {
+//                         compiledData.staffByRegion[region] = self.sortObj(compiledData.staffByRegion[region], 'value');
+//                     }
+
+//                     if(done){
+//                         done(compiledData);
+//                     }
+
+//                     dfd.resolve(compiledData);
+//                 });
+//               });
+//             });
+
+//             return dfd;
+//         },
+
+
+        /**
+         *  @function compileStaffData
+         *
+         *  We are compiling all the relevant information for our MPD reports for 
+         *  each of our NSS staff.
+         *
+         *  When we are done we should have this data in the following format:
+         *
+         *      compiledData : {
+         *          staffByRegion: {
+         *              'RegionCode 1' : {
+         *                  'accountNum1' : { staff data packet 1 },
+         *                  'accountNum2' : { staff data packet 2 },
+         *                  ...
+         *                  'accountNumN' : { staff data packet N }
+         *              },
+         *              'RegionCode 2' : {
+         *                  'accountNum1' : { staff data packet 1 },
+         *                  'accountNum2' : { staff data packet 2 },
+         *                  ...
+         *                  'accountNumN' : { staff data packet N }
+         *              },
+         *              ....
+         *              'RegionCode M' : {
+         *                  'accountNum1' : { staff data packet 1 },
+         *                  'accountNum2' : { staff data packet 2 },
+         *                  ...
+         *                  'accountNumN' : { staff data packet N }
+         *              }
+         *          },
+         *          staff:[
+         *              { staff data packet 1 },
+         *              { staff data packet 1 },
+         *              ...
+         *              { staff data packet N*M }
+         *          ]
+         *      }
+         *
+         *  Each staff data packet should contain the following information:
+         *      {
+         *          guid            : The unique global id of this staff,
+         *          accountNum      : This staff's account number,
+         *          name            : The staff's name =>  "surname, givenname (preferredName)",
+         *          baseSalary      : The staff's base monthly salary,
+         *          chineseName     : The staff's chinese name
+         *          accountBal      : The staff's current account balance 
+         *          avgPayroll      : The average of staff's last 12 payroll salaries paid
+         *          avgAccountBal   : The average of staff's last 12 account balances
+         *          monthsInDeficit : The # months in last 12 months that account balance < 0
+         *          avgLocalContrib : The net average change in account (+ or -) from local sources
+         *          localPercent    : The % that avgLocalContrib makes up of current salary
+         *          avgForeignContrib : The net average change in account (+ or -) from foreign sources
+         *          foreignPercent  : The % that avgForeignContrib makes up of current salary
+         *          monthsTilDeficit: estimate of how many more months until an account goes negative                       
+         *          phone           : The staff's current phone (mobile)
+         *          email           : The staff's current secure email address
+         *          hris_region     : The staff's region info
+         *          avgExpenditure  : The average amount leaving their account over the past 12 months, 
+         *      }
+         */
         compileStaffData:function(done) {
             var self = this;
             var dfd = AD.sal.Deferred();
@@ -32,7 +285,7 @@ module.exports= {
             
 
             //Wait until the date fields are retrieved before continuing
-            $.when(date).then(function(twelveMonthsAgo){
+            $.when(date).then(function(twelveMonthsAgo){ 
               
               var fiscalDateInfo = twelveMonthsAgo.date;
               var periodDateInfo = twelveMonthsAgo.period;
@@ -42,169 +295,235 @@ module.exports= {
               .fail(function(err) { 
 
               })
-              .then(function(territory){
+              .then(function(territory){ 
 
-                //Process through all the ren tables
-                var allSWRens = self.getSWRenData();
-                var allHRDBRens = self.getHRDBRenData();
-                var allPayroll = self.getPayrollRows(fiscalDateInfo);
-                var allAccountBal = self.getAccountBalRows();
-                var allForeignContrib = self.getForeignContribRows(periodDateInfo);
-                var allLocalContrib = self.getLocalContribRows(periodDateInfo);
-                var allStaffExpenditures = self.getStaffExpenditures(periodDateInfo);
+                var swRenInfo, hrisRenInfo, payrollInfo, accountBalInfo, 
+                    foreignContribInfo, localContribInfo, staffExpenditures = null;
 
-                //Wait until all the ren tables are retrieved from
-                $.when(
-                    allSWRens, allHRDBRens, allPayroll, allAccountBal, 
-                    allForeignContrib, allLocalContrib, allStaffExpenditures
-                )
-                .then(function(
-                    swRenInfo, hrdbRenInfo, payrollInfo, accountBalInfo, 
-                    foreignContribInfo, localContribInfo, staffExpenditures
-                ) {
+                async.series([
 
-                    //Process through each region
-                    for (var t in territory){
-                        var territoryId = territory[t].territory_id;
+                    // Step 1: load in all Stewardwise info:
+                    function(next){
 
-                        //Process through each ren in the region
-                        for (var a in swRenInfo[territoryId]) {
-                            var clone = {};
+                        var allSWRens = self.getSWRenData();
+                        var allPayroll = self.getPayrollRows(fiscalDateInfo);
+                        var allAccountBal = self.getAccountBalRows();
+                        var allForeignContrib = self.getForeignContribRows(periodDateInfo);
+                        var allLocalContrib = self.getLocalContribRows(periodDateInfo);
+                        var allStaffExpenditures = self.getStaffExpenditures(periodDateInfo);
 
-                            var renId = swRenInfo[territoryId][a].ren_id;
-                            var nssRenId = swRenInfo[territoryId][a].nssren_id;
-                            var renGUID = swRenInfo[territoryId][a].ren_guid;
+                        //Wait until all the ren tables are retrieved from
+                        $.when(
+                            allSWRens, allPayroll, allAccountBal, 
+                            allForeignContrib, allLocalContrib, allStaffExpenditures
+                        )
+                        .fail(function(err){
+                            AD.log.error('<bold>NSStaffProcessor.compileStaffData():</bold> error gathering NSS info: ', err);
+                            next(err);
+                        })
+                        .then(function(
+                            currSwRenInfo,  currPayrollInfo, currAccountBalInfo, 
+                            currForeignContribInfo, currLocalContribInfo, currStaffExpenditures
+                        ) {
 
-                            if (typeof hrdbRenInfo[renId] != 'undefined') {
-
-
-                                //Retrieve all the accthistory rows for the staff account num
-                                var accountInfo = accountBalInfo[hrdbRenInfo[renId].ren_staffaccount];
-
-                                //Retrieve all the local gltran rows for the staff account num
-                                var localContrib = localContribInfo[hrdbRenInfo[renId].ren_staffaccount];
-
-                                //Retrieve all the foreign gltran rows for the staff account num
-                                var foreignContrib = foreignContribInfo[hrdbRenInfo[renId].ren_staffaccount];
-
-                                // Retrieve the monthly average expenditure for this staff
-                                var avgExpenditure = staffExpenditures[hrdbRenInfo[renId].ren_staffaccount];
-                                if (avgExpenditure) {
-                                    clone.avgExpenditure = self.formatNumber(avgExpenditure);
-                                } else {
-                                    clone.avgExpenditure = 0;
-                                }
-
-                                //Retrieve all the payroll rows for the nssren_id
-                                var payInfo = payrollInfo[nssRenId];
-
-                                //Save the period to be used for retrieving the avg account balance
-                                var period = swRenInfo[territoryId][a].nssren_balancePeriod;
-
-                                //Save the currentSalary to be used for percentage of contributions
-                                var currentSalary = swRenInfo[territoryId][a].nssren_salaryAmount;
+                            swRenInfo = currSwRenInfo;
+                            payrollInfo = currPayrollInfo;
+                            accountBalInfo = currAccountBalInfo;
+                            foreignContribInfo = currForeignContribInfo;
+                            localContribInfo = currLocalContribInfo;
+                            staffExpenditures = currStaffExpenditures;
+                            next();
+                        })
+                    },
 
 
-                                // saving the GUID to the clone data as well. -Johnny
-                                clone.guid = renGUID;
+                    // Step 2: load in related HRIS info:
+                    function(next) {
 
-                                clone.accountNum = hrdbRenInfo[renId].ren_staffaccount;
-                                clone.name = self.getName(hrdbRenInfo[renId]);
-                                clone.baseSalary = currentSalary;
+                        // get relevant guids from swRenInfo:
+                            // swRenInfo :  { territory_id: { ren_id : {rens} } };
+                        var guids = [];
+                        for (var tid in swRenInfo) {
+                            var section = swRenInfo[tid];
 
-                                //Pass the html entities for chinese name to get changed to chinese characters
-                                clone.chineseName = self.decodeHtmlEntity(hrdbRenInfo[renId].ren_namecharacters);
-
-                                clone.accountBal = swRenInfo[territoryId][a].nssren_ytdBalance.toFixed(0);
-
-                                //Pass the payroll rows to getPayrollAvg to retrieve avgPayroll
-                                clone.avgPayroll = self.getPayrollAvg(payInfo);
-
-
-                                if (accountInfo) {
-
-                                    //Pass the acct bal rows and the period to retrieve avgAccountBal
-                                    clone.avgAccountBal = self.getAccountBalAvg(accountInfo, period);
-                                    clone.avgAccountBal = self.formatNumber(clone.avgAccountBal);
-
-                                    //Pass the acct bal rows and the period to retrieve monthsInDeficit
-                                    clone.monthsInDeficit = self.getMonthsInDeficit(accountInfo, period);
-
-                                } else {
-
-                                    Log(LogKey+'<yellow><bold>warn:</bold> accountInfo undefined for :</yellow>', clone);
-                                    clone.avgAccountBal = '???';
-                                    clone.monthsInDeficit = '???';
-                                }
-
-                                //Pass the local contributions to get the avgLocalContrib
-                                clone.avgLocalContrib = self.getAvgContributions(localContrib);
-
-                                //Pass the avg local contributions and current salary to get the percentage
-                                clone.localPercent = self.getPercent(clone.avgLocalContrib,currentSalary);
-
-                                //Pass the foreign contributions to get the avgForeignContrib
-                                clone.avgForeignContrib = self.getAvgContributions(foreignContrib);
-
-                                //Pass the avg foreign contributions and current salary to get the percentage
-                                clone.foreignPercent = self.getPercent(clone.avgForeignContrib,currentSalary);
-                                
-                                //Add the local and foreign avg contributions together for monthsTilDeficit
-                                var avgContributions = parseInt(clone.avgLocalContrib) + parseInt(clone.avgForeignContrib);
-
-                                //Pass the int value of avgPayroll, avgContributions, and accountBal
-                                clone.monthsTilDeficit = self.getMonthsTilDeficit(clone.baseSalary, avgContributions, parseInt(clone.accountBal));
-
-                                clone.phone = hrdbRenInfo[renId].ren_mobilephone + " (m)";
-                                clone.email = hrdbRenInfo[renId].ren_secureemail;
-
-                                //Retrieve the first characters of the territory_desc to display as region
-                                clone.hris_region = territory[t].territory_desc.split('-',1);
-                                
-                                //format numbers with commas
-                                clone.avgForeignContrib = self.formatNumber(clone.avgForeignContrib);
-                                clone.avgLocalContrib = self.formatNumber(clone.avgLocalContrib);
-                                
-                                clone.avgPayroll = self.formatNumber(clone.avgPayroll);
-                                clone.accountBal = self.formatNumber(clone.accountBal);
-                                clone.baseSalary = self.formatNumber(clone.baseSalary);
-
-                                var sbr = compiledData.staffByRegion;
-
-                                if (!sbr[clone.hris_region]) {
-                                    sbr[clone.hris_region] = {};
-                                }
-
-                                //Store the ren info in an object based off region and staff account num
-                                sbr[clone.hris_region][clone.accountNum] = clone;
-                                compiledData.staff.push(clone);
-
-                            } else {
-                                Log.error(LogKey+' no hrdbRenInfo for renid['+renId+'] :', { renId:renId, nssRenId:nssRenId, a:a, territoryId:territoryId});
-
-//                               console.log();
-//                               console.log('*** Warn: no hrdbRenInfo for renid['+renId+'] ');
-//                               console.log('    nssRenId:'+nssRenId);
-//                               console.log('    a:'+a);
-//                               console.log('    territoryId:'+territoryId);
-//                              console.log(swRenInfo[territoryId]);
-//                                console.log();
+                            for (var rid in section) {
+                                var ren = section[rid];
+                                guids.push(ren.ren_guid);
                             }
                         }
+
+                        // get that HRIS ren info
+                        self.getHRISRenData(guids)
+                        .fail(function(err){
+                            next(err);
+                        })
+                        .then(function(currHrisRenInfo) {
+
+                            hrisRenInfo = currHrisRenInfo;
+                            next();
+                        })
+                        
+                    }, 
+
+
+                    // step 3: put it all together
+                    function(next){
+
+                        //Process through each region
+                        for (var t in territory){
+                            var territoryId = territory[t].territory_id;
+
+                            //Process through each ren in the region
+                            for (var a in swRenInfo[territoryId]) {
+                                var clone = {};
+
+                                var renId = swRenInfo[territoryId][a].ren_id;
+                                var nssRenId = swRenInfo[territoryId][a].nssren_id;
+                                var renGUID = swRenInfo[territoryId][a].ren_guid;
+
+                                if (typeof hrisRenInfo[renGUID] != 'undefined') {
+
+                                    var staffAccount = hrisRenInfo[renGUID].staffAccount;
+
+                                    //Retrieve all the accthistory rows for the staff account num
+                                    var accountInfo = accountBalInfo[staffAccount];
+
+                                    //Retrieve all the local gltran rows for the staff account num
+                                    var localContrib = localContribInfo[staffAccount];
+
+                                    //Retrieve all the foreign gltran rows for the staff account num
+                                    var foreignContrib = foreignContribInfo[staffAccount];
+
+                                    // Retrieve the monthly average expenditure for this staff
+                                    var avgExpenditure = staffExpenditures[staffAccount];
+                                    if (avgExpenditure) {
+                                        clone.avgExpenditure = self.formatNumber(avgExpenditure);
+                                    } else {
+                                        clone.avgExpenditure = 0;
+                                    }
+
+                                    //Retrieve all the payroll rows for the nssren_id
+                                    var payInfo = payrollInfo[nssRenId];
+
+                                    //Save the period to be used for retrieving the avg account balance
+                                    var period = swRenInfo[territoryId][a].nssren_balancePeriod;
+
+                                    //Save the currentSalary to be used for percentage of contributions
+                                    var currentSalary = swRenInfo[territoryId][a].nssren_salaryAmount;
+
+
+                                    // saving the GUID to the clone data as well. -Johnny
+                                    clone.guid = renGUID;
+
+                                    clone.accountNum = staffAccount;
+                                    clone.name = self.getName(hrisRenInfo[renGUID]);
+                                    clone.baseSalary = currentSalary;
+
+                                    //Pass the html entities for chinese name to get changed to chinese characters
+                                    clone.chineseName = self.decodeHtmlEntity(hrisRenInfo[renGUID].ren_namecharacters);
+
+                                    clone.accountBal = swRenInfo[territoryId][a].nssren_ytdBalance.toFixed(0);
+
+                                    //Pass the payroll rows to getPayrollAvg to retrieve avgPayroll
+                                    clone.avgPayroll = self.getPayrollAvg(payInfo);
+
+
+                                    if (accountInfo) {
+
+                                        //Pass the acct bal rows and the period to retrieve avgAccountBal
+                                        clone.avgAccountBal = self.getAccountBalAvg(accountInfo, period);
+                                        clone.avgAccountBal = self.formatNumber(clone.avgAccountBal);
+
+                                        //Pass the acct bal rows and the period to retrieve monthsInDeficit
+                                        clone.monthsInDeficit = self.getMonthsInDeficit(accountInfo, period);
+
+                                    } else {
+
+                                        Log(LogKey+'<yellow><bold>warn:</bold> accountInfo undefined for :</yellow>', clone);
+                                        clone.avgAccountBal = '???';
+                                        clone.monthsInDeficit = '???';
+                                    }
+
+                                    //Pass the local contributions to get the avgLocalContrib
+                                    clone.avgLocalContrib = self.getAvgContributions(localContrib);
+
+                                    //Pass the avg local contributions and current salary to get the percentage
+                                    clone.localPercent = self.getPercent(clone.avgLocalContrib,currentSalary);
+
+                                    //Pass the foreign contributions to get the avgForeignContrib
+                                    clone.avgForeignContrib = self.getAvgContributions(foreignContrib);
+
+                                    //Pass the avg foreign contributions and current salary to get the percentage
+                                    clone.foreignPercent = self.getPercent(clone.avgForeignContrib,currentSalary);
+                                    
+                                    //Add the local and foreign avg contributions together for monthsTilDeficit
+                                    var avgContributions = parseInt(clone.avgLocalContrib) + parseInt(clone.avgForeignContrib);
+
+                                    //Pass the int value of avgPayroll, avgContributions, and accountBal
+                                    clone.monthsTilDeficit = self.getMonthsTilDeficit(clone.baseSalary, avgContributions, parseInt(clone.accountBal));
+
+                                    clone.phone = hrisRenInfo[renGUID].ren_mobilephone + " (m)";
+                                    clone.email = hrisRenInfo[renGUID].ren_secureemail;
+
+                                    //Retrieve the first characters of the territory_desc to display as region
+                                    clone.hris_region = territory[t].territory_desc.split('-',1);
+                                    
+                                    //format numbers with commas
+                                    clone.avgForeignContrib = self.formatNumber(clone.avgForeignContrib);
+                                    clone.avgLocalContrib = self.formatNumber(clone.avgLocalContrib);
+                                    
+                                    clone.avgPayroll = self.formatNumber(clone.avgPayroll);
+                                    clone.accountBal = self.formatNumber(clone.accountBal);
+                                    clone.baseSalary = self.formatNumber(clone.baseSalary);
+
+                                    var sbr = compiledData.staffByRegion;
+
+                                    if (!sbr[clone.hris_region]) {
+                                        sbr[clone.hris_region] = {};
+                                    }
+
+                                    //Store the ren info in an object based off region and staff account num
+                                    sbr[clone.hris_region][clone.accountNum] = clone;
+                                    compiledData.staff.push(clone);
+
+                                } else {
+                                    Log.error(LogKey+' no hrisRenInfo['+renGUID+']  :', { renGUID:renGUID, renId:renId, nssRenId:nssRenId, a:a, territoryId:territoryId});
+
+    //                               console.log();
+    //                               console.log('*** Warn: no hrdbRenInfo for renid['+renId+'] ');
+    //                               console.log('    nssRenId:'+nssRenId);
+    //                               console.log('    a:'+a);
+    //                               console.log('    territoryId:'+territoryId);
+    //                              console.log(swRenInfo[territoryId]);
+    //                                console.log();
+                                }
+                            }
+                        }
+
+                        for (var region in compiledData.staffByRegion) {
+                            compiledData.staffByRegion[region] = self.sortObj(compiledData.staffByRegion[region], 'value');
+                        }
+
+                        next();
+
                     }
 
-                    for (var region in compiledData.staffByRegion) {
-                        compiledData.staffByRegion[region] = self.sortObj(compiledData.staffByRegion[region], 'value');
+
+                ], function(err,results){
+
+                    if (err) {
+                        dfd.reject(err);
+                    } else {
+
+                        if (done) done(compiledData);
+                        dfd.reject(compiledData);
                     }
 
-                    if(done){
-                        done(compiledData);
-                    }
+                }); // async
 
-                    dfd.resolve(compiledData);
-                });
-              });
-            });
+              });  // NssCoreTerritory.find()
+                    
+            });  // $.when().then()
 
             return dfd;
         },
@@ -387,29 +706,97 @@ module.exports= {
 
 
         //Get all the ren from hrdb ren table
-        getHRDBRenData: function(){
-            var dfd = $.Deferred();
+        getHRISRenData: function(listGUIDs){
+            var dfd = AD.sal.Deferred();
 
-            var hrdbRenData = {};
+            listGUIDs = listGUIDs || [];  // no value here will return them all!
 
-            HRDBRen.find()
+            var hrisRenData = {};
+
+            //// NOTE:
+            //// should be able to :
+            //// LHRISRen.find()
+            //// .populate('family_id')
+            //// .populate('emails', {email_issecure:1})
+            //// .populate('phones')
+            //// .populate('assignments')
+            //// .then()...
+            ////
+            //// but at the moment v10.4 there is a bug and the {email_issecure:1} get's lost!
+            //// so for now, leave it out and manually find it ourselves:
+            LegacyHRIS.peopleByGUID({ guids:listGUIDs, populate:['family_id', {key:'emails', filter:{ email_issecure:1 }}, 'phones', 'assignments', 'staffAccounts'] })
             .fail(function(err){
-                Log.error(LogKey+' failed to lookup HRDBRen:', err);
+                Log.error(LogKey+' failed to lookup LegacyHris.renByGUID():', err);
                 dfd.reject(err);
             })
-            .then(function(hrdbrens){
-                for (var a=0;a<hrdbrens.length;a++){
+            .then(function(hrisRens){
+                hrisRens.forEach(function(ren){
+
+                    // add on secure email
+                    ren.ren_secureemail = '??';
+                    if (ren.emails.length > 0) {
+                        ren.emails.forEach(function(email){
+                            if (email.email_issecure == 1) {
+                                ren.ren_secureemail = email.email_address;
+                            }
+                        })
+                    }
+
+                    // add on mobile phone:
+                    ren.ren_mobilephone = '??';
+                    if (ren.phones.length > 0) {
+                        ren.phones.forEach(function(phone) {
+                            if (phone.phonetype_id == 3) {
+                                ren.ren_mobilephone = phone.phone_number;
+                            }
+                        })
+                    }
+
+                    // resolve staffAccount
+                    ren.staffAccount = '??';
+                    ren.staffAccounts = ren.staffAccounts || [];
+                    ren.staffAccounts.forEach(function(account){
+                        if (account.account_isprimary == 1) {
+                            ren.staffAccount = account.account_number;
+                        }
+                    })
+
 
                     //Put all the ren in an object to retrieve based off of ren_id
-                    hrdbRenData[hrdbrens[a].ren_id] = hrdbrens[a];
-
-                }
-                dfd.resolve(hrdbRenData);
+                    hrisRenData[ren.ren_guid] = ren;
+                })
+                dfd.resolve(hrisRenData);
             });
 
             return dfd;
-
         },
+
+
+
+        // //Get all the ren from hrdb ren table
+        // getHRDBRenData: function(){
+        //     var dfd = $.Deferred();
+
+        //     var hrdbRenData = {};
+
+        //     HRDBRen.find()
+        //     .fail(function(err){
+        //         Log.error(LogKey+' failed to lookup HRDBRen:', err);
+        //         dfd.reject(err);
+        //     })
+        //     .then(function(hrdbrens){
+        //         for (var a=0;a<hrdbrens.length;a++){
+
+        //             //Put all the ren in an object to retrieve based off of ren_id
+        //             hrdbRenData[hrdbrens[a].ren_id] = hrdbrens[a];
+
+        //         }
+        //         dfd.resolve(hrdbRenData);
+        //     });
+
+        //     return dfd;
+
+        // },
 
 
 
@@ -612,7 +999,7 @@ module.exports= {
 
                     // find only debit transactions
                     gltran_dramt: { '>': 0 },
-                    gltran_cramt: 0 },
+                    gltran_cramt: 0,
 
                     // limit by date
                     gltran_perpost: { '>': endPeriodDate } 
