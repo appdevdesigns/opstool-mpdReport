@@ -27,13 +27,16 @@ module.exports= {
             compiledData.staffByRegion = {};
             compiledData.staff = [];
 
-            date = self.getFiscalPeriod();
-            maxDate = self.getMinPeriod();
+            var date = self.getFiscalPeriod();
+            //var maxDate = self.getMinPeriod();
+            
 
             //Wait until the date fields are retrieved before continuing
-            $.when(date,maxDate).then(function(fiscalDateInfo,periodDateInfo){
-//console.log('- both getFiscalPeriod() & getMinPeriod() done.');
-
+            $.when(date).then(function(twelveMonthsAgo){
+              
+              var fiscalDateInfo = twelveMonthsAgo.date;
+              var periodDateInfo = twelveMonthsAgo.period;
+              
               //Retrieve the regions
               NssCoreTerritory.find().sort('territory_desc asc')
               .fail(function(err) { 
@@ -83,10 +86,14 @@ module.exports= {
 
                                 //Retrieve all the foreign gltran rows for the staff account num
                                 var foreignContrib = foreignContribInfo[hrdbRenInfo[renId].ren_staffaccount];
-                                
+
                                 // Retrieve the monthly average expenditure for this staff
                                 var avgExpenditure = staffExpenditures[hrdbRenInfo[renId].ren_staffaccount];
-                                clone.avgExpenditure = self.formatNumber(avgExpenditure);
+                                if (avgExpenditure) {
+                                    clone.avgExpenditure = self.formatNumber(avgExpenditure);
+                                } else {
+                                    clone.avgExpenditure = 0;
+                                }
 
                                 //Retrieve all the payroll rows for the nssren_id
                                 var payInfo = payrollInfo[nssRenId];
@@ -275,29 +282,74 @@ module.exports= {
 
         //Get the fiscal period from 12 months ago
         getFiscalPeriod: function(){
-            var dfd = $.Deferred();
-//console.log('- in getFiscalPeriod() ');
-            var endDate = "";
+            /*
+            Look up the fiscal period & fiscal year tables. Find the latest
+            twelve closed periods, and take the earliest of them.
 
-            NssCoreFiscalPeriod.find({requestcutoff_isClosed: 1}).sort("requestcutoff_id desc")
+            If we were to do it purely in SQL:
+
+            SELECT * FROM (
+                SELECT
+                    requestcutoff_date AS 'date',
+                    CONCAT(fiscalyear_glprefix, LPAD(requestcutoff_period, 2, '0')) AS 'period'
+                FROM
+                    nss_core_fiscalperiod p
+                    JOIN nss_core_fiscalyear y
+                        ON p.requestcutoff_year = y.fiscalyear_id
+                WHERE
+                    requestcutoff_isClosed = 1
+                ORDER BY
+                    requestcutoff_id DESC
+                LIMIT 12
+            ) AS latest ORDER BY period ASC LIMIT 1;
+            */
+
+
+            var dfd = $.Deferred();
+
+            NssCoreFiscalPeriod
+            .find({requestcutoff_isClosed: 1})
+            .sort("requestcutoff_id desc")
+            .limit(12)
             .fail(function(err) {
                 dfd.reject(err);
             })
             .then(function(period){
-//console.log('  -  fiscalPeriods found ... ');
 
                 //Retrieve the requestcutoff_date from 12 months ago and load into the Date() function
                 var fiscalPeriod = new Date(period[11].requestcutoff_date);
 
                 //Extract the year, month and day
-                year = fiscalPeriod.getFullYear();
-                month = fiscalPeriod.getMonth() + 1;
-                day = fiscalPeriod.getDate() + 1;
+                var year = fiscalPeriod.getFullYear();
+                var month = fiscalPeriod.getMonth() + 1;
+                var day = fiscalPeriod.getDate() + 1;
 
                 //Format the endDate
-                endDate = year + "-" + month + "-" + day;
+                var realDate = year + "-" + month + "-" + day;
+                
+                // Query the fiscal year table
+                NssCoreFiscalYear.find({fiscalyear_id: period[11].requestcutoff_year})
+                .fail(function(err){
+                    dfd.reject(err);
+                })
+                .done(function(fiscalYear){
+                    
+                    var glYear = fiscalYear[0].glprefix;
+                    var glPeriod = period[11].requestcutoff_period;
+                    var glDate;
+                    if (glPeriod < 10) {
+                        glDate = glYear + '0' + glPeriod;
+                    } else {
+                        glDate = glYear + '' + glPeriod;
+                    }
+                    
+                    dfd.resolve({
+                        date: realDate,
+                        period: glDate
+                    });
 
-                dfd.resolve(endDate);
+                });
+
             });
 
             return dfd;
@@ -461,7 +513,7 @@ module.exports= {
             NssCoreGLTran.find({gltran_acctnum: 5000})
             .where({gltran_perpost: {'>': endPeriodDate}})
             .fail(function(err){
-                Log.error(logKey+' failed to lookup NssCoreGLTran:', err);
+                Log.error(LogKey+' failed to lookup NssCoreGLTran:', err);
                 dfd.reject(err);
             })
             .then(function(gltrans){
@@ -500,7 +552,7 @@ module.exports= {
                                 ]})
             .where({gltran_perpost: {'>': endPeriodDate}})
             .fail(function(err){
-                Log.error(logKey+' failed to lookup NssCoreGLTran:',err);
+                Log.error(LogKey+' failed to lookup NssCoreGLTran:',err);
                 dfd.reject(err);
             })
             .then(function(gltrans){
@@ -552,11 +604,12 @@ module.exports= {
             */
             };
             
-            NssCoreGLTran.find(
+            NssCoreGLTran.find()
+            .where(
                 { and: [
                     // find only staff subaccounts
                     { gltran_subacctnum: { 'like':  '10____' } },
-                    // find only expenditure transactions
+                    // find only debit transactions
                     { gltran_dramt: { '>': 0 } },
                     { gltran_cramt: 0 },
                     // limit by date
@@ -564,7 +617,7 @@ module.exports= {
                 ] }
             )
             .fail(function(err){
-                Log.error(logKey+' failed to lookup NssCoreGLTran:',err);
+                Log.error(LogKey+' failed to lookup NssCoreGLTran:',err);
                 dfd.reject(err);
             })
             .done(function(gltrans){
@@ -597,17 +650,14 @@ module.exports= {
         //to get the minimum gltran_perpost from the last 12 months
         getMinPeriod: function(){
             var dfd = $.Deferred();
-//console.log('  - in getMinPeriod() ');
             var minPeriodDate = "";
 
             NssCoreGLTran.find().limit(1).sort("gltran_perpost desc")
             .fail(function(err){
-                Log.error(logKey+' failed to lookup NssCoreGLTran:',err);
+                Log.error(LogKey+' failed to lookup NssCoreGLTran:',err);
                 dfd.reject(err);
             })
             .then(function(gltran){
-//console.log('    - NssCoreGLTran.find()  returned');
-//console.log(gltran);
 
                 var period = gltran[0].gltran_perpost + "";
 
