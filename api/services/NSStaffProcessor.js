@@ -594,36 +594,40 @@ module.exports= {
             
             NssCoreGLTran.find()
             .where(
-                { and: [
+                { 
                     // find only staff subaccounts
-                    { gltran_subacctnum: { 'like':  '10____' } },
+                    gltran_subacctnum: { 'like':  '10____' },
+
                     // find only debit transactions
-                    { gltran_dramt: { '>': 0 } },
-                    { gltran_cramt: 0 },
+                    gltran_dramt: { '>': 0 },
+                    gltran_cramt: 0 },
+
                     // limit by date
-                    { gltran_perpost: { '>': endPeriodDate } }
-                ] }
+                    gltran_perpost: { '>': endPeriodDate } 
+                }
             )
             .fail(function(err){
                 Log.error(LogKey+' failed to lookup NssCoreGLTran:',err);
                 dfd.reject(err);
             })
             .done(function(gltrans){
-                for (var g=0; g<gltrans.length; g++) {
-                    //Cut the account number down to 4 digit to look up based off of hrdb.ren.ren_staffaccount
-                    var accountNum = gltrans[g].gltran_subacctnum.slice(2,6);
-                    // Sum the amounts that are deducted from the account
-                    if (expenseData[accountNum]) {
-                        expenseData[accountNum] += gltrans[g].gltran_dramt;
-                    } else {
-                        expenseData[accountNum] = gltrans[g].gltran_dramt;
+                if (gltrans) {
+                    for (var g=0; g<gltrans.length; g++) {
+                        //Cut the account number down to 4 digit to look up based off of hrdb.ren.ren_staffaccount
+                        var accountNum = gltrans[g].gltran_subacctnum.slice(2,6);
+                        // Sum the amounts that are deducted from the account
+                        if (expenseData[accountNum]) {
+                            expenseData[accountNum] += gltrans[g].gltran_dramt;
+                        } else {
+                            expenseData[accountNum] = gltrans[g].gltran_dramt;
+                        }
                     }
-                }
-                // Average and round the final values
-                for (var accountNum in expenseData) {
-                    expenseData[accountNum] = Math.round(
-                        expenseData[accountNum] / 12
-                    );
+                    // Average and round the final values
+                    for (var accountNum in expenseData) {
+                        expenseData[accountNum] = Math.round(
+                            expenseData[accountNum] / 12
+                        );
+                    }
                 }
                 
                 dfd.resolve(expenseData);
