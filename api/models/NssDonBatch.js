@@ -45,7 +45,7 @@ module.exports = {
 
         glbatch_id: 'INTEGER',
 
-        donBatch_look:  'INTEGER'
+        donBatch_lock:  'INTEGER'
     }
 
 };
