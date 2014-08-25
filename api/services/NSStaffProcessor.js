@@ -460,7 +460,7 @@ module.exports= {
                                     var avgContributions = parseInt(clone.avgLocalContrib) + parseInt(clone.avgForeignContrib);
 
                                     //Pass the int value of avgPayroll, avgContributions, and accountBal
-                                    clone.monthsTilDeficit = self.getMonthsTilDeficit(clone.baseSalary, avgContributions, parseInt(clone.accountBal));
+                                    clone.monthsTilDeficit = self.getMonthsTilDeficit(avgExpenditure, avgContributions, parseInt(clone.accountBal));
 
                                     clone.phone = hrisRenInfo[renGUID].ren_mobilephone + " (m)";
                                     clone.email = hrisRenInfo[renGUID].ren_secureemail;
@@ -730,22 +730,39 @@ module.exports= {
                 dfd.reject(err);
             })
             .then(function(hrisRens){
+
+                //// get listGuids
+                //// LegacyHRIS.emailsByGUID()
+                //// LegacyHRIS.phonesByGUID()
+                //// hrisRens.forEach() {  merge in emailList and phoneList }
+
                 hrisRens.forEach(function(ren){
+
+
+                    //// NOTE:
+                    //// on fields emails, phones
+                    //// normally we should receive the info back on the association data:  emails, phones
+                    //// but currently there is an issue with the associations across our different installations, so
+                    //// we check for one of our manual merges and if provided use that instead: _emails, _phones
+
 
                     // add on secure email
                     ren.ren_secureemail = '??';
-                    if (ren.emails.length > 0) {
-                        ren.emails.forEach(function(email){
+                    var eKey = ren._emails ? '_emails' : 'emails';
+                    if (ren[eKey].length > 0) {
+                        ren[eKey].forEach(function(email){
                             if (email.email_issecure == 1) {
                                 ren.ren_secureemail = email.email_address;
                             }
                         })
                     }
 
+
                     // add on mobile phone:
                     ren.ren_mobilephone = '??';
-                    if (ren.phones.length > 0) {
-                        ren.phones.forEach(function(phone) {
+                    var pKey = ren._phones ? '_phones' : 'phones';
+                    if (ren[pKey].length > 0) {
+                        ren[pKey].forEach(function(phone) {
                             if (phone.phonetype_id == 3) {
                                 ren.ren_mobilephone = phone.phone_number;
                             }
@@ -1225,9 +1242,10 @@ module.exports= {
 
 
 
-        //Calculate the monthsTilDeficit using the averages of payroll, contributions
-        //and the current account balance
-        getMonthsTilDeficit: function(payroll, avgContributions, accountBalance){
+        //Calculate the monthsTilDeficit using the averages of 
+        // expenditure (including salary), contributions and the current 
+        // account balance
+        getMonthsTilDeficit: function(avgExpenditure, avgContributions, accountBalance){
 
             var monthsTilDeficit = 1;
 
@@ -1237,7 +1255,7 @@ module.exports= {
             }
             
             // Ed Graham's formula
-            var accountTrend = avgContributions - payroll;
+            var accountTrend = avgContributions - avgExpenditure;
             if (accountTrend >= 0) {
                 monthsTilDeficit = 'NA';
             } else {
