@@ -1,6 +1,6 @@
 {
   "name": "opstool-mpdReport",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "(plugin) An Ops Portal tool to generate MPD reports for our staff.",
   "main": "module.js",
   "directories": {
