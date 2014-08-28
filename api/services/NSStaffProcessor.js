@@ -13,201 +13,9 @@ var emailOptions = null;
 var Log = null;
 var LogKey = '<green><bold>NSStaffProcessor:</bold></green>';
 
+var TESTING_GUID = '068F29E2-B3C7-085C-6E9D-08DD6E633F25';
 
 module.exports= {
-
-
-//         compileStaffData:function(done) {
-//             var self = this;
-//             var dfd = AD.sal.Deferred();
-
-//             if (Log == null) Log = MPDReportGen.Log;
-
-//             var compiledData = {};
-//             compiledData.staffByRegion = {};
-//             compiledData.staff = [];
-
-//             var date = self.getFiscalPeriod();
-//             //var maxDate = self.getMinPeriod();
-            
-
-//             //Wait until the date fields are retrieved before continuing
-//             $.when(date).then(function(twelveMonthsAgo){
-              
-//               var fiscalDateInfo = twelveMonthsAgo.date;
-//               var periodDateInfo = twelveMonthsAgo.period;
-              
-//               //Retrieve the regions
-//               NssCoreTerritory.find().sort('territory_desc asc')
-//               .fail(function(err) { 
-
-//               })
-//               .then(function(territory){
-
-//                 //Process through all the ren tables
-//                 var allSWRens = self.getSWRenData();
-//                 var allHRDBRens = self.getHRDBRenData();
-//                 var allPayroll = self.getPayrollRows(fiscalDateInfo);
-//                 var allAccountBal = self.getAccountBalRows();
-//                 var allForeignContrib = self.getForeignContribRows(periodDateInfo);
-//                 var allLocalContrib = self.getLocalContribRows(periodDateInfo);
-//                 var allStaffExpenditures = self.getStaffExpenditures(periodDateInfo);
-
-//                 //Wait until all the ren tables are retrieved from
-//                 $.when(
-//                     allSWRens, allHRDBRens, allPayroll, allAccountBal, 
-//                     allForeignContrib, allLocalContrib, allStaffExpenditures
-//                 )
-//                 .then(function(
-//                     swRenInfo, hrdbRenInfo, payrollInfo, accountBalInfo, 
-//                     foreignContribInfo, localContribInfo, staffExpenditures
-//                 ) {
-
-//                     //Process through each region
-//                     for (var t in territory){
-//                         var territoryId = territory[t].territory_id;
-
-//                         //Process through each ren in the region
-//                         for (var a in swRenInfo[territoryId]) {
-//                             var clone = {};
-
-//                             var renId = swRenInfo[territoryId][a].ren_id;
-//                             var nssRenId = swRenInfo[territoryId][a].nssren_id;
-//                             var renGUID = swRenInfo[territoryId][a].ren_guid;
-
-//                             if (typeof hrdbRenInfo[renId] != 'undefined') {
-
-
-//                                 //Retrieve all the accthistory rows for the staff account num
-//                                 var accountInfo = accountBalInfo[hrdbRenInfo[renId].ren_staffaccount];
-
-//                                 //Retrieve all the local gltran rows for the staff account num
-//                                 var localContrib = localContribInfo[hrdbRenInfo[renId].ren_staffaccount];
-
-//                                 //Retrieve all the foreign gltran rows for the staff account num
-//                                 var foreignContrib = foreignContribInfo[hrdbRenInfo[renId].ren_staffaccount];
-
-//                                 // Retrieve the monthly average expenditure for this staff
-//                                 var avgExpenditure = staffExpenditures[hrdbRenInfo[renId].ren_staffaccount];
-//                                 if (avgExpenditure) {
-//                                     clone.avgExpenditure = self.formatNumber(avgExpenditure);
-//                                 } else {
-//                                     clone.avgExpenditure = 0;
-//                                 }
-
-//                                 //Retrieve all the payroll rows for the nssren_id
-//                                 var payInfo = payrollInfo[nssRenId];
-
-//                                 //Save the period to be used for retrieving the avg account balance
-//                                 var period = swRenInfo[territoryId][a].nssren_balancePeriod;
-
-//                                 //Save the currentSalary to be used for percentage of contributions
-//                                 var currentSalary = swRenInfo[territoryId][a].nssren_salaryAmount;
-
-
-//                                 // saving the GUID to the clone data as well. -Johnny
-//                                 clone.guid = renGUID;
-
-//                                 clone.accountNum = hrdbRenInfo[renId].ren_staffaccount;
-//                                 clone.name = self.getName(hrdbRenInfo[renId]);
-//                                 clone.baseSalary = currentSalary;
-
-//                                 //Pass the html entities for chinese name to get changed to chinese characters
-//                                 clone.chineseName = self.decodeHtmlEntity(hrdbRenInfo[renId].ren_namecharacters);
-
-//                                 clone.accountBal = swRenInfo[territoryId][a].nssren_ytdBalance.toFixed(0);
-
-//                                 //Pass the payroll rows to getPayrollAvg to retrieve avgPayroll
-//                                 clone.avgPayroll = self.getPayrollAvg(payInfo);
-
-
-//                                 if (accountInfo) {
-
-//                                     //Pass the acct bal rows and the period to retrieve avgAccountBal
-//                                     clone.avgAccountBal = self.getAccountBalAvg(accountInfo, period);
-//                                     clone.avgAccountBal = self.formatNumber(clone.avgAccountBal);
-
-//                                     //Pass the acct bal rows and the period to retrieve monthsInDeficit
-//                                     clone.monthsInDeficit = self.getMonthsInDeficit(accountInfo, period);
-
-//                                 } else {
-
-//                                     Log(LogKey+'<yellow><bold>warn:</bold> accountInfo undefined for :</yellow>', clone);
-//                                     clone.avgAccountBal = '???';
-//                                     clone.monthsInDeficit = '???';
-//                                 }
-
-//                                 //Pass the local contributions to get the avgLocalContrib
-//                                 clone.avgLocalContrib = self.getAvgContributions(localContrib);
-
-//                                 //Pass the avg local contributions and current salary to get the percentage
-//                                 clone.localPercent = self.getPercent(clone.avgLocalContrib,currentSalary);
-
-//                                 //Pass the foreign contributions to get the avgForeignContrib
-//                                 clone.avgForeignContrib = self.getAvgContributions(foreignContrib);
-
-//                                 //Pass the avg foreign contributions and current salary to get the percentage
-//                                 clone.foreignPercent = self.getPercent(clone.avgForeignContrib,currentSalary);
-                                
-//                                 //Add the local and foreign avg contributions together for monthsTilDeficit
-//                                 var avgContributions = parseInt(clone.avgLocalContrib) + parseInt(clone.avgForeignContrib);
-
-//                                 //Pass the int value of avgPayroll, avgContributions, and accountBal
-//                                 clone.monthsTilDeficit = self.getMonthsTilDeficit(clone.baseSalary, avgContributions, parseInt(clone.accountBal));
-
-//                                 clone.phone = hrdbRenInfo[renId].ren_mobilephone + " (m)";
-//                                 clone.email = hrdbRenInfo[renId].ren_secureemail;
-
-//                                 //Retrieve the first characters of the territory_desc to display as region
-//                                 clone.hris_region = territory[t].territory_desc.split('-',1);
-                                
-//                                 //format numbers with commas
-//                                 clone.avgForeignContrib = self.formatNumber(clone.avgForeignContrib);
-//                                 clone.avgLocalContrib = self.formatNumber(clone.avgLocalContrib);
-                                
-//                                 clone.avgPayroll = self.formatNumber(clone.avgPayroll);
-//                                 clone.accountBal = self.formatNumber(clone.accountBal);
-//                                 clone.baseSalary = self.formatNumber(clone.baseSalary);
-
-//                                 var sbr = compiledData.staffByRegion;
-
-//                                 if (!sbr[clone.hris_region]) {
-//                                     sbr[clone.hris_region] = {};
-//                                 }
-
-//                                 //Store the ren info in an object based off region and staff account num
-//                                 sbr[clone.hris_region][clone.accountNum] = clone;
-//                                 compiledData.staff.push(clone);
-
-//                             } else {
-//                                 Log.error(LogKey+' no hrdbRenInfo for renid['+renId+'] :', { renId:renId, nssRenId:nssRenId, a:a, territoryId:territoryId});
-
-// //                               console.log();
-// //                               console.log('*** Warn: no hrdbRenInfo for renid['+renId+'] ');
-// //                               console.log('    nssRenId:'+nssRenId);
-// //                               console.log('    a:'+a);
-// //                               console.log('    territoryId:'+territoryId);
-// //                              console.log(swRenInfo[territoryId]);
-// //                                console.log();
-//                             }
-//                         }
-//                     }
-
-//                     for (var region in compiledData.staffByRegion) {
-//                         compiledData.staffByRegion[region] = self.sortObj(compiledData.staffByRegion[region], 'value');
-//                     }
-
-//                     if(done){
-//                         done(compiledData);
-//                     }
-
-//                     dfd.resolve(compiledData);
-//                 });
-//               });
-//             });
-
-//             return dfd;
-//         },
 
 
         /**
@@ -270,7 +78,175 @@ module.exports= {
          *          avgExpenditure  : The average amount leaving their account over the past 12 months, 
          *      }
          */
-        compileStaffData:function(done) {
+
+        testCompileStaffData:function() {
+            var self = this;
+            var dfd = AD.sal.Deferred();
+
+
+            var oldData = null;
+            var newData = null;
+
+            async.series([
+
+                // step 1: get old data
+                function(next) {
+AD.log('.... 1');
+                    self.compileStaffDataOLD(function(err, data){
+
+                        if (err) {
+                            next(err);
+                        } else {
+                            oldData = data;
+                            next();
+                        }
+                    })
+                },
+
+                // step 2: get new data
+                function(next) {
+AD.log('.... 2');
+                    self.compileStaffData(function(err, data){
+
+                        if (err) {
+                            next(err);
+                        } else {
+                            newData = data;
+                            next();
+                        }
+                    })
+                },
+
+                // step 3: check for major structure
+                function(next) {
+AD.log('.... 3');
+                    AD.log();
+                    AD.log();
+                    AD.log();
+                    AD.log('... comparing old and new data:');
+                    if(!newData.staffByRegion) AD.log.error('... newData missing .staffByRegion!');
+                    if(!newData.staff) AD.log.error('... newData missing .staff!');
+                    next();
+                },
+
+
+                // step 4: check oldData and newData have all same regions
+                function(next) {
+AD.log('.... 4');
+                    for (var r in oldData.staffByRegion) {
+                        if (!newData.staffByRegion[r]) AD.log.error('... newData missing region:'+r);
+                    }
+
+                    for (var r in newData.staffByRegion) {
+                        if (!oldData.staffByRegion[r]) AD.log.error('... newData has additional region:'+r);
+                    }
+                    next();
+
+                },
+
+
+
+
+                // step 5: check oldData and newData have same number of staff reported:
+                function(next) {
+AD.log('.... 5');
+                    if (oldData.staff.length != newData.staff.length) {
+                        if (oldData.staff.length > newData.staff.length) {
+                            AD.log.error('... oldData has more staff reported!');
+                        } else {
+                            AD.log.error('... newData has more staff reported!');
+                        }
+                    }
+                    next();
+
+                },
+
+
+
+
+                // step 6: check oldData and newData have same staff in each region:
+                function(next) {
+AD.log('.... 6');
+                    for (var r in oldData.staffByRegion) {
+
+                        for (var a in oldData.staffByRegion[r]) {
+
+                            if (!newData.staffByRegion[r][a]) AD.log.error('... newData missing entry: '+r+'->'+a);
+                        }
+
+
+                        for (var a in newData.staffByRegion[r]) {
+
+                            if (!oldData.staffByRegion[r][a]) AD.log.error('... newData has additional entry: '+r+'->'+a);
+                        }
+                        
+                    }
+
+                    next();
+
+                },
+
+
+
+
+
+
+
+                // step 7: scan individual values:
+                function(next) {
+
+                    var skipFields = ['hris_region', 'name', 'phone', 'monthsTilDeficit' ];
+AD.log('.... 7');
+                    for (var r in oldData.staffByRegion) {
+
+                        for (var a in oldData.staffByRegion[r]) {
+
+                            var errorFields = [];
+
+                            for (var v in oldData.staffByRegion[r][a]) {
+
+
+                                if (skipFields.indexOf(v) == -1) {
+                                    var oValue = oldData.staffByRegion[r][a][v];
+                                    var nValue = newData.staffByRegion[r][a][v];
+                                    if (oValue != nValue) {
+
+                                        errorFields.push('   '+v+': '+oValue+' <--> '+nValue );
+                                    }
+                                }
+                            }
+
+
+                            if (errorFields.length) {
+                                        AD.log();
+                                        AD.log.error('... differing values:');
+                                        AD.log( errorFields.join('\n'));
+                            }
+                        }
+                        
+                    }
+
+                    next();
+
+                }
+
+
+
+            ], function(err,results){
+AD.log('.... FINAL');
+                if (err) {
+                    dfd.reject(err);
+                }else {
+                    dfd.resolve();
+                }
+            })
+
+            return dfd;
+        },
+
+
+
+        compileStaffDataOLD:function(done) {
             var self = this;
             var dfd = AD.sal.Deferred();
 
@@ -293,7 +269,7 @@ module.exports= {
               //Retrieve the regions
               NssCoreTerritory.find().sort('territory_desc asc')
               .fail(function(err) { 
-
+done(err);
               })
               .then(function(territory){ 
 
@@ -431,7 +407,7 @@ module.exports= {
                                     if (accountInfo) {
 
                                         //Pass the acct bal rows and the period to retrieve avgAccountBal
-                                        clone.avgAccountBal = self.getAccountBalAvg(accountInfo, period);
+                                        clone.avgAccountBal = self.getAccountBalAvg(accountInfo, period, renGUID);
                                         clone.avgAccountBal = self.formatNumber(clone.avgAccountBal);
 
                                         //Pass the acct bal rows and the period to retrieve monthsInDeficit
@@ -475,7 +451,9 @@ module.exports= {
                                     clone.avgPayroll = self.formatNumber(clone.avgPayroll);
                                     clone.accountBal = self.formatNumber(clone.accountBal);
                                     clone.baseSalary = self.formatNumber(clone.baseSalary);
-
+// if( renGUID == TESTING_GUID) {
+//     AD.log('... clone:', clone);
+// }
                                     var sbr = compiledData.staffByRegion;
 
                                     if (!sbr[clone.hris_region]) {
@@ -512,11 +490,12 @@ module.exports= {
                 ], function(err,results){
 
                     if (err) {
+                        if (done) done(err);
                         dfd.reject(err);
                     } else {
 
-                        if (done) done(compiledData);
-                        dfd.reject(compiledData);
+                        if (done) done(null, compiledData);
+                        dfd.resolve(compiledData);
                     }
 
                 }); // async
@@ -527,6 +506,116 @@ module.exports= {
 
             return dfd;
         },
+
+
+
+
+
+
+
+        compileStaffData:function(done) {
+            var self = this;
+            var dfd = AD.sal.Deferred();
+
+            if (Log == null) Log = MPDReportGen.Log;
+
+            var compiledData = {};
+            compiledData.staffByRegion = {};
+            compiledData.staff = [];
+
+
+            var staffGUIDs = [];
+            var analysisResults = null;
+
+            async.series([
+
+                // step 1: first gather all the Staff GUIDs in our NSS system
+                function(next) {
+// Log('... gathering staff guids:');
+                    //// NOTE: leaving off guids:[]  returns all of 'em'
+                    LegacyStewardwise.peopleByGUID({ filter:{nssren_isActive: 1}})
+                    .fail(function(err){
+                        next(err);
+                    })
+                    .done(function(list){
+                        list.forEach(function(entry){
+                            staffGUIDs.push(entry.ren_guid);
+                        })
+// Log('... found '+staffGUIDs.length+' guids');
+
+                        next();
+                    })
+
+                },
+
+
+                // step 2: get account analysis for those staff
+                function(next) {
+// Log('... gathering Account Analysis entries:');
+                    LegacyStewardwise.accountAnalysisByGUID({guids:staffGUIDs})
+                    .fail(function(err){
+                        next(err);
+                    })
+                    .done(function(list){
+                        analysisResults = list;
+// Log('... found '+list.length+' entries');
+// Log('... that look like :', list[0]);
+                        next();
+                    })
+                },
+
+
+                // step 3: convert Analysis array to our result format:
+                function(next) {
+
+                    var sbr = compiledData.staffByRegion;
+
+                    analysisResults.forEach(function(entry){
+
+                        var region = entry.hris_region;
+                        if (region.length) region = region[0];  // make sure not an array
+
+                        if (!sbr[region]) {
+                            sbr[region] = {};
+                        }
+
+                        //Store the ren info in an object based off region and staff account num
+                        sbr[region][entry.accountNum] = entry;
+                        compiledData.staff.push(entry);
+
+                    })
+
+                    next();
+
+                },
+
+
+                // step 4: sort these results:
+                function(next) {
+
+                    for (var region in compiledData.staffByRegion) {
+                        compiledData.staffByRegion[region] = self.sortObj(compiledData.staffByRegion[region], 'value');
+                    }
+                    next();
+                }
+                
+
+            ],function(err, results) {
+
+                if (err) {
+                    if (done) done(err);
+                    dfd.reject(err);
+                } else {
+
+                    if (done) done(null, compiledData);
+                    dfd.resolve(compiledData);
+                }
+
+            })
+
+            return dfd;
+        },
+
 
 
 
@@ -653,7 +742,7 @@ module.exports= {
                 })
                 .done(function(fiscalYear){
                     
-                    var glYear = fiscalYear[0].glprefix;
+                    var glYear = fiscalYear[0].fiscalyear_glprefix;
                     var glPeriod = period[11].requestcutoff_period;
                     var glDate;
                     if (glPeriod < 10) {
@@ -1131,7 +1220,7 @@ module.exports= {
 
         //Calculate the avgAccountBal using the accountBal rows based off of staff account num
         //and the current account bal period from nss_core_ren table
-        getAccountBalAvg: function(accountBalRows, accountBalPeriod){
+        getAccountBalAvg: function(accountBalRows, accountBalPeriod, guid){
 
             var avgAccountBal = 0;
             var totalAccountBalance = 0;
@@ -1147,6 +1236,9 @@ module.exports= {
             //Take the rows and build an array of account balance values
             var acctBalArray = this.buildAcctBalArray(accountBalRows,accountBalPeriod);
 
+// if( guid == TESTING_GUID) {
+//     AD.log('... acctBalArray:', acctBalArray);
+// }
             var year = accountBalPeriod.split("-")[0];
             var month = accountBalPeriod.split("-")[1];
 
@@ -1332,36 +1424,44 @@ module.exports= {
 
             if (Log == null) Log = MPDReportGen.Log;
 
-            NSStaffProcessor.compileStaffData(function(data) {
+            NSStaffProcessor.compileStaffData(function(err, data) {
 
-                // Data should be 'Region' : { accounts }
-                var regionData = {
-                /*
-                    regionCode: { 
-                        acct1: { ... }, 
-                        acct2: { ... }, 
-                        ... 
-                    },
-                    "AOA": { 
-                        "0123": { ... },
-                        "0200": { ... },
+                if (err) {
+                    if (done) done(err);
+                    dfd.reject(err);
+                } else {
+
+
+                    // Data should be 'Region' : { accounts }
+                    var regionData = {
+                    /*
+                        regionCode: { 
+                            acct1: { ... }, 
+                            acct2: { ... }, 
+                            ... 
+                        },
+                        "AOA": { 
+                            "0123": { ... },
+                            "0200": { ... },
+                            ...
+                        },
                         ...
-                    },
-                    ...
-                */
-                };
+                    */
+                    };
 
 
-                // for each region in staff data
-                var staffByRegion = data.staffByRegion;
-                for (var region in staffByRegion) {
-                    //regionData[ emailDefs[region]] = staffByRegion[region];
-                    var regionStaff = staffByRegion[region];
-                    regionData[region] = regionStaff;
+                    // for each region in staff data
+                    var staffByRegion = data.staffByRegion;
+                    for (var region in staffByRegion) {
+                        //regionData[ emailDefs[region]] = staffByRegion[region];
+                        var regionStaff = staffByRegion[region];
+                        regionData[region] = regionStaff;
+                    }
+
+                    if (done) done(null, regionData);
+                    dfd.resolve(regionData);
+
                 }
-
-                if (done) done(regionData);
-                dfd.resolve(regionData);
 
             });
 
