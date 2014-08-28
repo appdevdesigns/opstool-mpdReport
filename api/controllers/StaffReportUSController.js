@@ -33,9 +33,10 @@ module.exports = {
             /*
             "files": [
                 {
-                    "size": 467448,
+                    "fd": "/full/path/to/root/.tmp/uploads/tempFilename.csv",
+                    "size": 467496,
                     "type": "text/csv",
-                    "filename": "SAS010_4849319.csv",
+                    "filename": "sas_curr.csv",
                     "status": "bufferingOrWriting",
                     "field": "csvFile"
                 }
@@ -54,8 +55,8 @@ module.exports = {
                 //// NOTE: we are really only expecting 1 .csv file to be uploaded.
                 //// if > 1 file appears, we simply use the last one ...
                 files.forEach(function(file) {
-
-                    fs.readFile( path.join('.tmp', 'uploads', file.filename) , function(err, data) {
+// AD.log('... file info:',file);
+                    fs.readFile( file.fd , function(err, data) {
                         if (err) {
 
                             Log.error(logKey+' error reading uploaded file:', err );
