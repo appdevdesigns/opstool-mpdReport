@@ -54,6 +54,17 @@ function(){
                 /* ... */
                 }
             };
+
+            //// get our List of Regions from our services:
+            this.regionList = {};
+            AD.comm.service.get({ url:'/nsmpdreport/regions'})
+            .fail(function(err){
+                console.error(err);
+            })
+            .done(function(data){
+                console.log(data);
+                self.regionList.national = data;
+            })
             
             this.key = '#review';
             this.initDOM();
@@ -78,23 +89,101 @@ function(){
 
 
 
+        /**
+         * @function currentFilter
+         * 
+         * Return the currently selected filter value.
+         * 
+         * @return [string] filter value.
+         */
+        currentFilter:function() {
+
+            var selected = '';
+            var currSelected = this.filter.find('.filter-on');
+            if ((currSelected) && (currSelected.length)) {
+                if (typeof currSelected == 'array') {
+                    selected = currSelected[0].text();
+                } else {
+                    selected = currSelected.text();
+                }
+            }
+            return selected;
+        },
+
+
+
+        /**
+         * @function currentRegionList
+         * 
+         * Return the list of regions according to our toolState.
+         * 
+         * @return [array] region values or null if unknown.
+         */
+        currentRegionList:function() {
+
+            var regions = null;
+
+            //  allow US staff version to pull regions by current data:
+            if (this.toolState.staffType == '#US') {
+                regions = [];
+                for (var r in this.reportData.staffByRegion) {
+                    regions.push(r);
+                }
+
+            } else {
+
+                // lookup region by our stored .regionList[key] 
+                var key = this.toolState.staffType.replace('#', '').toLowerCase();
+                if (this.regionList[key]){ 
+                    regions = [];
+
+                    // NOTE: make a copy of the region list so we don't modify the original
+                    // when we .push() the missing option.
+                    this.regionList[key].forEach(function(entry){
+                        regions.push(entry);
+                    })
+                }
+
+            }
+
+            return regions;
+        },
+
+
+        defaultFilter: function() {
+
+            var filter = this.currentFilter();
+            if (filter == '') {
+                var regions = this.currentRegionList();
+                if (regions) {
+                    filter = regions[0];
+                } else {
+                    console.warn('*** warn: could not determine a default filter');
+                }
+            }
+
+            return filter;
+
+        },
+
+
+
         displayFilters: function() {
 
-            // gather the regions:
-            var regions = [];
-            var selected = '';
-            for (var r in this.reportData.staffByRegion) {
-                regions.push(r);
-                if (selected == '') selected = r;
-            }
 
-            var currSelected = this.filter.find('.filter-on');
-            if (currSelected) {
-                selected = currSelected.val();
-            }
+            // pull the proper region list depending upon which toolState we are in
+            var regions = this.currentRegionList();
 
-            if (this.reportData.missing) {
-                regions.push('missing');
+
+            // find the value of the currently selected filter
+            var selected = this.defaultFilter();
+
+
+            if (this.toolState.staffType == '#US') {
+                // if our reportData includes a 'missing' dataset: add 'missing'
+                if (this.reportData.missing) {
+                    regions.push('missing');
+                }
             }
 
             this.filter.html(can.view(this.options.templateFilter, {
@@ -126,8 +215,7 @@ function(){
             }
             
             // Update the tag buttons
-            this.filter.find('.balrep-filter-tag').removeClass('filter-on');
-            this.filter.find("a[data-balrep-filter='"+regionKey+"']").addClass('filter-on');
+            this.updateFilterTag(regionKey);
             
             var $table = this.element.find('.opsportal-table-container');
             
@@ -160,24 +248,35 @@ function(){
         getData: function(done) {
             var self = this;
             var serviceURL;
+            var regionList;
             if (self.toolState.staffType == '#US') {
                 serviceURL = '/mpdreport/data';
             } else {
-                serviceURL = '/nsmpdreport/data';
+                serviceURL = '/nsmpdreport/dataForRegion';
+            }
+
+            var selectedRegion = this.currentFilter();
+            if (selectedRegion == '') {
+                regionList = this.currentRegionList();
+                if (regionList) {
+                    selectedRegion = regionList[0];  // just choose 1st one
+                }
             }
             
-            $.ajax({
+            AD.comm.service.get({
                 url: serviceURL,
+                params: { region: selectedRegion },
                 dataType:'json'
+            })
+            .fail(function(err){
+                done(err, null);
             })
             .done(function(data){
                 console.log(data);
                 self.reportData = data;
                 done(null, data);
-            })
-            .fail(function(err){
-                done(err, null);
             });
+            
         },
 
 
@@ -185,29 +284,163 @@ function(){
         loadResults: function(){
             var self = this;
 
-            // get data from server
-            this.loadIndicator.show();
-            this.getData(function(err, data){
+            //
+            // Reworking this to be a Prepare For Display
+            // fn() for our new approach:
+            //
 
-                self.loadIndicator.hide();
-                if (err) {
+            // keep the US approach the same:
+            if (self.toolState.staffType == '#US') {
 
-                    // display error msg
-                    console.log(err);
+                // get data from server
+                this.loadIndicator.show();
+                this.getData(function(err, data){
 
-                } else {
-                    self.displayFilters();
-                    self.displayData();
-                    
-                }
-            });
+                    self.loadIndicator.hide();
+                    if (err) {
 
+                        // display error msg
+                        console.log(err);
+
+                    } else {
+                        self.displayFilters();
+                        self.displayData();
+                        
+                    }
+                });
+
+            } else {
+
+                var listRegions = [];
+                var currentRegion = null;
+
+                AD.util.async.series([
+
+                    // step 1: make sure our regions are loaded
+                    function(next) {
+                        listRegions = self.currentRegionList();
+                        if (listRegions) {
+                            // got some results, so just continue on:
+                            next();
+                        } else {
+
+
+                            // load that data:
+                            self.loadIndicator.show();
+                            AD.comm.service.get({ url:'/nsmpdreport/regions'})
+                            .fail(function(err){
+                                self.loadIndicator.hide();
+                                next(err);
+                            })
+                            .done(function(data){
+                                self.loadIndicator.hide();
+                                self.regionList.national = data;
+                                listRegions = data;
+                                next();
+                            })
+
+                        } 
+                    },
+
+                    // step 2: choose a default
+                    function(next) {
+
+                        currentRegion = self.defaultFilter();
+                        next();
+                        
+                    },
+
+                    // step 3: make sure default region's data is loaded
+                    function(next) {
+
+                        // if that region is already loaded:
+                        if (self.reportData.staffByRegion[currentRegion]) {
+                            next();
+                        } else {
+
+                            // load that data:
+                            self.loadIndicator.show();
+                            AD.comm.service.get({ 
+                                url:'/nsmpdreport/dataForRegion',
+                                params:{ region: currentRegion }
+                            })
+                            .fail(function(err){
+                                self.loadIndicator.hide();
+                                console.error(' error loading dataForRegion(): currentRegion:'+currentRegion);
+                                console.error(err);
+                                next(err);
+                            })
+                            .done(function(data){
+
+                                self.loadIndicator.hide();
+                                // this returns [ {staffAccountAnalysis1}, {staffAccountAnalysis2}, ... ]
+
+                                // the existing display wants this as a hash:
+                                // { accountNum1: {staffAccountAnalysis1},  }
+                                var hash = {};
+                                data.forEach(function(entry){
+                                    hash[entry.accountNum] = entry;
+                                })
+
+                                self.reportData.staffByRegion[currentRegion] = hash;
+                                next();
+                            })
+
+                        }
+                    },
+
+                    // step 4: display information
+                    function(next) {
+
+                        self.displayFilters();
+                        self.displayData(currentRegion);
+                    }
+
+                ], function(err, results) {
+
+                    if (err) {
+                        console.error(err);
+                    } else {
+
+                        console.log('ns staff report loadData() completed.');
+                    }
+
+                })
+
+
+
+            }
+
+
+        },
+
+
+
+
+        /*
+         * @function updateFilterTag
+         *
+         * Make sure the filter tag for the given region Key is selected.
+         *
+         * @param [string] regionKey    : one of the values of an existing filter
+         */
+        updateFilterTag:function(regionKey){
+
+            // Update the tag buttons
+            this.filter.find('.balrep-filter-tag').removeClass('filter-on');
+            this.filter.find('a[data-balrep-filter="'+regionKey+'"]').addClass('filter-on');
 
         },
 
 
         // Handle clicks on the "Reload" button
         "a[href='#balrep-report-reload'] click": function($el, ev) {
+            var self = this;
+
+            if (this.toolState.staffType != '#US') {
+                // erase our data!
+                this.reportData.staffByRegion = {}
+            }
             this.loadResults();
             ev.preventDefault();
         },
@@ -224,7 +457,16 @@ function(){
         'a.balrep-filter-tag click': function ($el, ev) {
             var self = this;
             var regionKey = $el.attr('data-balrep-filter');
-            self.displayData(regionKey);
+
+            self.updateFilterTag(regionKey);
+
+            // keep us staff working as before:
+            if (self.toolState.staffType == '#US') {
+                self.displayData(regionKey);
+            } else {
+                self.loadResults();
+            }
+            
             ev.preventDefault();
         }
 
