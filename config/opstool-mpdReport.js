@@ -19,10 +19,10 @@ module.exports.opstool_mpdReport = {
                           //      'use'     the one below instead of the one passed in
       
         // define the base email addresses to use when sending reports:
-        from: 'from@email.net',
-        to:   'to@email.net',
-        cc:   'cc@email.net',
-        bcc:  'bcc@email.net',
+        //from: 'from@email.net',
+        //to:   'to@email.net',
+        //cc:   'cc@email.net',
+        //bcc:  'bcc@email.net',
 
 
         // list the emails here:
@@ -47,10 +47,10 @@ module.exports.opstool_mpdReport = {
       
       
         // define the base email addresses to use when sending reports:
-        from: 'from@email.net',
-        to:   'to@email.net',
-        cc:   'cc@email.net',
-        bcc:  'bcc@email.net',
+        //from: 'from@email.net',
+        //to:   'to@email.net',
+        //cc:   'cc@email.net',
+        //bcc:  'bcc@email.net',
 
 
         // list the emails here:
