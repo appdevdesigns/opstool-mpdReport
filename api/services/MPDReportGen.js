@@ -35,7 +35,9 @@ var emailFn = function(system, field, emailAddr) {
 
     if ('undefined' == typeof sails.config.opstool_mpdReport[system][field]) {
         Log.error(' config/opstool-mpdReport.js  (system:'+system+') did not define field: '+field);
-        sails.config.opstool_mpdReport[system][field] = field+'@not.provided.net';
+        //// Putting in fake placeholder email addresses clogs up the server 
+        //// logs with error messages. 
+        //sails.config.opstool_mpdReport[system][field] = field+'@not.provided.net';
     }
     
 
