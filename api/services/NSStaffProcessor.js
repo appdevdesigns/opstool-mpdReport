@@ -1526,12 +1526,20 @@ done(err);
 
                                         if (emailOptions == null) { emailOptions = MPDReportGen.emailOptionsNS };
 
+                                        // the "name" of the email distribution list to be used in the subject line
+                                        var emailName = emailAddr.match(/^[^@]+/);
+                                        if (emailName && emailName[0]) {
+                                            emailName = emailName[0].toUpperCase();
+                                        } else {
+                                            emailName = emailAddr;
+                                        }
+
                                         var email = {
                                                 from: emailOptions.From(),
                                                 to: emailOptions.To(emailAddr),
                                                 cc: emailOptions.CC(),
                                                 bcc: emailOptions.BCC(),
-                                                subject:'Current: ' + region + ' NS Staff Account Info ('+emailAddr+')',
+                                                subject:'Current: ' + region + ' NS Staff Account Info ('+emailName+')',
                                                 html:html,
                                                 text:text
                                         };
@@ -1600,13 +1608,13 @@ done(err);
                                     } else {
 
                                         if (emailOptions == null) { emailOptions = MPDReportGen.emailOptionsNS };
-
+                                        
                                         var email = {
                                                 from: emailOptions.From(),
                                                 to: emailOptions.To(staffData.staff[a].email),
                                                 cc: emailOptions.CC(),
                                                 bcc: emailOptions.BCC(),
-                                                subject:'NS Staff Account Info ('+staffData.staff[a].email+')',
+                                                subject:'NS Staff Account Info ('+staffData.staff[a].name+')',
                                                 html:html,
                                                 text:text
                                         };

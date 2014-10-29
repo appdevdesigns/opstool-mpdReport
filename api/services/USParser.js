@@ -909,13 +909,21 @@ var renderStandardEmails = function(opts) {
                 } else {
 
                     if (emailOptions == null) { emailOptions = MPDReportGen.emailOptionsUS };
+
+                    // the "name" of the email distribution list to be used in the subject line
+                    var emailName = emailAddr.match(/^[^@]+/);
+                    if (emailName && emailName[0]) {
+                        emailName = emailName[0].toUpperCase();
+                    } else {
+                        emailName = emailAddr;
+                    }
                     
                     var email = {
                         from: emailOptions.From(),
                         to: emailOptions.To(emailAddr),
                         cc: emailOptions.CC(),
                         bcc: emailOptions.BCC(),
-                        subject:'PREVIEW: US Staff Account Info ('+emailAddr+')',
+                        subject:'PREVIEW: US Staff Account Info ('+emailName+')',
                         html:html,
                         text:text
                     };
