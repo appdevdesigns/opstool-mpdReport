@@ -68,9 +68,9 @@ module.exports= {
          *          avgAccountBal   : The average of staff's last 12 account balances
          *          monthsInDeficit : The # months in last 12 months that account balance < 0
          *          avgLocalContrib : The net average change in account (+ or -) from local sources
-         *          localPercent    : The % that avgLocalContrib makes up of current salary
+         *          localPercent    : The % that avgLocalContrib makes up of avg expenditure
          *          avgForeignContrib : The net average change in account (+ or -) from foreign sources
-         *          foreignPercent  : The % that avgForeignContrib makes up of current salary
+         *          foreignPercent  : The % that avgForeignContrib makes up of avg expenditure
          *          monthsTilDeficit: estimate of how many more months until an account goes negative                       
          *          phone           : The staff's current phone (mobile)
          *          email           : The staff's current secure email address
@@ -423,14 +423,14 @@ done(err);
                                     //Pass the local contributions to get the avgLocalContrib
                                     clone.avgLocalContrib = self.getAvgContributions(localContrib);
 
-                                    //Pass the avg local contributions and current salary to get the percentage
-                                    clone.localPercent = self.getPercent(clone.avgLocalContrib,currentSalary);
+                                    //Pass the avg local contributions and avg expenditure to get the percentage
+                                    clone.localPercent = self.getPercent(clone.avgLocalContrib, clone.avgExpenditure);
 
                                     //Pass the foreign contributions to get the avgForeignContrib
                                     clone.avgForeignContrib = self.getAvgContributions(foreignContrib);
 
-                                    //Pass the avg foreign contributions and current salary to get the percentage
-                                    clone.foreignPercent = self.getPercent(clone.avgForeignContrib,currentSalary);
+                                    //Pass the avg foreign contributions and avg expenditure to get the percentage
+                                    clone.foreignPercent = self.getPercent(clone.avgForeignContrib, clone.avgExpenditure);
                                     
                                     //Add the local and foreign avg contributions together for monthsTilDeficit
                                     var avgContributions = parseInt(clone.avgLocalContrib) + parseInt(clone.avgForeignContrib);
