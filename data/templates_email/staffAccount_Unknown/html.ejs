@@ -20,7 +20,7 @@
     <tbody>
 <%
 
-    var getRowClass = function(person) {
+    var getBalanceClass = function(person) {
     
         var retClass = '';
         
@@ -41,10 +41,10 @@
 
     people.forEach(function(person) {
 %>
-        <tr <%- getRowClass(person) %> >
+        <tr>
             <td><%= person.accountNum %></td>
             <td><%= person.name %></td>
-            <td><%= person.accountBal %></td>
+            <td <%- getBalanceClass(person) %> ><%= person.accountBal %></td>
             <td><%= person.avgAccountBal %></td>
             <td <%- getFieldClass(person) %> ><%= person.monthsInDeficit %></td>
         </tr>

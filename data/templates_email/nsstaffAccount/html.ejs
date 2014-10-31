@@ -60,12 +60,12 @@
     
         var person = people[acct];
 %>
-        <tr <%- getRowClass(person) %> >
+        <tr>
             <td><%= person.accountNum %></td>
             <td><%= person.name %></td>
             <td><%= person.chineseName %></td>
             <td><%= person.baseSalary %></td>
-            <td><%= person.accountBal %></td>
+            <td <%- getClassLess(person.accountBal,1) %> ><%= person.accountBal %></td>
             <td><%= person.avgAccountBal %></td>
             <td><%= person.avgLocalContrib %></td>
             <td><%= person.localPercent %></td>

@@ -27,7 +27,7 @@
     //// assets/opstool/MPDReport/views/MPDReportReview/row.ejs
     //// 
     
-    var getRowClass = function(person) {
+    var getBalanceClass = function(person) {
     
         var retClass = '';
         
@@ -45,16 +45,17 @@
          
          return retClass;
     }
+    
 
 //    for (var acct in people) {
     
 //        var person = people[acct];
     people.forEach(function(person) {
 %>
-        <tr <%- getRowClass(person) %> >
+        <tr>
             <td><%= person.accountNum %></td>
             <td><%= person.hrisName %></td>
-            <td><%= person.accountBal %></td>
+            <td <%- getBalanceClass(person) %> ><%= person.accountBal %></td>
             <td><%= person.avgAccountBal %></td>
             <td <%- getFieldClass(person) %> ><%= person.monthsInDeficit %></td>
             <td> ??? </td>
