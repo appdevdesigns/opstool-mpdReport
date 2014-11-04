@@ -55,7 +55,7 @@ function(){
 
             var action = $el.attr('href');
             if (action == '#send-individual') {
-                serviceURL = '/nsmpdreport/email/send/individual';
+                serviceURL = '/nsmpdreport/email/individual/send';
             } else if (action == '#send-regional') {
                 serviceURL = '/nsmpdreport/email/send';
             }
