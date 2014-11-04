@@ -23,12 +23,18 @@
     <tbody>
 <%
 
+    // Returns the integer value of a number string that may include commas.
+    var int = function(numString) {
+        return parseInt(('' + numString).replace(/,/g, ''));
+    }
+
+
     var getBalanceClass = function(person) {
     
         var retClass = '';
         
-        if (person.accountBal <= 2000) { retClass = ' class="warning" '; }
-        if (person.accountBal <= 0) { retClass = ' class="danger" '; }
+        if (int(person.accountBal) <= 2000) { retClass = ' class="warning" '; }
+        if (int(person.accountBal) <= 0) { retClass = ' class="danger" '; }
          
         return retClass;
     }
@@ -37,7 +43,7 @@
     var getFieldClass = function(person) {
         var retClass = '';
         
-         if (person.monthsInDeficit > 0) { retClass = ' class="danger" '; }
+         if (int(person.monthsInDeficit) > 0) { retClass = ' class="danger" '; }
          
          return retClass;
     }

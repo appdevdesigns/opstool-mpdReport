@@ -29,31 +29,37 @@
     </thead>
     <tbody>
 <%
-
+    
+    // Returns the integer value of a number string that may include commas.
+    var int = function(numString) {
+        return parseInt(('' + numString).replace(/,/g, ''));
+    }
+    
+    
     var getRowClass = function(person) {
     
         var retClass = '';
         
-         if (person.accountBal <= 0) { retClass = ' class="danger" '; }
+        if (int(person.accountBal) <= 0) { retClass = ' class="danger" '; }
          
-         return retClass;
+        return retClass;
     }
     
     
     var getClassGreater = function(field,value) {
         var retClass = '';
         
-         if (field > value) { retClass = ' class="danger" '; }
+        if (int(field) > value) { retClass = ' class="danger" '; }
          
-         return retClass;
+        return retClass;
     }
     
     var getClassLess = function(field,value) {
         var retClass = '';
          
-         if (field < value) { retClass = ' class="danger" '; }
+        if (int(field) < value) { retClass = ' class="danger" '; }
          
-         return retClass;
+        return retClass;
     }
 
     for (var acct in people) {
