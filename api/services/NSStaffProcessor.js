@@ -1525,14 +1525,9 @@ done(err);
                                     } else {
 
                                         if (emailOptions == null) { emailOptions = MPDReportGen.emailOptionsNS };
-
-                                        // the "name" of the email distribution list to be used in the subject line
-                                        var emailName = emailAddr.match(/^[^@]+/);
-                                        if (emailName && emailName[0]) {
-                                            emailName = emailName[0].toUpperCase();
-                                        } else {
-                                            emailName = emailAddr;
-                                        }
+                                        
+                                        // Find the name of the email distribution list to be used in the subject line
+                                        var emailName = MPDReportGen.parseAddressForName(emailAddr);
 
                                         var email = {
                                                 from: emailOptions.From(),

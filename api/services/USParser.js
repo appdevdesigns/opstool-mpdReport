@@ -911,12 +911,7 @@ var renderStandardEmails = function(opts) {
                     if (emailOptions == null) { emailOptions = MPDReportGen.emailOptionsUS };
 
                     // the "name" of the email distribution list to be used in the subject line
-                    var emailName = emailAddr.match(/^[^@]+/);
-                    if (emailName && emailName[0]) {
-                        emailName = emailName[0].toUpperCase();
-                    } else {
-                        emailName = emailAddr;
-                    }
+                    var emailName = MPDReportGen.parseAddressForName(emailAddr);
                     
                     var email = {
                         from: emailOptions.From(),

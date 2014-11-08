@@ -105,12 +105,43 @@ var pathTemplates = function() {
 
 
 
+// Parse an email address and return a best guess of the recipient's name.
+// @param string emailAddr
+//      Can be a formatted address like:
+//      "John Smith" <jsmith@example.com>
+//      Or just a basic address like:
+//      jsmith@example.com
+// @return string
+var parseAddressForName = function(emailAddr) {
+    // Worst case: fall back on using the entire address as the name
+    var emailName = emailAddr;
+    // Formatted address: use the given display name
+    var formattedAddr = emailAddr.match(/"(.+?)"\s*\<.+?\>/);
+    // Basic unformatted address: just drop the domain
+    var basicAddr = emailAddr.match(/^[^@]+/);
+    
+    if (formattedAddr && formattedAddr[1]) {
+        // Address was in the form of "John Smith" <jsmith@example.com>
+        // Use John Smith
+        emailName = formattedAddr[1];
+    }
+    else if (basicAddr && basicAddr[0]) {
+        // Address was in the form of jsmith@example.com
+        // Use JSMITH
+        emailName = basicAddr[0].toUpperCase();
+    } 
+    
+    return emailName;
+}
+
+
 module.exports= {
 
         emailDump:emailDump,
         emailOptionsUS:emailOptionsUS,
         emailOptionsNS:emailOptionsNS,
         Log: Log,
-        pathTemplates:pathTemplates
+        pathTemplates:pathTemplates,
+        parseAddressForName: parseAddressForName
 
 };
