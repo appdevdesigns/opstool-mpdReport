@@ -2,17 +2,18 @@
 steal(
         // List your Controller's dependencies here:
         'appdev',
+        '//opstools/MPDReport/views/MPDReportType/MPDReportType.ejs',
 function(){
 
-    //if (typeof AD.controllers.opstools == 'undefined') AD.controllers.opstools = {};
-    //if (typeof AD.controllers.opstools.HrisUserProfile == 'undefined') AD.controllers.opstools.HrisUserProfile = {};
-    AD.controllers.opstools.MPDReport.MPDReportType = can.Control.extend({
-
+    // if (typeof AD.controllers.opstools == 'undefined') AD.controllers.opstools = {};
+    // if (typeof AD.controllers.opstools.MPDReport == 'undefined') AD.controllers.opstools.MPDReport = {};
+    // AD.controllers.opstools.MPDReport.MPDReportType = can.Control.extend({
+    AD.Control.extend('opstools.MPDReport.MPDReportType', {
 
         init: function( element, options ) {
             var self = this;
             this.options = AD.defaults({
-                    templateDOM: '//opstools/MPDReport/views/MPDReportType/MPDReportType.ejs',
+                    templateDOM: '//opstools/MPDReport/views/MPDReportType/MPDReportType.ejs'
             }, options);
 
             this.initDOM();
@@ -53,6 +54,7 @@ function(){
 			self.nextStep('review');
             ev.preventDefault();
         }
+        
     });
 
 

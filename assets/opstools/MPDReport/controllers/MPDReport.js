@@ -1,20 +1,14 @@
 steal(
     // List your Controller's dependencies here:
     'appdev',
-    '//js/GenericList.js'
+    'GenericList.js',
+    'OpsPortal/classes/OpsTool.js',
+    '//opstools/MPDReport/views/MPDReport/MPDReport.ejs'
 ).then(
 
 function(){
 
-
-    // Namespacing conventions:
-    // AD.controllers.opstools.[Tool].Tool  --> main controller for tool
-    // AD.controllers.opstools.[Tool].[controller] --> sub controllers for tool
-    // AD.controllers.opstools.HrisAdminObjects.Tool = can.Control.extend({
-
-    if (typeof AD.controllers.opstools == 'undefined') AD.controllers.opstools = {};
-    if (typeof AD.controllers.opstools.MPDReport == 'undefined') AD.controllers.opstools.MPDReport = {};
-    AD.controllers.opstools.MPDReport.Tool = AD.classes.opsportal.OpsTool.extend({
+    AD.Control.OpsTool.extend('MPDReport', {
 
         init: function( element, options ) {
             var self = this;
@@ -24,7 +18,9 @@ function(){
                     tool:null   // the parent opsPortal Tool() object
             }, options);
             this.options = options;
-            
+
+//// TODO: Multilingual & call _super() on init.
+
             self.toolState = {
                 staffType: '#US' // toggles between '#US' & '#NATIONAL'
             }
