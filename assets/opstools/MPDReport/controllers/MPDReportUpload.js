@@ -2,15 +2,17 @@
 steal(
         // List your Controller's dependencies here:
         'appdev',
+        '//opstools/MPDReport/views/MPDReportUpload/MPDReportUpload.ejs',
 function(){
 
-    AD.controllers.opstools.MPDReport.MPDReportUpload = can.Control.extend({
+    // AD.controllers.opstools.MPDReport.MPDReportUpload = can.Control.extend({
+    AD.Control.extend('opstools.MPDReport.MPDReportUpload', {
 
 
         init: function( element, options ) {
             var self = this;
             this.options = AD.defaults({
-                    templateDOM: '//opstools/MPDReport/views/MPDReportUpload/MPDReportUpload.ejs',
+                    templateDOM: '//opstools/MPDReport/views/MPDReportUpload/MPDReportUpload.ejs'
             }, options);
 
             this.key = '#upload';
@@ -50,6 +52,7 @@ function(){
             // insert our base DOM with the Column contents: objectlist, and bottom elements
             this.element.html(can.view(this.options.templateDOM, {} ));
         }
+        
     });
 
 

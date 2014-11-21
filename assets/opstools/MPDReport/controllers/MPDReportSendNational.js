@@ -2,18 +2,18 @@
 steal(
         // List your Controller's dependencies here:
         'appdev',
-        'appdev/widgets/ad_icon_busy/ad_icon_busy.js',
+        'appdev/widgets/ad_icon_busy',
+        '//opstools/MPDReport/views/MPDReportSendNational/MPDReportSendNational.ejs',
 function(){
 
-    //if (typeof AD.controllers.opstools == 'undefined') AD.controllers.opstools = {};
-    //if (typeof AD.controllers.opstools.HrisUserProfile == 'undefined') AD.controllers.opstools.HrisUserProfile = {};
-    AD.controllers.opstools.MPDReport.MPDReportSendNational = can.Control.extend({
+
+    AD.Control.extend('opstools.MPDReport.MPDReportSendNational', {
 
 
         init: function( element, options ) {
             var self = this;
             this.options = AD.defaults({
-                    templateDOM: '//opstools/MPDReport/views/MPDReportSendNational/MPDReportSendNational.ejs',
+                    templateDOM: '//opstools/MPDReport/views/MPDReportSendNational/MPDReportSendNational.ejs'
             }, options);
 
             // This must be an object reference and should not be copied by

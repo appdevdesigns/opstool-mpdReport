@@ -2,13 +2,18 @@
 steal(
         // List your Controller's dependencies here:
         'appdev',
-//        'pages/nsstaffreport/nsstaffreport.css',
+
+        '//opstools/MPDReport/views/MPDReportReview/MPDReportReview.ejs',
+        '//opstools/MPDReport/views/MPDReportReview/filter.ejs',
+        '//opstools/MPDReport/views/MPDReportReview/table.ejs',
 
 function(){
 
     //if (typeof AD.controllers.opstools == 'undefined') AD.controllers.opstools = {};
     //if (typeof AD.controllers.opstools.HrisUserProfile == 'undefined') AD.controllers.opstools.HrisUserProfile = {};
-    AD.controllers.opstools.MPDReport.MPDReportReview = can.Control.extend({
+    // AD.controllers.opstools.MPDReport.MPDReportReview = can.Control.extend({
+
+    AD.Control.extend('opstools.MPDReport.MPDReportReview', {
 
 
         init: function( element, options ) {
@@ -18,6 +23,8 @@ function(){
                     templateFilter: '//opstools/MPDReport/views/MPDReportReview/filter.ejs',
                     templateTable: '//opstools/MPDReport/views/MPDReportReview/table.ejs'
             }, options);
+            
+//// TODO: Multilingual & call _super() on init.
             
             // This must be an object reference and should not be copied by
             // value via defaults()
@@ -54,6 +61,9 @@ function(){
                 /* ... */
                 }
             };
+
+
+//// TODO:  refactor RegionList as a Model
 
             //// get our List of Regions from our services:
             this.regionList = {};
@@ -407,13 +417,9 @@ function(){
 
                 })
 
-
-
             }
 
-
         },
-
 
 
 
@@ -433,6 +439,7 @@ function(){
         },
 
 
+
         // Handle clicks on the "Reload" button
         "a[href='#balrep-report-reload'] click": function($el, ev) {
             var self = this;
@@ -444,6 +451,7 @@ function(){
             this.loadResults();
             ev.preventDefault();
         },
+
         
 
         // Handle clicks on the "Approve" button
@@ -451,6 +459,7 @@ function(){
             can.trigger(this, 'approved');
             //this.trigger('approved');
         },
+
         
 
         // Handle clicks on a filter tag
