@@ -2,20 +2,21 @@
 steal(
         // List your Controller's dependencies here:
         'appdev',
-        'appdev/widgets/ad_icon_busy/ad_icon_busy.js',
+        'appdev/widgets/ad_icon_busy',
+        '//opstools/MPDReport/views/MPDReportSend/MPDReportSend.ejs',
 function(){
 
-    //if (typeof AD.controllers.opstools == 'undefined') AD.controllers.opstools = {};
-    //if (typeof AD.controllers.opstools.HrisUserProfile == 'undefined') AD.controllers.opstools.HrisUserProfile = {};
-    AD.controllers.opstools.MPDReport.MPDReportSend = can.Control.extend({
+    AD.Control.extend('opstools.MPDReport.MPDReportSend', {
 
 
         init: function( element, options ) {
             var self = this;
             this.options = AD.defaults({
-                    templateDOM: '//opstools/MPDReport/views/MPDReportSend/MPDReportSend.ejs',
+                    templateDOM: '//opstools/MPDReport/views/MPDReportSend/MPDReportSend.ejs'
             }, options);
-            
+
+//// TODO: Multilingual & call _super() on init.
+
             // This must be an object reference and should not be copied by
             // value via defaults()
             self.toolState = options.toolState;
