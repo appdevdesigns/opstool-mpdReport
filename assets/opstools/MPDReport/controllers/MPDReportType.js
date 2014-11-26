@@ -5,9 +5,6 @@ steal(
         '//opstools/MPDReport/views/MPDReportType/MPDReportType.ejs',
 function(){
 
-    // if (typeof AD.controllers.opstools == 'undefined') AD.controllers.opstools = {};
-    // if (typeof AD.controllers.opstools.MPDReport == 'undefined') AD.controllers.opstools.MPDReport = {};
-    // AD.controllers.opstools.MPDReport.MPDReportType = can.Control.extend({
     AD.Control.extend('opstools.MPDReport.MPDReportType', {
 
         init: function( element, options ) {

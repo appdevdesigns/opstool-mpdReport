@@ -5,7 +5,6 @@ steal(
         '//opstools/MPDReport/views/MPDReportUpload/MPDReportUpload.ejs',
 function(){
 
-    // AD.controllers.opstools.MPDReport.MPDReportUpload = can.Control.extend({
     AD.Control.extend('opstools.MPDReport.MPDReportUpload', {
 
 

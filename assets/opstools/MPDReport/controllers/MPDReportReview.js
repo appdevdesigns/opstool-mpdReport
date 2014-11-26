@@ -9,9 +9,6 @@ steal(
 
 function(){
 
-    //if (typeof AD.controllers.opstools == 'undefined') AD.controllers.opstools = {};
-    //if (typeof AD.controllers.opstools.HrisUserProfile == 'undefined') AD.controllers.opstools.HrisUserProfile = {};
-    // AD.controllers.opstools.MPDReport.MPDReportReview = can.Control.extend({
 
     AD.Control.extend('opstools.MPDReport.MPDReportReview', {
 
