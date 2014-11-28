@@ -1607,8 +1607,11 @@ done(err);
                                         var email = {
                                                 from: emailOptions.From(),
                                                 to: emailOptions.To(staffData.staff[a].email),
+                                                /*
+                                                // No copies for individual reports
                                                 cc: emailOptions.CC(),
                                                 bcc: emailOptions.BCC(),
+                                                */
                                                 subject:'NS Staff Account Info ('+staffData.staff[a].name+')',
                                                 html:html,
                                                 text:text
