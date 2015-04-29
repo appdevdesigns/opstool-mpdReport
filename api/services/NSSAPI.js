@@ -1,5 +1,5 @@
 var path = require('path');
-var $ = require('jquery-deferred');
+// var $ = require('jquery-deferred');
 var AD = require('ad-utils');
 
 //// Node-Email-Templates:
