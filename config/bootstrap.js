@@ -7,9 +7,10 @@
  * For more information on bootstrapping your app, check out:
  * http://sailsjs.org/#documentation
  */
-
+var path = require('path');
+var AD = require('ad-utils');
 module.exports = function (cb) {
 
-    cb();       // successful response
+    AD.module.permissions(path.join(__dirname, '..', 'setup', 'permissions'), cb);
     // cb(err);   // in case of an unrecoverable error
 };
