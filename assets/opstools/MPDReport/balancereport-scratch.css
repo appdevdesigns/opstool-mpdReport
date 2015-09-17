@@ -5,6 +5,12 @@
 }
 #balrep-type-list li a { opacity: 0.75; }
 
+/* Fix: put all region filters side by side horizontally */
+.tool-balance-report-review .opsportal-filter ul.nav li {
+    float: left;
+}
+
+
 td.balrep-deficit, td.balrep-months-deficit, td.balrep-12-deficit { background: #f00 !important; font-weight: bold; color: #CC9900;}
 td.balrep-warn { background: #CC9900 !important; font-weight: bold; }
 td.balrep-3-deficit { background: #ffff00 !important; font-weight: bold; }
