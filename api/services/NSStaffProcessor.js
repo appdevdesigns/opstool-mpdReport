@@ -1474,9 +1474,11 @@ done(err);
         // @param object regionData
         //     Basic object containing staff data as generated 
         //     by compileRegionData().
+        // @param object extra
+        //     Basic object containing any extra data to be added to the email
         // @param function done
         //     Callback function.
-        compileRenderedEmails: function(templatesDir, regionData, done) {
+        compileRenderedEmails: function(templatesDir, regionData, extra, done) {
             var dfd = $.Deferred();
 
             // load regional email addresses
@@ -1509,12 +1511,17 @@ done(err);
                                 
                                 var emailAddr = emailDefs[region];
                                 if (!emailAddr) {
-                                    Log.error(LogKey, 'No email address for region: [' + region + ']');
+                                    //Log.error(LogKey, 'No email address for region: [' + region + ']');
+                                    console.log('No email address for region: [' + region + ']');
                                     continue;
                                 }
                                 
                                 // NOTE: this is NOT asynchronous...
-                                renderEmail({ people:regionData[region] }, templatesDir, function(err, html, text) {
+                                var data = {
+                                    people: regionData[region],
+                                    extra: extra
+                                };
+                                renderEmail(data, templatesDir, function(err, html, text) {
 
                                     if (err) {
                                         Log.error(LogKey+' error rendering email:', err);
@@ -1534,9 +1541,9 @@ done(err);
                                                 to: emailOptions.To(emailAddr),
                                                 cc: emailOptions.CC(),
                                                 bcc: emailOptions.BCC(),
-                                                subject:'Current: ' + region + ' NS Staff Account Info ('+emailName+')',
-                                                html:html,
-                                                text:text
+                                                subject: 'Current: ' + region + ' NS Staff Account Info ('+emailName+')',
+                                                html: html,
+                                                text: text
                                         };
                                         renderedEmails.push( email );
                                     }
@@ -1560,9 +1567,11 @@ done(err);
         // @param object staffData
         //     Basic object containing staff data as generated 
         //     by compileStaffData().
+        // @param object extra
+        //     Basic object containing any extra data to add to the email
         // @param function done
         //     Callback function.
-        compileRenderedIndividualEmails: function(templatesDir, staffData, done) {
+        compileRenderedIndividualEmails: function(templatesDir, staffData, extra, done) {
             var dfd = $.Deferred();
 
             if (Log == null) Log = MPDReportGen.Log;
@@ -1590,12 +1599,17 @@ done(err);
 
                             //
                             for (var a=0;a<staffData.staff.length;a++) {
-
+                                
                                 // NOTE: this is NOT asynchronous...
-                                renderEmail({ person:staffData.staff[a] }, templatesDir, function(err, html, text) {
+                                var data = {
+                                    person: staffData.staff[a],
+                                    extra: extra
+                                };
+                                renderEmail(data, templatesDir, function(err, html, text) {
 
                                     if (err) {
-                                        Log.error(LogKey+' error rendering email:', err);
+                                        console.log(err);
+                                        //Log.error(LogKey+' error rendering email:', err);
                                         if (done) done(err, null);
                                         dfd.reject(err);
                                         return;
