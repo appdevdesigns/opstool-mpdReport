@@ -1,3 +1,6 @@
+<% if (extra.memo) { %>
+<p><%= extra.memo.replace(/\n/, '<br>') %></p>
+<% } %>
 
 <div class="jumbotron" id="jumbo">
   <div class="container">
@@ -5,6 +8,7 @@
     <h1>Missing US Staff Accounts </h1>
     <p>These US Staff could not be found in the HRIS.</p>
     <p>Please review this information and update their HRIS info if they are in your Region.</p>
+
   </div>
 </div>
 <table class="table">

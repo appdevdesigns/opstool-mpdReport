@@ -9,49 +9,6 @@ var AD = require('ad-utils');
 //////
 // CONFIG
 //
-/*
-var emailFn = function(field, emailAddr) {
-
-    // make sure configuration file properly set.
-    if ('undefined' == typeof sails.config.opstool_mpdReport) {
-        AD.log.error('<bold>opstool-mpdReport</bold> config file not defined!');
-        sails.config.opstool_mpdReport = { mode:'replace' };
-    } else {
-        if ('undefined' == typeof sails.config.opstool_mpdReport[field]) {
-            AD.log.error('<bold>opstool-mpdReport</bold> config/opstool-mpdReport.js did not define field: '+field);
-            sails.config.opstool_mpdReport[field] = field+'@not.provided.net';
-        }
-    }
-
-
-    var emailTo = sails.config.opstool_mpdReport[field];
-    if (emailAddr) {
-
-        // lets figure out what to do with the passed in address
-        var mode = sails.config.opstool_mpdReport.mode.toLowerCase();
-        if ( mode == 'merge') {
-            emailTo = emailAddr + ', ' + emailTo;
-        } else if (mode == 'replace') {
-            emailTo = emailAddr;
-        } 
-    }
-
-    return emailTo;
-}
-
-var emailOptions = {
- //   debug:true,
- //   from: 'jhausman@dodomail.net',
- //   //to: 'jchan@zteam.biz',
- //   to: 'Ed Graham <egraham@zonemail.net>',
- //   cc: 'rpoolman@zteam.biz',
- //   bcc: 'jchan@zteam.biz',
-    To:   function( addr ) { return emailFn('to',   addr); },
-    From: function( addr ) { return emailFn('from', addr); },
-    CC:   function( addr ) { return emailFn('cc',   addr); },
-    BCC:  function( addr ) { return emailFn('bcc',  addr); },
-};
-*/
 var emailOptions = null;
 
 
@@ -113,16 +70,16 @@ module.exports= {
 
 
             $.when(csvParsed, staffFound, regionsFound, assignmentsFound, phonesFound, emailsFound)
-            .then(function( csvInfo, usStaff, regionObj, assignmentObj, phoneObj, emailObj){
+            .fail(function() {
+                console.log('compileStaffData failed:', arguments);
+                return done({});
+            })
+            .done(function( csvInfo, usStaff, regionObj, assignmentObj, phoneObj, emailObj){
 //                compiledData.csvInfo = csvObj;
 //                compiledData.usStaff = staffObj;
                 compiledData.staffByRegion = {};
                 compiledData.missing = {};
 
-//Log('all pieces found!');
-
-//Log('<green><bold>csvInfo:</bold></green>', csvInfo);
-//Log(usStaff);
 
                 for (var a in csvInfo) {
                     if ( usStaff[a]) {
@@ -139,11 +96,8 @@ module.exports= {
                         }
 
                         var lID = assignmentObj[staff.ren_id];
-// console.log('staff.ren_id='+staff.ren_id);
-// console.log(' assignment LID:'+lID);
 
                         clone.hris_region = regionObj[lID];
-// console.log(' hris_region:'+ clone.hris_region);
 
                         clone.phone = phoneObj[clone.ren_id];
                         clone.email = emailObj[clone.ren_id];
@@ -207,7 +161,6 @@ module.exports= {
             	.to.array(function( data, count) {
 
             	    self.array2obj(data, function(obj) {
-//AD.log('csv parsed ...');
             	        dfd.resolve(obj);
             	    });
             	});
@@ -265,7 +218,6 @@ module.exports= {
                     if (val == lookup.key) {
 
                         var val = csv[r][c + lookup.col];
-//console.log(lookup);
                         if (typeof lookup.parse != 'undefined') {
                             val = lookup.parse(val);
                         }
@@ -299,7 +251,6 @@ module.exports= {
                         if (err) {
                             dfd.reject(err);
                         } else {
-//AD.log('region info found ...');
                             dfd.resolve(finalLookup);
                         }
                     });
@@ -346,7 +297,6 @@ module.exports= {
 
 
                                 var locationLookup = lookupTable(trans, 'location_id', 'location_label');
-//Log('location info found ...');
                                 if (done) done(null, locationLookup);
 
                             }
@@ -382,7 +332,6 @@ module.exports= {
                     HRISAssignLocation.find({parent_id:currentSet})
                     .fail(function(err){
                         Log.error(LogKey+'error searching sub locations: ',err, ' \ncurrSet: ',currentSet);
-//                        console.log(currentSet);
                         if (cb) cb(err);
                     })
                     .then(function(locations) {
@@ -434,7 +383,6 @@ module.exports= {
 
         findUSStaff: function(done) {
             var dfd = $.Deferred();
- //           console.log(sails.config.adapters);
             HRISCountryData
             .find({ country_code:'US'})
             .fail(function(err){
@@ -457,8 +405,6 @@ console.log(err);
 
                             // create a lookup:  { 'family_id' : 'account_number' }
                             var familyID_Account = lookupTable(accounts, 'family_id', 'account_number');
-//console.log('familyid->account lookup:');
-//console.log(familyID_Account);
                             get(HRISRen, 'family_id', { ren_isfamilypoc:1}, accounts, function(err, ren) {
 
                                 if (err) {
@@ -478,7 +424,6 @@ console.log(err);
                                         account_poc[ key ] = info;
                                     }
 
-//Log('staff found ...');
                                     dfd.resolve(account_poc);
 
                                 }
@@ -516,11 +461,7 @@ console.log(err);
                 if (assignments.length > 0 ) {
 
                     var ren2assign = lookupTable(assignments, 'ren_id', 'team_id');
-//console.log('ren2assign:');
-//console.log(ren2assign);
                     get( HRISXrefTeamLocation, 'team_id', {}, assignments, function( err, tlocations) {
-//console.log('tlocations:');
-//console.log(tlocations);
                         if (err) {
                             Log.error(LogKey+'error finding team X location:', err);
                             console.log(err);
@@ -530,8 +471,6 @@ console.log(err);
 
 
                             var team2Loc = lookupTable(tlocations, 'team_id', 'location_id');
-//console.log('team2loc:');
-//console.log(team2Loc);
                             var combinedLookup = {};
 
                             for (var rid in ren2assign) {
@@ -565,7 +504,6 @@ console.log(err);
             HRISPhoneTypeTrans.find({language_code:'en'})
             .fail(function(err) {
                 Log.error(LogKey+' error finding PHone types: ', err);
-//console.log(HRISPhoneTypeTrans);
                 dfd.reject(err);
             })
             .then(function(types){
@@ -660,7 +598,7 @@ console.log(err);
         },
 
 
-        compileRenderedEmails: function(templatesDir, emailData, done) {
+        compileRenderedEmails: function(templatesDir, emailData, extra, done) {
             var dfd = $.Deferred();
 
             if (Log == null) Log = MPDReportGen.Log; 
@@ -675,7 +613,7 @@ console.log(err);
                     dfd.reject(err);
 
                 } else {
-
+                    
                     async.series([
 
                         // Step 1: compile all Standard Emails
@@ -691,8 +629,10 @@ console.log(err);
                                     renderer:renderer,
                                     listEmails:renderedEmails,
                                     data:emailData,
+                                    extra:extra,
                                     dir:templatesDir})
                                 .fail(function(err){
+                                    console.log('renderStandard error:', err);
                                     next(err);
                                 })
                                 .then(function(data){
@@ -716,6 +656,7 @@ console.log(err);
                                     renderer:renderer,
                                     listEmails:renderedEmails,
                                     data:emailData,
+                                    extra:extra,
                                     dir:templatesDir})
                                 .fail(function(err){
                                     next(err);
@@ -740,6 +681,7 @@ console.log(err);
                                     renderer:renderer,
                                     listEmails:renderedEmails,
                                     data:emailData,
+                                    extra:extra,
                                     dir:templatesDir})
                                 .fail(function(err){
                                     next(err);
@@ -754,7 +696,7 @@ console.log(err);
                     ], function(err,results) {
 
                         if (err) {
-
+                            console.log('compileRenderedEmails error:', err);
                             if (done) done(err, null);
                             dfd.reject(err);
 
@@ -886,6 +828,7 @@ var renderStandardEmails = function(opts) {
 //        opts.renderer   The renderer for this email template
 //        opts.listEmails The array to store our rendered email obj into
 //        opts.data       The data to use for our
+//        opts.extra      Any extra data to add
 //        opts.dir        The template directory (why do we need this again?)
 
 
@@ -898,7 +841,11 @@ var renderStandardEmails = function(opts) {
 
             // NOTE: this is NOT asynchronous...
             var people = arrayOrderedBy(opts.data[emailAddr], 'accountBal');
-            opts.renderer({ people:people }, opts.dir, function(err, html, text) {
+            var renderData = { 
+                people: people,
+                extra: opts.extra
+            }
+            opts.renderer(renderData, opts.dir, function(err, html, text) {
                 if (err) {
                     Log.error(LogKey+' error rendering email : ',err);
 
@@ -943,6 +890,7 @@ var renderMissingRegionsEmails = function(opts) {
 //        opts.renderer   The renderer for this email template
 //        opts.listEmails The array to store our rendered email obj into
 //        opts.data       The data to use for our
+//        opts.extra      Any extra data to add
 //        opts.dir        The template directory (why do we need this again?)
 
 
@@ -956,7 +904,11 @@ var renderMissingRegionsEmails = function(opts) {
             // NOTE: this is NOT asynchronous...
             // NOTE: region = 'undefined' means that we couldn't find their region
             var people = arrayOrderedBy(opts.data['undefined'], 'accountBal');
-            opts.renderer({ people:people }, opts.dir, function(err, html, text) {
+            var renderData = { 
+                people: people,
+                extra: opts.extra
+            }
+            opts.renderer(renderData, opts.dir, function(err, html, text) {
                 if (err) {
                     Log.error(LogKey+' error rendering email: ', err);
 
@@ -998,6 +950,7 @@ var renderMissingStaffEmails = function(opts) {
 //        opts.renderer   The renderer for this email template
 //        opts.listEmails The array to store our rendered email obj into
 //        opts.data       The data to use for our
+//        opts.extra      Any extra data to add
 //        opts.dir        The template directory (why do we need this again?)
 
 
@@ -1011,7 +964,11 @@ var renderMissingStaffEmails = function(opts) {
             // NOTE: this is NOT asynchronous...
             // NOTE: region = 'undefined' means that we couldn't find their region
             var people = arrayOrderedBy(opts.data['missing'], 'accountBal');
-            opts.renderer({ people:people }, opts.dir, function(err, html, text) {
+            var renderData = { 
+                people: people,
+                extra: opts.extra
+            }
+            opts.renderer(renderData, opts.dir, function(err, html, text) {
                 if (err) {
                     Log.error(LogKey+' error rendering email: ', err);
 
@@ -1159,8 +1116,6 @@ var arrayOrderedBy = function (objList, fieldName, sortBy) {
 //        curr = curr.next;
 //    }
 
-//console.log('---- sorted array -----');
-//console.log(sortedArray);
     if (numDone != sortedArray.length) {
         Log.error(LogKey+' sorted array not equal to number of entries:', {objList:objList, sortedArray:sortedArray});
         console.log();

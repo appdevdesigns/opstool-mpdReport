@@ -9,7 +9,7 @@
 module.exports = {
 
     '/mpdreport/upload'                       : 'opstool-mpdReport/StaffReportUSController.uploadFile'
-    , 'post /mpdreport/data'                   : 'opstool-mpdReport/StaffReportUSController.data'
+    , 'get /mpdreport/data'                   : 'opstool-mpdReport/StaffReportUSController.data'
     , 'post /mpdreport/email/send'             : 'opstool-mpdReport/StaffReportUSController.emailSend'
 
     , 'get /nsmpdreport/regions'              : 'opstool-mpdReport/StaffReportNSController.regions'

@@ -55,7 +55,6 @@ module.exports = {
                 //// NOTE: we are really only expecting 1 .csv file to be uploaded.
                 //// if > 1 file appears, we simply use the last one ...
                 files.forEach(function(file) {
-// AD.log('... file info:',file);
                     fs.readFile( file.fd , function(err, data) {
                         if (err) {
 
@@ -107,59 +106,47 @@ module.exports = {
     emailSend: function(req, res) {
 
         if (Log == null) Log = MPDReportGen.Log;
-
         var logKey = '<green><bold>US:Regional:</bold></green>';
 
-//     console.log(sails.config);
-        Log(logKey + ' in emailSend()');
-
         var templatesDir = MPDReportGen.pathTemplates();
+        var memo = req.param('memo') || null;
+        var extra = { memo: memo };
 
         // Generate the Regional Report Data
         USParser.compileEmailData('sas_curr.csv', function(regionData) {
-
+            
             // Convert data into an array of generated emails
-            USParser.compileRenderedEmails(templatesDir, regionData, function(err, emails) {
-
+            USParser.compileRenderedEmails(templatesDir, regionData, extra, function(err, emails) {
 
                 if (err) {
-               //   res.send('got an error?');
                     Log.error(logKey + ' error rendering emails.', err);
-                    ADCore.comm.error(res, err, 500);
+                    res.AD.error(err, 500);
                     return;
                 }
 
-                AD.log();
-
-                var numDone = 0;
-                var isDone = false;   // make sure we only send 1x response
-                emails.forEach(function(email){
-
+                AD.log(logKey + 'Sending ' + emails.length + ' emails...');
+                
+                // Process up to 5 emails concurrently
+                async.eachLimit(emails, 5, function(email, next) {
                     Log(logKey + ' sending email to:'+email.to+'    subj:'+email.subject);
 
                     Nodemailer.send(email)
                     .fail(function(err){
-                        // process error
                         Log.error(logKey + 'error sending email.', err);
                         MPDReportGen.emailDump(email);
-                        if (!isDone) {
-                            isDone = true;
- //                         res.send({ status:'error', data:err });
-                            ADCore.comm.error(res, err, 500);
-                        }
+                        next(err);
                     })
                     .then(function(response){
-
-                        numDone++;
-                        if(!isDone) {
-                            if (numDone >= emails.length) {
- //                             res.send(response); 
-                                Log(logKey + '<green><bold> ... sending emails complete!</bold></green>');
-                                ADCore.comm.success(res, response);
-                            }
-                        }
+                        next();
                     });
-
+                    
+                }, function(err) {
+                    if (err) {
+                        res.AD.error(err, 500);
+                    } else {
+                        Log(logKey + '<green><bold> ... sending emails complete!</bold></green>');
+                        res.AD.success({});
+                    }
                 });
 
             });
