@@ -1,3 +1,81 @@
+<p>(See below for English)</p>
+
+<div class="jumbotron" id="jumbo">
+  <div class="container">
+    
+    <h1>您的员工帐户摘要</h1>
+    <p>请查看此信息:</p>
+  </div>
+</div>
+<table class="table">	
+        <tr>
+        	<td>同工帐号  </td>
+            <td><%= person.accountNum %></td>
+        </tr>
+        <tr>
+        	<td>名字（拼音，英文） </td>
+            <td><%= person.name %></td>
+        </tr>
+        <tr>
+        	<td>名字（中文） </td>
+            <td><%= person.chineseName %></td>
+        </tr>
+        <tr>
+        	<td>接纳工资  </td>
+            <td><%= person.baseSalary %></td>
+        </tr>
+        <tr>
+        	<td>账户余额  </td>
+            <td><%= person.accountBal %></td>
+        </tr>
+        <tr>
+        	<td>接纳账户余额（前12个月来看） </td>
+            <td><%= person.avgAccountBal %></td>
+        </tr>
+        <tr>
+        	<td>接纳国内支持（前12个月来看）  </td>
+            <td><%= person.avgLocalContrib %></td>
+        </tr>
+        <tr>
+        	<td>接纳账户余额是接纳工资百分之多少  </td>
+            <td><%= person.localPercent %></td>
+        </tr>
+        <tr>
+        	<td>接纳大陆外支持（前12个月来看） </td>
+            <td><%= person.avgForeignContrib %></td>
+        </tr>
+        <tr>
+        	<td>接纳国内支持是接纳工资百分之多少  </td>
+            <td><%= person.foreignPercent %></td>
+        </tr>
+        <tr>
+        	<td>在前12个月账户负数几次 </td>
+            <td><%= person.monthsInDeficit %></td>
+        </tr>
+        <!--
+        <tr>
+        	<td>看工资和支持来算，你还有几个月账户才负数。
+NA的意思是，在以后12个月看起来账户不要负数。
+（这是一个试用的数字）  </td>
+            <td><%= person.monthsTilDeficit %></td>
+        </tr>
+        -->
+        <tr>
+            <td>对于过去12个月平均支出 </td>
+            <td><%= person.avgExpenditure %></td>
+        </tr>
+        <tr>
+        	<td>电话  </td>
+            <td><%= person.phone %></td>
+        </tr>
+        <tr>
+        	<td>邮件  </td>
+            <td><%= person.email %></td>
+        </tr>
+        <tr></tr>
+    </tbody>
+</table>    
+
 
 <div class="jumbotron" id="jumbo">
   <div class="container">
@@ -51,13 +129,15 @@
         	<td>Months in Deficit:  </td>
             <td><%= person.monthsInDeficit %></td>
         </tr>
+        <!--
         <tr>
         	<td>Months Until Deficit:  </td>
             <td><%= person.monthsTilDeficit %></td>
         </tr>
+        -->
         <tr>
-            <td>Average* Expenditure</td>
-            </td><%= person.avgExpenditure %></td>
+            <td>Average* Expenditure: </td>
+            <td><%= person.avgExpenditure %></td>
         </tr>
         <tr>
         	<td>Phone Number:  </td>
