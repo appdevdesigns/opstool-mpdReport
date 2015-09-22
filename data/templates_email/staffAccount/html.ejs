@@ -27,12 +27,18 @@
     //// assets/opstool/MPDReport/views/MPDReportReview/row.ejs
     //// 
     
-    var getRowClass = function(person) {
+    // Returns the integer value of a number string that may include commas.
+    var int = function(numString) {
+        return parseInt(('' + numString).replace(/,/g, ''));
+    }
+
+
+    var getBalanceClass = function(person) {
     
         var retClass = '';
         
-        if (person.accountBal <= 2000) { retClass = ' class="warning" '; }
-        if (person.accountBal <= 0) { retClass = ' class="danger" '; }
+        if (int(person.accountBal) <= 2000) { retClass = ' class="warning" '; }
+        if (int(person.accountBal) <= 0) { retClass = ' class="danger" '; }
          
         return retClass;
     }
@@ -41,20 +47,21 @@
     var getFieldClass = function(person) {
         var retClass = '';
         
-         if (person.monthsInDeficit > 0) { retClass = ' class="danger" '; }
+         if (int(person.monthsInDeficit) > 0) { retClass = ' class="danger" '; }
          
          return retClass;
     }
+    
 
 //    for (var acct in people) {
     
 //        var person = people[acct];
     people.forEach(function(person) {
 %>
-        <tr <%- getRowClass(person) %> >
+        <tr>
             <td><%= person.accountNum %></td>
             <td><%= person.hrisName %></td>
-            <td><%= person.accountBal %></td>
+            <td <%- getBalanceClass(person) %> ><%= person.accountBal %></td>
             <td><%= person.avgAccountBal %></td>
             <td <%- getFieldClass(person) %> ><%= person.monthsInDeficit %></td>
             <td> ??? </td>

@@ -17,9 +17,9 @@
             <th>Current Account Balance</th>
             <th>Average* Monthly Balance</th>
             <th>Average* Local Contributions</th>
-            <th>Local Percentage of Salary</th>
+            <th>Local Percentage of Need</th>
             <th>Average* Foreign Contributions</th>
-            <th>Foreign Percentage of Salary</th>
+            <th>Foreign Percentage of Need</th>
             <th># Months in deficit</th>
             <th># Months till deficit</th>
             <th>Average* Expenditure</th>
@@ -29,43 +29,49 @@
     </thead>
     <tbody>
 <%
-
+    
+    // Returns the integer value of a number string that may include commas.
+    var int = function(numString) {
+        return parseInt(('' + numString).replace(/,/g, ''));
+    }
+    
+    
     var getRowClass = function(person) {
     
         var retClass = '';
         
-         if (person.accountBal <= 0) { retClass = ' class="danger" '; }
+        if (int(person.accountBal) <= 0) { retClass = ' class="danger" '; }
          
-         return retClass;
+        return retClass;
     }
     
     
     var getClassGreater = function(field,value) {
         var retClass = '';
         
-         if (field > value) { retClass = ' class="danger" '; }
+        if (int(field) > value) { retClass = ' class="danger" '; }
          
-         return retClass;
+        return retClass;
     }
     
     var getClassLess = function(field,value) {
         var retClass = '';
          
-         if (field < value) { retClass = ' class="danger" '; }
+        if (int(field) < value) { retClass = ' class="danger" '; }
          
-         return retClass;
+        return retClass;
     }
 
     for (var acct in people) {
     
         var person = people[acct];
 %>
-        <tr <%- getRowClass(person) %> >
+        <tr>
             <td><%= person.accountNum %></td>
             <td><%= person.name %></td>
             <td><%= person.chineseName %></td>
             <td><%= person.baseSalary %></td>
-            <td><%= person.accountBal %></td>
+            <td <%- getClassLess(person.accountBal,1) %> ><%= person.accountBal %></td>
             <td><%= person.avgAccountBal %></td>
             <td><%= person.avgLocalContrib %></td>
             <td><%= person.localPercent %></td>

@@ -10,7 +10,7 @@ steal(
 		, 'opstools/MPDReport/controllers/MPDReportSendNational.js'
 ).then(
 		'dropzone.js',
-		'dropzone.css',
+		//'dropzone.css',
 		'site/labels/opstool-MPDReport.js'
 ).then(function(){
 

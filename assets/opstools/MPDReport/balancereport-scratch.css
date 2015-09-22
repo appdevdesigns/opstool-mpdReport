@@ -11,17 +11,22 @@ td.balrep-3-deficit { background: #ffff00 !important; font-weight: bold; }
 
 .balrep-send-container {
   position: relative;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+/*  border: 1px solid rgba(0, 0, 0, 0.1);
   background: #f0f0f0;
   padding: 60px 60px 0 60px;
-  min-height: 275px;
+  min-height: 275px;*/
+  background: white none repeat scroll 0 0;
+  border: 2px solid rgba(0, 0, 0, 0.3);
+  min-height: 200px;
+  padding: 54px;
+  margin-top: 1.5em;
 }
 
 .balrep-send-container .balrep-send { 
 	border: 1px solid transparent;
 	position: relative;
 	background-color: transparent;
-	background-image: url('/images/opstool-mpdReport/icon-mail.png');
+	background-image: url('/images/opsportal/icon-mail.png');
 	background-repeat: no-repeat;
 	background-position: top center;
 	background-size: auto 100px;
