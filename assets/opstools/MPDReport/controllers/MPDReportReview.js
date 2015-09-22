@@ -227,7 +227,7 @@ function(){
             // Update the tag buttons
             this.updateFilterTag(regionKey);
             
-            var $table = this.element.find('.opsportal-table-container');
+            var $table = this.element.find('.op-table-container');
             
             if (!tableData) return;
 
