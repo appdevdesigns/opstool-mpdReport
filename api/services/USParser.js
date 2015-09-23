@@ -56,65 +56,61 @@ module.exports= {
 
 
         compileStaffData:function(fileName, done) {
+            var dfd = $.Deferred();
 
             if (Log == null) Log = MPDReportGen.Log; 
 
             var compiledData = {};
 
             var csvParsed = this.parseCSV(fileName);
-            var staffFound = this.findUSStaff();
-            var regionsFound = this.findRegionInfo();
-            var assignmentsFound = this.findAssignments();
-            var phonesFound = this.findPhones();
-            var emailsFound = this.findEmails();
-
-
-            $.when(csvParsed, staffFound, regionsFound, assignmentsFound, phonesFound, emailsFound)
-            .fail(function() {
+            var staffFound = LHRISWorker.workersByAccount({
+                countryCode: 'US',
+                groupByRegion: false
+            });
+            
+            
+            $.when(csvParsed, staffFound)
+            .fail(function(err) {
                 console.log('compileStaffData failed:', arguments);
+                dfd.reject(err);
                 return done({});
             })
-            .done(function( csvInfo, usStaff, regionObj, assignmentObj, phoneObj, emailObj){
-//                compiledData.csvInfo = csvObj;
-//                compiledData.usStaff = staffObj;
+            .done(function(csvInfo, usStaff) {
                 compiledData.staffByRegion = {};
                 compiledData.missing = {};
-
-
-                for (var a in csvInfo) {
-                    if ( usStaff[a]) {
-
-                        var clone = {};
-                        var csv = csvInfo[a];
-                        for (var c in csv) {
-                            clone[c] = csv[c];
-                        }
-
-                        var staff = usStaff[a];
-                        for (var s in staff) {
-                            clone[s] = staff[s];
-                        }
-
-                        var lID = assignmentObj[staff.ren_id];
-
-                        clone.hris_region = regionObj[lID];
-
-                        clone.phone = phoneObj[clone.ren_id];
-                        clone.email = emailObj[clone.ren_id];
-
-                        var sbr = compiledData.staffByRegion;
-                        if (!sbr[clone.hris_region]) {
-                             sbr[clone.hris_region] = {};
-                        }
-
-                        sbr[clone.hris_region][a] = clone;
-
-                    } else {
-                        compiledData.missing[a] = csvInfo[a];
+                
+                for (var account in csvInfo) {
+                    if (usStaff[account]) {
+                        // HRIS data found
+                        var region = usStaff[account].Region;
+                        
+                        // Add HRIS info to the CSV entry
+                        csvInfo[account].phone = usStaff[account].Phone;
+                        csvInfo[account].email = usStaff[account].Email;
+                        csvInfo[account].hrisName = usStaff[account].Name;
+                        
+                        // Group by region -> account
+                        compiledData.staffByRegion[region] = compiledData.staffByRegion[region] || {};
+                        compiledData.staffByRegion[region][account] = csvInfo[account];
+                    } 
+                    else {
+                        // No HRIS data found for this account.
+                        compiledData.missing[account] = csvInfo[account];
                     }
                 }
-
-
+                
+                
+                // *****
+                // All the `account` indexes uses above are the staff account
+                // numbers with leading zeroes removed, and parsed into int.
+                // This helps prevent mismatches between CSV & HRIS data due to
+                // number formatting.
+                //
+                // Below this point, the sort procedures will re-index the
+                // data with the original account numbers containing 
+                // leading zeroes.
+                // *****
+                
 
                 //// sort this data by account Balance:
                 var sortedData = {
@@ -141,11 +137,11 @@ module.exports= {
 
 
                 if (done) done(sortedData);
+                dfd.resolve(sortedData);
 
             });
-//// TODO:  need a .fail(function(err){  ... }); option here since one of these could fail.
-////        this means done() needs to support: done(err, compiledData) format.
-
+            
+            return dfd;
         },
 
 
@@ -227,342 +223,6 @@ module.exports= {
                 }
             }
 
-        },
-
-
-
-        findRegionInfo: function () {
-            var self = this;
-            var dfd = $.Deferred();
-
-            // return a lookup table with all location_id =>  regionCode
-
-            this.getLocationLookup(function( err, locationLookup) {
-
-                if (err) {
-
-                    dfd.reject(err);
-
-                } else {
-
-                    //
-                    // now pull all location sub types and relate them back to their parent location_trans
-                    self.locationSubLocations(locationLookup, function(err, finalLookup) {
-                        if (err) {
-                            dfd.reject(err);
-                        } else {
-                            dfd.resolve(finalLookup);
-                        }
-                    });
-
-                }
-            });
-            return dfd;
-        },
-
-
-
-        getLocationLookup: function(done) {
-            // create a lookup with all Region Locations:  { location_id : RegionCode }
-
-            // find which location type == Region
-            HRISAssignLocationTypeTrans
-            .find({ language_code:'en', locationtype_label:'Region'})
-            .fail(function(err){
-                Log.error(LogKey+' error looking up HRISAssignLocationTypeTrans:', err);
-                done(err);
-            })
-            .then(function(locationType){
-
-                // pull all locations_data with this locationType
-                get(HRISAssignLocation, 'locationtype_id', {}, locationType, function(err, locations){
-
-                    if (err) {
-
-                        Log.error(LogKey+' error looking up HRISAssignLocation:', err);
-                        done(err);
-
-                    } else {
-
-
-                        // pull the location_tran for these locations
-                        get(HRISAssignLocationTrans, 'location_id', { language_code:'en' },  locations, function(err, trans) {
-
-                            if (err) {
-
-                                Log.error(LogKey+' error looking up HRISAssignLocationTrans:', err);
-                                done(err);
-
-                            } else {
-
-
-                                var locationLookup = lookupTable(trans, 'location_id', 'location_label');
-                                if (done) done(null, locationLookup);
-
-                            }
-
-                        });
-
-                    }
-                });
-
-                
-            });
-        },
-
-
-
-        locationSubLocations: function(lookup, done) {
-            // take the given lookup and then find all their sub locations
-            // and map the sublocations to the parent's Region Code
-
-            // convert lookup into an array of location_id's
-            var set = [];
-            for (var l in lookup) {
-                set.push(parseInt(l), 10);
-            }
-
-            var recursiveLookup = function( currentSet, cb) {
-                // currentSet {array} list of location_id's to lookup
-
-                // if we have locations to look up
-                if (currentSet.length > 0 ) {
-
-                    // pull all locations with parent_id in currentSet
-                    HRISAssignLocation.find({parent_id:currentSet})
-                    .fail(function(err){
-                        Log.error(LogKey+'error searching sub locations: ',err, ' \ncurrSet: ',currentSet);
-                        if (cb) cb(err);
-                    })
-                    .then(function(locations) {
-
-                        if (locations.length > 0 ) {
-
-                            var nextSet = [];
-                            for (var l=0; l<locations.length; l++) {
-                                var element = locations[l];
-
-                                // insert into lookup table
-                                lookup[element.location_id] = lookup[element.parent_id];
-
-                                // store this id for the next call
-                                nextSet.push(element.location_id);
-                            }
-
-                            recursiveLookup(nextSet, function(err) {
-                                if (err) {
-                                    if (cb) cb(err);
-                                } else {
-                                    if (cb) cb();
-                                }
-                            });
-
-                        } else {
-                            if (cb) cb();
-                        }
-                        
-                    });
-
-                } else {
-
-                    if (cb) cb();
-                }
-
-            };
-
-            recursiveLookup(set, function(err) {
-                if (err) {
-                    if (done) done(err);
-                } else {
-                    if (done) done(null, lookup);
-                }
-            });
-        },
-
-
-
-        findUSStaff: function(done) {
-            var dfd = $.Deferred();
-            HRISCountryData
-            .find({ country_code:'US'})
-            .fail(function(err){
-                Log.error(LogKey+'error finding countries:', err);
-console.log(err);
-                dfd.reject(err);
-            })
-            .then(function (countries) {
-
-
-                    get(HRISAccount, 'country_id', {}, countries, function(err, accounts){
-
-                        if (err) {
-                            Log.error(LogKey+'error finding account->countries:', err);
-console.log(err);
-                            dfd.reject(err);
-
-                        } else {
-
-
-                            // create a lookup:  { 'family_id' : 'account_number' }
-                            var familyID_Account = lookupTable(accounts, 'family_id', 'account_number');
-                            get(HRISRen, 'family_id', { ren_isfamilypoc:1}, accounts, function(err, ren) {
-
-                                if (err) {
-                                    Log.error(LogKey+'error finding ren->accounts:', err );
-console.log(err);
-                                    dfd.reject(err);
-
-                                } else {
-
-                                    var account_poc = {};
-                                    for (var r=0; r<ren.length; r++) {
-                                        var info = {};
-                                        info.hrisName = ren[r].ren_surname + ', ' + ren[r].ren_givenname + ' ( '+ ren[r].ren_preferredname + ' )';
-                                        info.ren_id = ren[r].ren_id;
-
-                                        var key = parseInt(familyID_Account[ren[r].family_id], 10);
-                                        account_poc[ key ] = info;
-                                    }
-
-                                    dfd.resolve(account_poc);
-
-                                }
-
-                            }); // end get(HRISRen);
-
-                        }
-
-                    }); // end get(HRISAccount);
-
-                
-
-
-            });  // end HRISCountryData.find()
-
-            return dfd;
-        },
-
-
-
-        findAssignments: function () {
-            // create a lookup to relate a ren => location_id (by assignment)
-            var dfd = $.Deferred();
-
-            HRISAssignment.find({ assignment_isprimary:1 })
-            .fail(function(err){
-                Log.error(LogKey+'error finding assignments:',err);
-                console.log(err);
-                dfd.reject(err);
-            })
-            .then( function(assignments) {
-
-                Log(LogKey+' assignments found ['+assignments.length+']');
-
-                if (assignments.length > 0 ) {
-
-                    var ren2assign = lookupTable(assignments, 'ren_id', 'team_id');
-                    get( HRISXrefTeamLocation, 'team_id', {}, assignments, function( err, tlocations) {
-                        if (err) {
-                            Log.error(LogKey+'error finding team X location:', err);
-                            console.log(err);
-                            dfd.reject(err);
-
-                        } else {
-
-
-                            var team2Loc = lookupTable(tlocations, 'team_id', 'location_id');
-                            var combinedLookup = {};
-
-                            for (var rid in ren2assign) {
-                                combinedLookup[rid] = team2Loc[ren2assign[rid]];
-                            }
-
-                            dfd.resolve(combinedLookup);
-                        }
-                    });
-
-                } else {
-
-                    dfd.resolve({});
-                }
-
-            });
-
-
-            return dfd;
-        },
-
-
-
-        findPhones: function () {
-            var dfd = $.Deferred();
-
-            // return a lookup table with all location_id =>  regionCode
-            var phoneTypes = {};
-            var phoneLookup = {};
-
-            HRISPhoneTypeTrans.find({language_code:'en'})
-            .fail(function(err) {
-                Log.error(LogKey+' error finding PHone types: ', err);
-                dfd.reject(err);
-            })
-            .then(function(types){
-
-                types.forEach(function(type) {
-                    phoneTypes[type.phonetype_id] = type.phonetype_label;
-                });
-
-                HRISPhone.find()
-                .fail(function(err){
-
-                    Log.error(LogKey+' error finding phones:', err);
-                    console.log(err);
-                    dfd.reject(err);
-                })
-                .then(function(phones){
-
-
-                    phones.forEach(function(phone) {
-
-                        var phoneNum = phone.phone_number + ' '+getPhoneTag(phoneTypes[phone.phonetype_id]);
-                        phoneLookup[phone.ren_id] = phoneNum;
-
-                    });
-
-                    dfd.resolve(phoneLookup);
-                    
-                });
-
-            });
-
-            return dfd;
-        },
-
-
-
-        findEmails: function () {
-            var dfd = $.Deferred();
-
-            // return a lookup table with all ren_id =>  email_address
-            var emailLookup = {};
-
-            HRISEmail.find({email_issecure:1})
-            .fail(function(err) {
-                Log.error(LogKey+' error finding emails:', err);
-                console.log(err);
-                dfd.reject(err);
-            })
-            .then(function(emails){
-
-                emails.forEach(function(email) {
-                    emailLookup[email.ren_id] = email.email_address;
-                });
-
-                dfd.resolve(emailLookup);
-                
-            });
-
-            return dfd;
         },
 
 
@@ -738,66 +398,6 @@ var rowNextEntry = function( csv, baseRow) {
     // if we get here, then r > csv length
     return r;  // this will stop the process.
 };
-
-
-var get = function( model, fkey, options, values, cb) {
-
-    if ((values) && (values.length > 0)) {
-
-        var listFKey = [];
-        for (var v =0; v < values.length; v++ ) {
-
-            if (values[v][fkey]) {
-                listFKey.push( values[v][fkey]);
-            }
-
-        }
-
-        options = options || {};
-        options[fkey]=listFKey;
-
-        model.find(options)
-        .fail(function(err) {
-            if (cb) cb(err, []);
-        })
-        .then(function(values) {
-            if (cb) cb(null, values);
-        });
-
-    } else {
-        if (cb) cb(null, []);
-    }
-};
-
-var lookupTable = function (values, fromKey, toKey) {
-    var table = {};
-    if ((values) && (values.length>0)) {
-        for (var v=0; v < values.length; v++) {
-            table[values[v][fromKey]] = values[v][toKey];
-        }
-    }
-    return table;
-};
-
-
-
-var getPhoneTag = function(phoneType) {
-
-    switch (phoneType.toLowerCase()) {
-        case 'mobile':
-            return '(m)';
-            break;
-        case 'home':
-            return '(h)';
-            break;
-        case 'work':
-            return '(w)';
-            break;
-    }
-
-    return '';
-};
-
 
 
 var getRenderer = function(templateObj, name) {
