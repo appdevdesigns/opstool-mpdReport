@@ -67,8 +67,8 @@ module.exports = {
     dataForRegion: function(req,res){
 
         var desiredRegion = req.param('region');
-
-
+        
+        
         AD.log('<green>StaffReportNSController.dataForRegion()</green>: region:', desiredRegion);
 
         var territoryIDs = [];
@@ -98,8 +98,12 @@ module.exports = {
                             territoryIDs.push(entry.territory_id);
                         }
                     })
-
-                    next();
+                    
+                    if (territoryIDs.length > 0) {
+                        next();
+                    } else {
+                        next(new Error('No matches in that region'));
+                    }
 
                 })
 
@@ -108,14 +112,12 @@ module.exports = {
 
             // step 2: find all the NSSRen in these territories and gather their guids
             function(next) {
-// AD.log('... finding people by territoryIDs:', territoryIDs);
-
+                
                 LegacyStewardwise.peopleByGUID({ filter:{territory_id: territoryIDs }})
                 .fail(function(err){
                     next(err);
                 })
                 .done(function(list){
-// AD.log('... people found in territories: ', list);
 
                     list.forEach(function(entry){
                         peopleGUIDs.push(entry.ren_guid);
@@ -126,13 +128,12 @@ module.exports = {
 
             // step 3: now call the analysis with these people's guids:
             function(next) {
-
+                
                 LegacyStewardwise.accountAnalysisByGUID({ guids: peopleGUIDs })
                 .fail(function(err){
                     next(err);
                 })
                 .done(function(list){
-// AD.log('... accountAnalysis:', list);
                     analysisResults = list;
                     next();
                 })
@@ -140,12 +141,11 @@ module.exports = {
             }
 
         ], function(err, results){
+            
 
             if (err) {
-// AD.log.error('... returning error:', err);
                 ADCore.comm.error(res, err, 500);
             } else {
-// AD.log('... returning results:', analysisResults);
                 ADCore.comm.success(res, analysisResults);
             }
 
