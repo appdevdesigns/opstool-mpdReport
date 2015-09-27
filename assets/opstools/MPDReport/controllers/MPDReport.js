@@ -122,7 +122,7 @@ function(){
 
 
         // Toggle between US and National staff reports
-        '.opsportal-stage-title a click': function($el, ev) {
+        '.mpdreport-us-national a click': function($el, ev) {
             this.element.find('.opsportal-stage-title a.active-btn').removeClass('active-btn');
             $el.addClass('active-btn');
             this.toggleStaffType($el.attr('href'));

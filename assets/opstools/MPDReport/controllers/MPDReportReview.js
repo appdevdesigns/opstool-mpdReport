@@ -246,7 +246,7 @@ function(){
             var busyIcon = this.element.find('.loading-indicator');
             this.loadIndicator = new AD.widgets.ad_icon_busy(busyIcon);
 
-            this.filter = this.element.find('.opsportal-filter');
+            this.filter = this.element.find('.op-filter');
 
         },
 
