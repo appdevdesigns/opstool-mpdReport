@@ -1,3 +1,6 @@
+<% if (extra.memo) { %>
+<p><%= extra.memo.replace(/\n/, '<br>') %></p>
+<% } %>
 
 <div class="jumbotron" id="jumbo">
   <div class="container">
@@ -5,6 +8,7 @@
     <h1>US Staff Account Summary</h1>
     <p>Staff account summary for US staff living in your region.</p>
     <p>Please review this information and contact any staff needing to address their MPD.</p>
+
   </div>
 </div>
 <table class="table">

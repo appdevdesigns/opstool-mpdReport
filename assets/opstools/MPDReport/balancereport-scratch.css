@@ -9,6 +9,16 @@
 .opsportal-area-tool-MPDReport a.btn {
     background-color: #000;
 }
+
+.opsportal-area-tool-MPDReport div.memo {
+    margin: 1em 0;
+}
+.opsportal-area-tool-MPDReport .memo textarea#mpd-report-memo {
+    margin: .5em auto;
+    width: 20em;
+    height: 10em;
+}
+
 td.balrep-deficit, td.balrep-months-deficit, td.balrep-12-deficit { background: #f00 !important; font-weight: bold; color: #CC9900;}
 td.balrep-warn { background: #CC9900 !important; font-weight: bold; }
 td.balrep-3-deficit { background: #ffff00 !important; font-weight: bold; }

@@ -1,3 +1,6 @@
+<% if (extra.memo) { %>
+<p><%= extra.memo.replace(/\n/, '<br>') %></p>
+<% } %>
 
 <div class="jumbotron" id="jumbo">
   <div class="container">
@@ -5,6 +8,7 @@
     <h1>US Staff Account Summary</h1>
     <p>These US Staff did not have proper assignment information in the HRIS.</p>
     <p>Please review their assignments and make sure they are properly set if they are in your Region.</p>
+
   </div>
 </div>
 <table class="table">
@@ -55,7 +59,7 @@
             <td><%= person.accountNum %></td>
             <td><%= person.hrisName %></td>
             <td><%= person.accountBal %></td>
-            <td< %- getBalanceClass(person) %> ><%= person.avgAccountBal %></td>
+            <td <%- getBalanceClass(person) %> ><%= person.avgAccountBal %></td>
             <td <%- getFieldClass(person) %> ><%= person.monthsInDeficit %></td>
             <td> ??? </td>
             <td><%= person.phone %></td>

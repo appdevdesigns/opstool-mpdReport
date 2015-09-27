@@ -184,15 +184,14 @@ module.exports = {
     emailSend: function(req, res) {
 
         if (Log == null) Log = MPDReportGen.Log;
-
         var logKey = '<green><bold>NS:Regional:</bold></green>';
-
         Log(logKey + ' ... emailSend()');
+        
+        // Optional memo note to be added to each email
+        var memo = req.param('memo') || null;
 
-//console.log(sails.config);
-
-        var templatesDir = MPDReportGen.pathTemplates(); //path.join(sails.config.appPath, 'data', 'templates_email');
-
+        var templatesDir = MPDReportGen.pathTemplates();
+        
         NSStaffProcessor.compileRegionData(function(err, regionData) {
 
             if (err) {
@@ -203,12 +202,11 @@ module.exports = {
 
             } else {
 
-
-                NSStaffProcessor.compileRenderedEmails(templatesDir, regionData, function(err, emails) {
+                var extra = { memo: memo };
+                NSStaffProcessor.compileRenderedEmails(templatesDir, regionData, extra, function(err, emails) {
 
                     if (err) {
                         ADCore.comm.error(res, err, 500);
-     //                   res.send('got an error?');
                         return;
                     }
                   
@@ -227,6 +225,11 @@ module.exports = {
                         });
                     };
 
+                    if (emails.length == 0) {
+                        res.AD.error(new Error('No reports were generated. Maybe the server config was wrong?'));
+                        return;
+                    }
+                    
                     var numSent = 0;
                     var numDone = 0;
                     for (var i=0; i<emails.length; i++) {
@@ -239,7 +242,7 @@ module.exports = {
                             numDone++;
 
                             if (err) {
-     //                           console.log(err);
+                                res.AD.error(err, 500);
                             } else {
 
                                 // wait until all operations are complete
@@ -259,37 +262,35 @@ module.exports = {
     emailSendIndividual: function(req, res) {
         
         if (Log == null) Log = MPDReportGen.Log;
-
         var logKey = '<green><bold>NS:Individual:</bold></green>';
-
         Log(logKey + ' ... emailSendIndividual()');
         
-//Log(sails.config);
-
-        var templatesDir = MPDReportGen.pathTemplates(); //path.join(sails.config.appPath, 'data', 'templates_email');
-
+        // Optional memo note to be added to each email
+        var memo = req.param('memo') || null;
+        
+        var templatesDir = MPDReportGen.pathTemplates();
+        
         NSStaffProcessor.compileStaffData(function(err, data){
-
+        
             if (err) {
                 ADCore.comm.error(res, err, 500);
                 return;
-
+            
             } else {
-
-
-                NSStaffProcessor.compileRenderedIndividualEmails(templatesDir,data, function(err, emails) {
-
-
+                
+                var extra = {
+                    memo: memo
+                };
+                NSStaffProcessor.compileRenderedIndividualEmails(templatesDir, data, extra, function(err, emails) {
+                
                     if (err) {
-                        ADCore.comm.error(res, err, 500);
-    //                    res.send('got an error?');
+                        res.AD.error(err, 500);
                         return;
                     }
-
-
+                    
+                    
                     // local sender ... waits for deferreds ...
                     var sendIt = function(email, done) {
-
                         Nodemailer.send(email)
                         .fail(function(err){
                             Log.error(logKey + ' ... sending email failed:', err);
@@ -300,37 +301,36 @@ module.exports = {
                             done(null, response);
                         });
                     }
-
-
+                    
+                    
                     var numSent = 0;
                     var numDone = 0;
                     for (var emailAddr in emails) {
-
+                    
                         var emailData = emails[emailAddr];
                         
                         Log(logKey + ' ... sending to email:'+emailAddr);
-
+                        
                         numSent++;
-
+                        
                         sendIt(emailData, function(err, response){
-
+                            
                             numDone++;
-
+                            
                             if (err) {
-     //                           Log.error(err);
+                                res.AD.error(err, 500);
                             } else {
-
+                                
                                 // wait until all operations are complete
                                 if (numDone >= numSent) {
-
+                                    
                                     Log(logKey+'<bold> ... sending complete!</bold>');
-                                    ADCore.comm.success(res, response);
-     //                               res.send(response);
+                                    res.AD.success(response);
                                 }
                             }
                         })
                     }
-
+                    
                 });
 
             }

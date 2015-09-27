@@ -16,7 +16,9 @@ function(){
 
             this.key = '#upload';
             this.initDOM();
-
+            this.dropzoneHeaders = {
+                'X-CSRF-Token': 'uninitialized'
+            };
 
             //
             // attach dropzone to the file uplader
@@ -24,9 +26,18 @@ function(){
             var myDrop = new Dropzone('#staff-report-uploader', {
                 url:'/mpdreport/upload',
                 acceptedFiles:'.csv',
-                paramName:'csvFile'
+                paramName:'csvFile',
+                headers: self.dropzoneHeaders
             });
-        
+            
+            // Rather than trying to tinker with the inner workings of Dropzone
+            // we will simply fetch the CSRF token periodically so it will
+            // always be fresh.
+            this.csrfInterval = setInterval(function() {
+                self.fetchCSRF();
+            }, 1000*60*60);
+            self.fetchCSRF();
+            
 
             myDrop.on('success', function(file, response){
                 // notify any other widgets about the file.uploaded event
@@ -37,6 +48,18 @@ function(){
             });
 
 
+        },
+        
+        
+        fetchCSRF: function() {
+            var self = this;
+            AD.comm.service.get({
+                url: '/csrfToken'
+            })
+            .done(function(data) {
+                self.dropzoneHeaders['X-CSRF-Token'] = data._csrf;
+            });
+            
         },
         
         
