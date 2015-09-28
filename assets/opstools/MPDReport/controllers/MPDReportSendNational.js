@@ -74,6 +74,10 @@ function(){
             })
             .fail(function(err){
                 console.log(err);
+                alert(err.message);
+            })
+            .done(function(){
+                alert("Completed");
             });
             
             ev.preventDefault();
