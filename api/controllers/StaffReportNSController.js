@@ -62,9 +62,36 @@ module.exports = {
      * Return a set of account analysis for the Staff in the given
      * region.
      *
-     * @return  [ 'RegionTxt1', 'RegionText2', ... 'RegionTextN'];
+     * @return  [ { staff2Obj }, { staff2Obj }, ... ];
      */
-    dataForRegion: function(req,res){
+    dataForRegion: function(req, res) {
+        var region = req.param('region');
+        
+        // TODO: add ability to filter the DB query by region
+        // It runs fast enough now that you won't notice much difference
+        // but avoiding unecessary processing is nice.
+        
+        NSStaffProcessor.compileStaffData()
+        .fail(function(err) {
+            res.AD.error(err);
+        })
+        .done(function(results) {
+            if (results.staffByRegion[region]) {
+                // Reformat into a flat array
+                var finalResult = [];
+                for (var account in results.staffByRegion[region]) {
+                    finalResult.push( results.staffByRegion[region][account] );
+                }
+                res.AD.success(finalResult);
+            } 
+            else {
+                res.AD.error(new Error('No matches for that region'));
+            }
+        });
+    },
+    
+    
+    dataForRegionOLD: function(req,res){
 
         var desiredRegion = req.param('region');
         

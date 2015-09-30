@@ -451,9 +451,6 @@ done(err);
                                     clone.avgPayroll = self.formatNumber(clone.avgPayroll);
                                     clone.accountBal = self.formatNumber(clone.accountBal);
                                     clone.baseSalary = self.formatNumber(clone.baseSalary);
-// if( renGUID == TESTING_GUID) {
-//     AD.log('... clone:', clone);
-// }
                                     var sbr = compiledData.staffByRegion;
 
                                     if (!sbr[clone.hris_region]) {
@@ -467,13 +464,6 @@ done(err);
                                 } else {
                                     Log.error(LogKey+' no hrisRenInfo['+renGUID+']  :', { renGUID:renGUID, renId:renId, nssRenId:nssRenId, a:a, territoryId:territoryId});
 
-    //                               console.log();
-    //                               console.log('*** Warn: no hrdbRenInfo for renid['+renId+'] ');
-    //                               console.log('    nssRenId:'+nssRenId);
-    //                               console.log('    a:'+a);
-    //                               console.log('    territoryId:'+territoryId);
-    //                              console.log(swRenInfo[territoryId]);
-    //                                console.log();
                                 }
                             }
                         }
@@ -506,14 +496,206 @@ done(err);
 
             return dfd;
         },
-
-
-
-
-
-
-
-        compileStaffData:function(done) {
+        
+        
+        
+        /**
+         * @param function done
+         *      Optional callback function.
+         * @return Deferred
+         */
+        compileStaffData: function(done) {
+            var self = this;
+            
+            var dfd = AD.sal.Deferred();
+            dfd.done(function(result) {
+                done && done(null, result);
+            });
+            dfd.fail(function(err) {
+                done && done(err);
+            });
+            
+            // Final result. See documentation at the top.
+            var compiledData = {
+                staffByRegion: {},
+                staff: []
+            };
+            
+            // Fiscal period from 12 months ago.
+            var fiscalPeriod = {/*
+                date: "YYYY-MM-DD",
+                period: "YYYYMM"
+            */};
+            
+            // Staff share the same account when they marry. So we keep track
+            // of staff & accounts separately until the final grouping.
+            var accounts = {};
+            var staff = [];
+            
+            
+            async.series([
+                // Fiscal period from 12 months ago
+                function(next) {
+                    LegacyStewardwise.fiscalPeriod()
+                    .fail(next)
+                    .done(function(result) {
+                        fiscalPeriod = result;
+                        next();
+                    });
+                },
+                
+                // Get NS with HRIS info
+                function(next) {
+                    LNSSRen.staffInfo()
+                    .fail(next)
+                    .done(function(list) {
+                        if (!list || !list.length) {
+                            next(new Error('No Stewardwise staff found'));
+                        }
+                        else {
+                            staff = list;
+                            next();
+                        }
+                    });
+                },
+                
+                // Get GL average salary info
+                function(next) {
+                    LNSSCoreGLTrans.avgSalary(fiscalPeriod.period)
+                    .fail(next)
+                    .done(function(results) {
+                        for (var accountNum in results) {
+                            var num = parseInt(accountNum);
+                            accounts[num] = accounts[num] || {};
+                            accounts[num].avgSalary = results[accountNum];
+                        }
+                        next();
+                    });
+                },
+                
+                // Get GL expenditure info
+                function(next) {
+                    LNSSCoreGLTrans.avgMonthlyExpenditure(fiscalPeriod.period)
+                    .fail(next)
+                    .done(function(results) {
+                        for (var accountNum in results) {
+                            var num = parseInt(accountNum);
+                            accounts[num] = accounts[num] || {};
+                            accounts[num].avgExpenditure = results[accountNum];
+                        }
+                        next();
+                    });
+                },
+                
+                // Get GL contribution info
+                function(next) {
+                    LNSSCoreGLTrans.avgLocalContrib(fiscalPeriod.period)
+                    .fail(next)
+                    .done(function(results) {
+                        for (var accountNum in results) {
+                            var num = parseInt(accountNum);
+                            accounts[num] = accounts[num] || {};
+                            accounts[num].avgLocalContrib = results[accountNum];
+                            accounts[num].localPercent = Math.round(results[accountNum] / accounts[num].avgExpenditure * 100);
+                        }
+                        next();
+                    });
+                },
+                function(next) {
+                    LNSSCoreGLTrans.avgForeignContrib(fiscalPeriod.period)
+                    .fail(next)
+                    .done(function(results) {
+                        for (var accountNum in results) {
+                            var num = parseInt(accountNum);
+                            accounts[num] = accounts[num] || {};
+                            accounts[num].avgForeignContrib = results[accountNum];
+                            accounts[num].foreignPercent = results[accountNum] / accounts[num].avgExpenditure * 100;
+                        }
+                        next();
+                    });
+                },
+                
+                // Get GL account history info
+                function(next) {
+                    LNSSCoreAccountHistory.recent12Balances()
+                    .fail(next)
+                    .done(function(results) {
+                        for (var accountNum in results) {
+                            var num = parseInt(accountNum);
+                            var balances = results[accountNum];
+                            var total = 0;
+                            accounts[num] = accounts[num] || {};
+                            accounts[num].monthsInDeficit = 0;
+                            // Count number of months in defict
+                            for (var i=0; i<12; i++) {
+                                total += balances[i];
+                                if (balances[i] < 0) {
+                                    accounts[num].monthsInDeficit += 1;
+                                }
+                            }
+                            // Compute average monthly balance
+                            accounts[num].avgAccountBal = total / 12;
+                        }
+                        next();
+                    });
+                },
+                
+                // Group staff by region & account num
+                // (some staff will be left out due to married staff with 
+                // overlapping accounts)
+                function(next) {
+                    for (var i=0; i<staff.length; i++) {
+                        var entry = staff[i];
+                        var num = parseInt(entry.accountNum);
+                        // Merge account GL info into staff entry
+                        if (accounts[num]) {
+                            for (var key in accounts[num]) {
+                                entry[key] = accounts[num][key];
+                            }
+                            // Calculate months til deficit
+                            entry.monthsTilDeficit = LegacyStewardwise.getMonthsTilDeficit({
+                                avgContributions: accounts[num].avgLocalContrib + accounts[num].avgForeignContrib,
+                                avgExpenditures: accounts[num].avgExpenditure,
+                                accountBalance: entry.accountBal
+                            });
+                        } else {
+                            entry.monthsTilDeficit = 'NA';
+                        }
+                        
+                        // Format numbers
+                        formatEntryNumbers( entry );
+                        
+                        // Group by region
+                        var region = entry.region;
+                        compiledData.staff.push(entry);
+                        compiledData.staffByRegion[region] = compiledData.staffByRegion[region] || {};
+                        if (!compiledData.staffByRegion[region][num] || entry.poc) {
+                            // Add person if account num is not shared or
+                            // if person is family point of contact.
+                            compiledData.staffByRegion[region][num] = entry;
+                        }
+                    }
+                    // Sort
+                    for (var region in compiledData.staffByRegion) {
+                        compiledData.staffByRegion[region] = self.sortObj(compiledData.staffByRegion[region], 'value');
+                    }
+                    next();
+                }
+            
+            ], function(err) {
+                if (err) {
+                    dfd.reject(err);
+                } else {
+                    dfd.resolve(compiledData);
+                }
+            });
+            
+            return dfd;
+        },
+        
+        
+        
+        compileStaffDataOLD2:function(done) {
             var self = this;
             var dfd = AD.sal.Deferred();
 
@@ -531,7 +713,6 @@ done(err);
 
                 // step 1: first gather all the Staff GUIDs in our NSS system
                 function(next) {
-// Log('... gathering staff guids:');
                     //// NOTE: leaving off guids:[]  returns all of 'em'
                     LegacyStewardwise.peopleByGUID({ filter:{nssren_isActive: 1}})
                     .fail(function(err){
@@ -541,7 +722,6 @@ done(err);
                         list.forEach(function(entry){
                             staffGUIDs.push(entry.ren_guid);
                         })
-// Log('... found '+staffGUIDs.length+' guids');
 
                         next();
                     })
@@ -551,15 +731,12 @@ done(err);
 
                 // step 2: get account analysis for those staff
                 function(next) {
-// Log('... gathering Account Analysis entries:');
                     LegacyStewardwise.accountAnalysisByGUID({guids:staffGUIDs})
                     .fail(function(err){
                         next(err);
                     })
                     .done(function(list){
                         analysisResults = list;
-// Log('... found '+list.length+' entries');
-// Log('... that look like :', list[0]);
                         next();
                     })
                 },
@@ -629,10 +806,9 @@ done(err);
             if (typeof type === 'function') {
                 temp_array.sort(type);
             } else if (type === 'value') {
-//                console.log("sorting by value");
                 temp_array.sort(function(a,b) {
-                    var accountBalA = parseFloat(obj[a].accountBal.replace(/\,/g,''));
-                    var accountBalB = parseFloat(obj[b].accountBal.replace(/\,/g,''));
+                    var accountBalA = parseFloat(String(obj[a].accountBal).replace(/\,/g,''));
+                    var accountBalB = parseFloat(String(obj[b].accountBal).replace(/\,/g,''));
                     var deficitA = obj[a].monthsTilDeficit;
                     var deficitB = obj[b].monthsTilDeficit;
                     if (obj[a].monthsTilDeficit.toString().indexOf("NA") != -1){
@@ -641,10 +817,6 @@ done(err);
                     if (obj[b].monthsTilDeficit.toString().indexOf("NA") != -1){
                         deficitB = obj[b].monthsTilDeficit.replace(/\NA/g,'9999999999999999999999');
                     }
-//console.log("accountBalA ="+accountBalA);
-//console.log("accountBalB ="+accountBalB);
-//console.log("deficitA ="+deficitA);
-//console.log("deficitB ="+deficitB);
                     //return accountBalA - accountBalB || parseInt(deficitA) - parseInt(deficitB);
                     return parseInt(deficitA) - parseInt(deficitB) || accountBalA - accountBalB;
                 });
@@ -785,7 +957,6 @@ done(err);
                     }
                     //Store rens in an object to retrieve based off territory_id
                     nssRenCoreData[rens[b].territory_id][rens[b].ren_id] = rens[b];
-//console.log("rens[b].nssren_ytdBalance = "+rens[b].nssren_ytdBalance);
                 }
                 dfd.resolve(nssRenCoreData);
             });
@@ -1236,9 +1407,6 @@ done(err);
             //Take the rows and build an array of account balance values
             var acctBalArray = this.buildAcctBalArray(accountBalRows,accountBalPeriod);
 
-// if( guid == TESTING_GUID) {
-//     AD.log('... acctBalArray:', acctBalArray);
-// }
             var year = accountBalPeriod.split("-")[0];
             var month = accountBalPeriod.split("-")[1];
 
@@ -1648,4 +1816,29 @@ done(err);
             return dfd;
         }
 
-}
+};
+
+
+var formatEntryNumbers = function(entry) {
+    var percentageFields = {
+        'localPercent': true,
+        'foreignPercent': true
+    };
+    
+    for (var field in entry) {
+        var number = entry[field];
+        if (typeof number == 'number' && !isNaN(number)) {
+            number = number.toFixed(0);
+            while (/(\d+)(\d{3})/.test(number.toString())){
+                number = number.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2');
+            }
+            if (percentageFields[field]) {
+                number += '%';
+            }
+        } 
+        else if (typeof number != 'string') {
+            number = '-';
+        }
+        entry[field] = number;
+    }
+};
