@@ -30,7 +30,7 @@ module.exports = {
         LegacyStewardwise.regionsFromTerritories()
         .fail(function(err){
 
-            ADCore.comm.error(res, err, 500);
+            res.AD.error(err, 500);
 
         })
         .done(function(list){
@@ -49,7 +49,7 @@ module.exports = {
             for (var r in regions) regionsFinal.push(r);
 
             // use our framework success response:
-            ADCore.comm.success(res, regionsFinal);
+            res.AD.success(regionsFinal);
 
         })
 
@@ -62,278 +62,172 @@ module.exports = {
      * Return a set of account analysis for the Staff in the given
      * region.
      *
-     * @return  [ 'RegionTxt1', 'RegionText2', ... 'RegionTextN'];
+     * @return  [ { staff2Obj }, { staff2Obj }, ... ];
      */
-    dataForRegion: function(req,res){
-
-        var desiredRegion = req.param('region');
-
-
-        AD.log('<green>StaffReportNSController.dataForRegion()</green>: region:', desiredRegion);
-
-        var territoryIDs = [];
-        var peopleGUIDs = [];
-
-        var analysisResults = null;
+    dataForRegion: function(req, res) {
+        var region = req.param('region');
         
-        async.series([
-
-            // step 1: first find the Territories and get the one(s) that match the given region
-            function(next) {
-
-                LegacyStewardwise.regionsFromTerritories()
-                .fail(function(err){
-
-                    AD.log.error('... error retrieving regionsFromTerritories(): ',err);
-                    next(err);
-                })
-                .done(function(list){
-
-                    // this is an [] of territories with a .region field
-                    // attached.
-
-                    // add each territory_id from entries that match our desired region
-                    list.forEach(function(entry){
-                        if (desiredRegion == entry.region) {
-                            territoryIDs.push(entry.territory_id);
-                        }
-                    })
-
-                    next();
-
-                })
-
-            },
-
-
-            // step 2: find all the NSSRen in these territories and gather their guids
-            function(next) {
-// AD.log('... finding people by territoryIDs:', territoryIDs);
-
-                LegacyStewardwise.peopleByGUID({ filter:{territory_id: territoryIDs }})
-                .fail(function(err){
-                    next(err);
-                })
-                .done(function(list){
-// AD.log('... people found in territories: ', list);
-
-                    list.forEach(function(entry){
-                        peopleGUIDs.push(entry.ren_guid);
-                    });
-                    next();
-                })
-            },
-
-            // step 3: now call the analysis with these people's guids:
-            function(next) {
-
-                LegacyStewardwise.accountAnalysisByGUID({ guids: peopleGUIDs })
-                .fail(function(err){
-                    next(err);
-                })
-                .done(function(list){
-// AD.log('... accountAnalysis:', list);
-                    analysisResults = list;
-                    next();
-                })
-
-            }
-
-        ], function(err, results){
-
-            if (err) {
-// AD.log.error('... returning error:', err);
-                ADCore.comm.error(res, err, 500);
-            } else {
-// AD.log('... returning results:', analysisResults);
-                ADCore.comm.success(res, analysisResults);
-            }
-
+        NSStaffProcessor.compileStaffData(region)
+        .fail(function(err) {
+            res.AD.error(err);
         })
-
-
-
-
-
-    },
-
-
-
-    ////
-    //// OLD Stuff Here:
-    ////
-
-    data:  function(req,res){
-
-        if (Log == null) Log = MPDReportGen.Log;
-
-        NSStaffProcessor.compileStaffData(function(err, data){
-            if (err) {
-
-                AD.log.error('... error compilingStaffData:', err);
-                ADCore.comm.error(res, err, 500);
-
-            } else {
-                Log('<green><bold>NS:</bold></green>  data() complete.');
-                res.send(data);
+        .done(function(results) {
+            if (results.staffByRegion[region]) {
+                // Reformat into a flat array
+                var finalResult = [];
+                for (var account in results.staffByRegion[region]) {
+                    finalResult.push( results.staffByRegion[region][account] );
+                }
+                res.AD.success(finalResult);
+            } 
+            else {
+                res.AD.error(new Error('No matches for that region'));
             }
-            
         });
     },
-
+    
+    
     emailSend: function(req, res) {
 
         if (Log == null) Log = MPDReportGen.Log;
-
         var logKey = '<green><bold>NS:Regional:</bold></green>';
-
         Log(logKey + ' ... emailSend()');
+        
+        // Optional memo note to be added to each email
+        var memo = req.param('memo') || null;
 
-//console.log(sails.config);
+        var templatesDir = MPDReportGen.pathTemplates();
+        
+        NSStaffProcessor.compileStaffData()
+        .fail(function(err) {
+            AD.log.error('... error compilingStaffData:', err);
+            res.AD.error(err, 500);
+        })
+        .done(function(staffData) {
 
-        var templatesDir = MPDReportGen.pathTemplates(); //path.join(sails.config.appPath, 'data', 'templates_email');
+            var extra = { memo: memo };
+            var regionData = staffData.staffByRegion;
+            NSStaffProcessor.compileRenderedEmails(templatesDir, regionData, extra, function(err, emails) {
 
-        NSStaffProcessor.compileRegionData(function(err, regionData) {
+                if (err) {
+                    res.AD.error(err, 500);
+                    return;
+                }
+              
+                // local sender ... waits for deferreds ...
+                var sendIt = function(email, done) {
 
-            if (err) {
+                    Log(logKey + ' ... sending email to:'+email.to+'    subj:'+email.subject);
 
-                AD.log.error('... error compilingRegionData:', err);
-                ADCore.comm.error(res, err, 500);
-                return;
+                    Nodemailer.send(email)
+                    .fail(function(err){
+                        Log.error(logKey+' ... error sending email:', err);
+                        MPDReportGen.emailDump(email);
+                        done(err, null);
+                    }).then(function(response){
+                        done(null, response);
+                    });
+                };
 
-            } else {
+                if (emails.length == 0) {
+                    res.AD.error(new Error('No reports were generated. Maybe the server config was wrong?'));
+                    return;
+                }
+                
+                var numSent = 0;
+                var numDone = 0;
+                for (var i=0; i<emails.length; i++) {
 
+                    var emailData = emails[i];
 
-                NSStaffProcessor.compileRenderedEmails(templatesDir, regionData, function(err, emails) {
+                    numSent++;
 
-                    if (err) {
-                        ADCore.comm.error(res, err, 500);
-     //                   res.send('got an error?');
-                        return;
-                    }
-                  
-                    // local sender ... waits for deferreds ...
-                    var sendIt = function(email, done) {
+                    sendIt(emailData, function(err, response) {
+                        numDone++;
 
-                        Log(logKey + ' ... sending email to:'+email.to+'    subj:'+email.subject);
+                        if (err) {
+                            res.AD.error(err, 500);
+                        } else {
 
-                        Nodemailer.send(email)
-                        .fail(function(err){
-                            Log.error(logKey+' ... error sending email:', err);
-                            MPDReportGen.emailDump(email);
-                            done(err, null);
-                        }).then(function(response){
-                            done(null, response);
-                        });
-                    };
-
-                    var numSent = 0;
-                    var numDone = 0;
-                    for (var i=0; i<emails.length; i++) {
-
-                        var emailData = emails[i];
-
-                        numSent++;
-
-                        sendIt(emailData, function(err, response) {
-                            numDone++;
-
-                            if (err) {
-     //                           console.log(err);
-                            } else {
-
-                                // wait until all operations are complete
-                                if (numDone >= numSent) {
-                                    Log(logKey+'<bold> ... sending complete! </bold>');
-                                    ADCore.comm.success(res, response);
-                                }
+                            // wait until all operations are complete
+                            if (numDone >= numSent) {
+                                Log(logKey+'<bold> ... sending complete! </bold>');
+                                res.AD.success(response);
                             }
-                        });
-                    }
-                });
+                        }
+                    });
+                }
+            });
 
-            } // end if err
         });
     },
+    
 
     emailSendIndividual: function(req, res) {
         
         if (Log == null) Log = MPDReportGen.Log;
-
         var logKey = '<green><bold>NS:Individual:</bold></green>';
-
         Log(logKey + ' ... emailSendIndividual()');
         
-//Log(sails.config);
-
-        var templatesDir = MPDReportGen.pathTemplates(); //path.join(sails.config.appPath, 'data', 'templates_email');
-
-        NSStaffProcessor.compileStaffData(function(err, data){
-
-            if (err) {
-                ADCore.comm.error(res, err, 500);
-                return;
-
-            } else {
-
-
-                NSStaffProcessor.compileRenderedIndividualEmails(templatesDir,data, function(err, emails) {
-
-
-                    if (err) {
-                        ADCore.comm.error(res, err, 500);
-    //                    res.send('got an error?');
-                        return;
-                    }
-
-
-                    // local sender ... waits for deferreds ...
-                    var sendIt = function(email, done) {
-
-                        Nodemailer.send(email)
-                        .fail(function(err){
-                            Log.error(logKey + ' ... sending email failed:', err);
-                            MPDReportGen.emailDump(email);
-                            done(err, null);
-                        })
-                        .then(function(response){
-                            done(null, response);
-                        });
-                    }
-
-
-                    var numSent = 0;
-                    var numDone = 0;
-                    for (var emailAddr in emails) {
-
-                        var emailData = emails[emailAddr];
-                        
-                        Log(logKey + ' ... sending to email:'+emailAddr);
-
-                        numSent++;
-
-                        sendIt(emailData, function(err, response){
-
-                            numDone++;
-
-                            if (err) {
-     //                           Log.error(err);
-                            } else {
-
-                                // wait until all operations are complete
-                                if (numDone >= numSent) {
-
-                                    Log(logKey+'<bold> ... sending complete!</bold>');
-                                    ADCore.comm.success(res, response);
-     //                               res.send(response);
-                                }
+        // Optional memo note to be added to each email
+        var memo = req.param('memo') || null;
+        
+        var templatesDir = MPDReportGen.pathTemplates();
+        
+        NSStaffProcessor.compileStaffData()
+        .fail(function(err){
+            res.AD.error(err, 500);
+            return;
+        })
+        .done(function(data){            
+            var extra = {
+                memo: memo
+            };
+            NSStaffProcessor.compileRenderedIndividualEmails(templatesDir, data, extra, function(err, emails) {
+            
+                if (err) {
+                    res.AD.error(err, 500);
+                    return;
+                }
+                
+                // local sender ... waits for deferreds ...
+                var sendIt = function(email, done) {
+                    Nodemailer.send(email)
+                    .fail(function(err){
+                        Log.error(logKey + ' ... sending email failed:', err);
+                        MPDReportGen.emailDump(email);
+                        done(err, null);
+                    })
+                    .then(function(response){
+                        done(null, response);
+                    });
+                }
+                
+                
+                var numSent = 0;
+                var numDone = 0;
+                for (var emailAddr in emails) {
+                
+                    var emailData = emails[emailAddr];
+                    Log(logKey + ' ... sending to email:'+emailAddr);
+                    numSent++;
+                    
+                    sendIt(emailData, function(err, response){
+                        numDone++;
+                        if (err) {
+                            res.AD.error(err, 500);
+                        } else {
+                            // wait until all operations are complete
+                            if (numDone >= numSent) {
+                                Log(logKey+'<bold> ... sending complete!</bold>');
+                                res.AD.success(response);
                             }
-                        })
-                    }
+                        }
+                    });
+                }
+                    
+            });
 
-                });
-
-            }
         });
     }
 

@@ -60,16 +60,24 @@ function(){
                 serviceURL = '/nsmpdreport/email/send';
             }
             
+            var $memo = self.element.find('textarea#mpd-report-memo');
+            
             self.busyIndicator.show();
-            $.ajax({
+            AD.comm.service.post({
                 url: serviceURL,
-                dataType:'json'
+                params: {
+                    memo: $memo.val()
+                }
             })
             .always(function(){
                 self.busyIndicator.hide();
             })
             .fail(function(err){
                 console.log(err);
+                alert(err.message);
+            })
+            .done(function(){
+                alert("Completed");
             });
             
             ev.preventDefault();
