@@ -30,7 +30,7 @@ module.exports = {
         LegacyStewardwise.regionsFromTerritories()
         .fail(function(err){
 
-            ADCore.comm.error(res, err, 500);
+            res.AD.error(err, 500);
 
         })
         .done(function(list){
@@ -49,7 +49,7 @@ module.exports = {
             for (var r in regions) regionsFinal.push(r);
 
             // use our framework success response:
-            ADCore.comm.success(res, regionsFinal);
+            res.AD.success(regionsFinal);
 
         })
 
@@ -67,11 +67,7 @@ module.exports = {
     dataForRegion: function(req, res) {
         var region = req.param('region');
         
-        // TODO: add ability to filter the DB query by region
-        // It runs fast enough now that you won't notice much difference
-        // but avoiding unecessary processing is nice.
-        
-        NSStaffProcessor.compileStaffData()
+        NSStaffProcessor.compileStaffData(region)
         .fail(function(err) {
             res.AD.error(err);
         })
@@ -91,123 +87,6 @@ module.exports = {
     },
     
     
-    dataForRegionOLD: function(req,res){
-
-        var desiredRegion = req.param('region');
-        
-        
-        AD.log('<green>StaffReportNSController.dataForRegion()</green>: region:', desiredRegion);
-
-        var territoryIDs = [];
-        var peopleGUIDs = [];
-
-        var analysisResults = null;
-        
-        async.series([
-
-            // step 1: first find the Territories and get the one(s) that match the given region
-            function(next) {
-
-                LegacyStewardwise.regionsFromTerritories()
-                .fail(function(err){
-
-                    AD.log.error('... error retrieving regionsFromTerritories(): ',err);
-                    next(err);
-                })
-                .done(function(list){
-
-                    // this is an [] of territories with a .region field
-                    // attached.
-
-                    // add each territory_id from entries that match our desired region
-                    list.forEach(function(entry){
-                        if (desiredRegion == entry.region) {
-                            territoryIDs.push(entry.territory_id);
-                        }
-                    })
-                    
-                    if (territoryIDs.length > 0) {
-                        next();
-                    } else {
-                        next(new Error('No matches in that region'));
-                    }
-
-                })
-
-            },
-
-
-            // step 2: find all the NSSRen in these territories and gather their guids
-            function(next) {
-                
-                LegacyStewardwise.peopleByGUID({ filter:{territory_id: territoryIDs }})
-                .fail(function(err){
-                    next(err);
-                })
-                .done(function(list){
-
-                    list.forEach(function(entry){
-                        peopleGUIDs.push(entry.ren_guid);
-                    });
-                    next();
-                })
-            },
-
-            // step 3: now call the analysis with these people's guids:
-            function(next) {
-                
-                LegacyStewardwise.accountAnalysisByGUID({ guids: peopleGUIDs })
-                .fail(function(err){
-                    next(err);
-                })
-                .done(function(list){
-                    analysisResults = list;
-                    next();
-                })
-
-            }
-
-        ], function(err, results){
-            
-
-            if (err) {
-                ADCore.comm.error(res, err, 500);
-            } else {
-                ADCore.comm.success(res, analysisResults);
-            }
-
-        })
-
-
-
-
-
-    },
-
-
-
-    ////
-    //// OLD Stuff Here:
-    ////
-
-    data:  function(req,res){
-
-        if (Log == null) Log = MPDReportGen.Log;
-
-        NSStaffProcessor.compileStaffData(function(err, data){
-            if (err) {
-
-                AD.log.error('... error compilingStaffData:', err);
-                ADCore.comm.error(res, err, 500);
-
-            } else {
-                Log('<green><bold>NS:</bold></green>  data() complete.');
-                res.send(data);
-            }
-            
-        });
-    },
-
     emailSend: function(req, res) {
 
         if (Log == null) Log = MPDReportGen.Log;
@@ -219,72 +98,70 @@ module.exports = {
 
         var templatesDir = MPDReportGen.pathTemplates();
         
-        NSStaffProcessor.compileRegionData(function(err, regionData) {
+        NSStaffProcessor.compileStaffData()
+        .fail(function(err) {
+            AD.log.error('... error compilingStaffData:', err);
+            res.AD.error(err, 500);
+        })
+        .done(function(staffData) {
 
-            if (err) {
+            var extra = { memo: memo };
+            var regionData = staffData.staffByRegion;
+            NSStaffProcessor.compileRenderedEmails(templatesDir, regionData, extra, function(err, emails) {
 
-                AD.log.error('... error compilingRegionData:', err);
-                ADCore.comm.error(res, err, 500);
-                return;
+                if (err) {
+                    res.AD.error(err, 500);
+                    return;
+                }
+              
+                // local sender ... waits for deferreds ...
+                var sendIt = function(email, done) {
 
-            } else {
+                    Log(logKey + ' ... sending email to:'+email.to+'    subj:'+email.subject);
 
-                var extra = { memo: memo };
-                NSStaffProcessor.compileRenderedEmails(templatesDir, regionData, extra, function(err, emails) {
+                    Nodemailer.send(email)
+                    .fail(function(err){
+                        Log.error(logKey+' ... error sending email:', err);
+                        MPDReportGen.emailDump(email);
+                        done(err, null);
+                    }).then(function(response){
+                        done(null, response);
+                    });
+                };
 
-                    if (err) {
-                        ADCore.comm.error(res, err, 500);
-                        return;
-                    }
-                  
-                    // local sender ... waits for deferreds ...
-                    var sendIt = function(email, done) {
+                if (emails.length == 0) {
+                    res.AD.error(new Error('No reports were generated. Maybe the server config was wrong?'));
+                    return;
+                }
+                
+                var numSent = 0;
+                var numDone = 0;
+                for (var i=0; i<emails.length; i++) {
 
-                        Log(logKey + ' ... sending email to:'+email.to+'    subj:'+email.subject);
+                    var emailData = emails[i];
 
-                        Nodemailer.send(email)
-                        .fail(function(err){
-                            Log.error(logKey+' ... error sending email:', err);
-                            MPDReportGen.emailDump(email);
-                            done(err, null);
-                        }).then(function(response){
-                            done(null, response);
-                        });
-                    };
+                    numSent++;
 
-                    if (emails.length == 0) {
-                        res.AD.error(new Error('No reports were generated. Maybe the server config was wrong?'));
-                        return;
-                    }
-                    
-                    var numSent = 0;
-                    var numDone = 0;
-                    for (var i=0; i<emails.length; i++) {
+                    sendIt(emailData, function(err, response) {
+                        numDone++;
 
-                        var emailData = emails[i];
+                        if (err) {
+                            res.AD.error(err, 500);
+                        } else {
 
-                        numSent++;
-
-                        sendIt(emailData, function(err, response) {
-                            numDone++;
-
-                            if (err) {
-                                res.AD.error(err, 500);
-                            } else {
-
-                                // wait until all operations are complete
-                                if (numDone >= numSent) {
-                                    Log(logKey+'<bold> ... sending complete! </bold>');
-                                    ADCore.comm.success(res, response);
-                                }
+                            // wait until all operations are complete
+                            if (numDone >= numSent) {
+                                Log(logKey+'<bold> ... sending complete! </bold>');
+                                res.AD.success(response);
                             }
-                        });
-                    }
-                });
+                        }
+                    });
+                }
+            });
 
-            } // end if err
         });
     },
+    
 
     emailSendIndividual: function(req, res) {
         
@@ -297,70 +174,60 @@ module.exports = {
         
         var templatesDir = MPDReportGen.pathTemplates();
         
-        NSStaffProcessor.compileStaffData(function(err, data){
-        
-            if (err) {
-                ADCore.comm.error(res, err, 500);
-                return;
+        NSStaffProcessor.compileStaffData()
+        .fail(function(err){
+            res.AD.error(err, 500);
+            return;
+        })
+        .done(function(data){            
+            var extra = {
+                memo: memo
+            };
+            NSStaffProcessor.compileRenderedIndividualEmails(templatesDir, data, extra, function(err, emails) {
             
-            } else {
+                if (err) {
+                    res.AD.error(err, 500);
+                    return;
+                }
                 
-                var extra = {
-                    memo: memo
-                };
-                NSStaffProcessor.compileRenderedIndividualEmails(templatesDir, data, extra, function(err, emails) {
+                // local sender ... waits for deferreds ...
+                var sendIt = function(email, done) {
+                    Nodemailer.send(email)
+                    .fail(function(err){
+                        Log.error(logKey + ' ... sending email failed:', err);
+                        MPDReportGen.emailDump(email);
+                        done(err, null);
+                    })
+                    .then(function(response){
+                        done(null, response);
+                    });
+                }
                 
-                    if (err) {
-                        res.AD.error(err, 500);
-                        return;
-                    }
+                
+                var numSent = 0;
+                var numDone = 0;
+                for (var emailAddr in emails) {
+                
+                    var emailData = emails[emailAddr];
+                    Log(logKey + ' ... sending to email:'+emailAddr);
+                    numSent++;
                     
-                    
-                    // local sender ... waits for deferreds ...
-                    var sendIt = function(email, done) {
-                        Nodemailer.send(email)
-                        .fail(function(err){
-                            Log.error(logKey + ' ... sending email failed:', err);
-                            MPDReportGen.emailDump(email);
-                            done(err, null);
-                        })
-                        .then(function(response){
-                            done(null, response);
-                        });
-                    }
-                    
-                    
-                    var numSent = 0;
-                    var numDone = 0;
-                    for (var emailAddr in emails) {
-                    
-                        var emailData = emails[emailAddr];
-                        
-                        Log(logKey + ' ... sending to email:'+emailAddr);
-                        
-                        numSent++;
-                        
-                        sendIt(emailData, function(err, response){
-                            
-                            numDone++;
-                            
-                            if (err) {
-                                res.AD.error(err, 500);
-                            } else {
-                                
-                                // wait until all operations are complete
-                                if (numDone >= numSent) {
-                                    
-                                    Log(logKey+'<bold> ... sending complete!</bold>');
-                                    res.AD.success(response);
-                                }
+                    sendIt(emailData, function(err, response){
+                        numDone++;
+                        if (err) {
+                            res.AD.error(err, 500);
+                        } else {
+                            // wait until all operations are complete
+                            if (numDone >= numSent) {
+                                Log(logKey+'<bold> ... sending complete!</bold>');
+                                res.AD.success(response);
                             }
-                        })
-                    }
+                        }
+                    });
+                }
                     
-                });
+            });
 
-            }
         });
     }
 

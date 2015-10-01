@@ -15,8 +15,6 @@ module.exports = {
     , 'get /nsmpdreport/regions'              : 'opstool-mpdReport/StaffReportNSController.regions'
     , 'get /nsmpdreport/dataForRegion'        : 'opstool-mpdReport/StaffReportNSController.dataForRegion'
 
-    /// old 
-    , 'get /nsmpdreport/data'                 : 'opstool-mpdReport/StaffReportNSController.data'
     , 'post /nsmpdreport/email/send'           : 'opstool-mpdReport/StaffReportNSController.emailSend'
     , 'post /nsmpdreport/email/individual/send': 'opstool-mpdReport/StaffReportNSController.emailSendIndividual'
 
