@@ -2,6 +2,7 @@
 steal(
         // List your Controller's dependencies here:
         'appdev',
+        'dropzone.js',
         '//opstools/MPDReport/views/MPDReportUpload/MPDReportUpload.ejs',
 function(){
 

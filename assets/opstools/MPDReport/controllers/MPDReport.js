@@ -2,7 +2,12 @@ steal(
     // List your Controller's dependencies here:
     'appdev',
     'GenericList.js',
-    'OpsPortal/classes/OpsTool.js',
+    'OpsPortal/classes/OpsTool.js',        
+    'opstools/MPDReport/controllers/MPDReportType.js',
+    'opstools/MPDReport/controllers/MPDReportUpload.js',
+    'opstools/MPDReport/controllers/MPDReportReview.js',
+    'opstools/MPDReport/controllers/MPDReportSend.js',
+    'opstools/MPDReport/controllers/MPDReportSendNational.js',
     '//opstools/MPDReport/views/MPDReport/MPDReport.ejs'
 ).then(
 
