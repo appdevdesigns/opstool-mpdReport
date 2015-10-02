@@ -184,7 +184,22 @@ module.exports= {
                     });
                 },
                 
-                // Get GL account history info
+                // Get short pay periods
+                // (array of period numbers 1-12 where short pay was taken)
+                function(next) {
+                    LNSSCoreGLTrans.shortPayPeriods(fiscalPeriod.period)
+                    .fail(next)
+                    .done(function(results) {
+                        for (var accountNum in results) {
+                            var num = parseInt(accountNum);
+                            accounts[num].shortPayPeriods = results[accountNum];
+                        }
+                        next();
+                    });
+                },
+                
+                // Get GL account history info.
+                // Calculate months in deficit.
                 function(next) {
                     LNSSCoreAccountHistory.recent12Balances()
                     .fail(next)
@@ -195,13 +210,21 @@ module.exports= {
                             var total = 0;
                             accounts[num] = accounts[num] || {};
                             accounts[num].monthsInDeficit = 0;
-                            // Count number of months in defict
+                            
+                            var deficitPeriods = [];
                             for (var i=0; i<12; i++) {
                                 total += balances[i];
-                                if (balances[i] < 0) {
+                                
+                                // Count number of months in defict
+                                if (balances[i] < 10) {
+                                    deficitPeriods.push( i );
                                     accounts[num].monthsInDeficit += 1;
                                 }
                             }
+                            
+                            // TODO: correlate the deficitPeriods with
+                            // the account's shortPayPeriods
+
                             // Compute average monthly balance
                             accounts[num].avgAccountBal = total / 12;
                         }
@@ -210,7 +233,7 @@ module.exports= {
                 },
                 
                 // Group staff by region & account num
-                // (some staff will be left out due to married staff with 
+                // (some staff will be left out due to married couples with 
                 // overlapping accounts)
                 function(next) {
                     for (var i=0; i<staff.length; i++) {
