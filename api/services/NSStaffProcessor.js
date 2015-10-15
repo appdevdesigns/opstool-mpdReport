@@ -1,13 +1,13 @@
 var path = require('path');
 var AD = require('ad-utils');
-
-
-//// Node-Email-Templates:
-var emailTemplates = require('email-templates');
+var async = require('async');
 
 //// NOTE: at loading time, MPDReportGen might not be available yet.
 ////       so for now set to null and reassign before we use it.
 var emailOptions = null;
+
+// How many emails to queue at the same time.
+var MAX_CONCURRENT = 5;
 
 var Log = null;
 var LogKey = '<green><bold>NSStaffProcessor:</bold></green>';
@@ -330,93 +330,41 @@ module.exports= {
 
 
     
-    // @param string templatesDir
     // @param object regionData
     //     Basic object containing staff data grouped by region
     //     See compileStaffData() .staffByRegion
     // @param object extra
     //     Basic object containing any extra data to be added to the email
-    // @param function done
-    //     Callback function.
-    compileRenderedEmails: function(templatesDir, regionData, extra, done) {
+    // @return Deferred
+    compileRenderedEmails: function(regionData, extra) {
         var dfd = AD.sal.Deferred();
-
-        // load regional email addresses
-        var emailDefs = sails.config.opstool_mpdReport.ns.emails;
-
         if (Log == null) Log = MPDReportGen.Log;
+        var numEmails = 0;
+        
+        // Iterate over each region
+        // region == regionData[region]
+        async.forEachOf(regionData, function(people, region, next) {
+            
+            EmailNotifications.trigger('mpdreport.ns.region.'+(region.toLowerCase()), {
+                variables: {
+                    people: people,
+                    extra: extra
+                },
+                to: []
+            })
+            .fail(function(err){
+                Log('Error queueing NS MPD email for region: ' + region);
+                next(err);
+            })
+            .done(function(){
+                numEmails += 1;
+                Log('Queued NS MPD email for region: ' + region);
+                next();
+            });
 
-        var renderedEmails = [];
-
-        emailTemplates(templatesDir, function(err, template) {
-
-            if (err) {
-                Log.error(LogKey+' error getting template: ', err);
-                if (done) done(err, null);
-                dfd.reject(err);
-
-            } else {
-
-                template('nsstaffAccount', true, function(err, renderEmail){
-
-                    if (err) {
-
-                        Log.error(LogKey+' error getting renderer: ', err);
-                        if (done) done(err, null);
-                        dfd.reject(err);
-
-                    } else {
-
-                        for (var region in regionData) {
-                            
-                            var emailAddr = emailDefs[region];
-                            if (!emailAddr) {
-                                //Log.error(LogKey, 'No email address for region: [' + region + ']');
-                                console.log('No email address for region: [' + region + ']');
-                                continue;
-                            }
-                            
-                            // NOTE: this is NOT asynchronous...
-                            var data = {
-                                people: regionData[region],
-                                extra: extra
-                            };
-                            renderEmail(data, templatesDir, function(err, html, text) {
-
-                                if (err) {
-                                    Log.error(LogKey+' error rendering email:', err);
-                                    if (done) done(err, null);
-                                    dfd.reject(err);
-                                    return;
-
-                                } else {
-
-                                    if (emailOptions == null) { emailOptions = MPDReportGen.emailOptionsNS };
-                                    
-                                    // Find the name of the email distribution list to be used in the subject line
-                                    var emailName = MPDReportGen.parseAddressForName(emailAddr);
-
-                                    var email = {
-                                            from: emailOptions.From(),
-                                            to: emailOptions.To(emailAddr),
-                                            cc: emailOptions.CC(),
-                                            bcc: emailOptions.BCC(),
-                                            subject: 'Current: ' + region + ' NS Staff Account Info ('+emailName+')',
-                                            html: html,
-                                            text: text
-                                    };
-                                    renderedEmails.push( email );
-                                }
-                            });
-
-                        } // next region
-
-                        if (done) done(null, renderedEmails);
-                        dfd.resolve(renderedEmails);
-
-                    } // end if err
-                });
-            } // end if err
+        }, function(err) {
+            if (err) dfd.reject(err);
+            else dfd.resolve(numEmails);
         });
 
         return dfd;
@@ -429,81 +377,35 @@ module.exports= {
     //     by compileStaffData().
     // @param object extra
     //     Basic object containing any extra data to add to the email
-    // @param function done
-    //     Callback function.
-    compileRenderedIndividualEmails: function(templatesDir, staffData, extra, done) {
+    compileRenderedIndividualEmails: function(staffData, extra) {
         var dfd = AD.sal.Deferred();
-
+        var numEmails = 0;
         if (Log == null) Log = MPDReportGen.Log;
-
-        var renderedEmails = {};
-
-        emailTemplates(templatesDir, function(err, template) {
-
-            if (err) {
-                Log.error(LogKey+' error getting template :', err);
-                if (done) done(err, null);
-                dfd.reject(err);
-
-            } else {
-
-                template('nsstaffIndAccount', true, function(err, renderEmail){
-
-                    if (err) {
-
-                        Log.error(LogKey+' error getting renderer: ', err);
-                        if (done) done(err, null);
-                        dfd.reject(err);
-
-                    } else {
-
-                        //
-                        for (var a=0;a<staffData.staff.length;a++) {
-                            
-                            // NOTE: this is NOT asynchronous...
-                            var data = {
-                                person: staffData.staff[a],
-                                extra: extra
-                            };
-                            renderEmail(data, templatesDir, function(err, html, text) {
-
-                                if (err) {
-                                    console.log(err);
-                                    //Log.error(LogKey+' error rendering email:', err);
-                                    if (done) done(err, null);
-                                    dfd.reject(err);
-                                    return;
-
-                                } else {
-
-                                    if (emailOptions == null) { emailOptions = MPDReportGen.emailOptionsNS };
-                                    
-                                    var email = {
-                                            from: emailOptions.From(),
-                                            to: emailOptions.To(staffData.staff[a].email),
-                                            /*
-                                            // No copies for individual reports
-                                            cc: emailOptions.CC(),
-                                            bcc: emailOptions.BCC(),
-                                            */
-                                            subject:'NS Staff Account Info ('+staffData.staff[a].name+')',
-                                            html:html,
-                                            text:text
-                                    };
-                                    renderedEmails[a] = email;
-                                }
-                            });
-
-
-                        } // next region
-
-                        if (done) done(null, renderedEmails);
-                        dfd.resolve(renderedEmails);
-
-                    } // end if err
-                })
-            } // end if err
-        })
+        
+        async.eachLimit(staffData.staff, MAX_CONCURRENT, function(person, next) {
+            
+            EmailNotifications.trigger('mpdreport.ns.individual', {
+                variables: {
+                    person: person,
+                    extra: extra
+                },
+                to: [ person.email ]
+            })
+            .fail(function(err){
+                //Log('Error queueing NS MPD individual email');
+                next(err);
+            })
+            .done(function(){
+                //Log('Queued NS MPD individual email:', person.name);
+                numEmails += 1;
+                next();
+            });
+            
+        }, function(err) {
+            Log('Queued ' + numEmails + ' emails');
+            if (err) dfd.reject(err);
+            else dfd.resolve(numEmails);
+        });
 
         return dfd;
     }
