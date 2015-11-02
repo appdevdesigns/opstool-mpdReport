@@ -201,32 +201,65 @@ module.exports= {
             // Get GL account history info.
             // Calculate months in deficit.
             function(next) {
-                LNSSCoreAccountHistory.recent12Balances()
+                // Make an array of the recent 12 periods.
+                // Start with the fiscal period from 12 months ago
+                var periods = [ fiscalPeriod.period ];
+                // Add on the 11 periods after that
+                while (periods.length < 12) {
+                    var p = periods[ periods.length-1 ];
+                    var year = parseInt(p.slice(0, 4));
+                    var month = parseInt(p.slice(4, 6));
+                    month += 1;
+                    if (month > 12) {
+                        // Month rollover to 01
+                        periods.push( String(year+1) + '01' );
+                    } else if (month < 10) {
+                        // Single digit month
+                        periods.push( String(year) + '0' + String(month) );
+                    } else {
+                        // Double digit month
+                        periods.push( String(year) + String(month) );
+                    }
+                }
+                
+                LNSSCoreAccountHistory.balanceForPeriods(periods)
                 .fail(next)
                 .done(function(results) {
                     for (var accountNum in results) {
                         var num = parseInt(accountNum);
                         var balances = results[accountNum];
-                        var total = 0;
                         accounts[num] = accounts[num] || {};
                         accounts[num].monthsInDeficit = 0;
                         
-                        var deficitPeriods = [];
-                        for (var i=0; i<12; i++) {
-                            total += balances[i];
+                        accounts[num].deficits = {
+                        /*
+                            <period>: <balance>,
+                            '201505': 12345,
+                            ...
+                        */
+                        };
+                        
+                        var shortPeriods = accounts[num].shortPayPeriods || [];
+                        var periodCount = 0;
+                        var total = 0;
+                        
+                        for (var period in balances) {
+                            var thisBalance = balances[period];
+                            periodCount += 1;
+                            total += thisBalance;
                             
                             // Count number of months in defict
-                            if (balances[i] < 10) {
-                                deficitPeriods.push( i );
+                            var isLowBalance = thisBalance < 10;
+                            var isShortPay = shortPeriods.indexOf(period) >= 0;
+                            if (isLowBalance || isShortPay) {
                                 accounts[num].monthsInDeficit += 1;
+                                accounts[num].deficits[ period ] = thisBalance;
                             }
                         }
                         
-                        // TODO: correlate the deficitPeriods with
-                        // the account's shortPayPeriods
 
                         // Compute average monthly balance
-                        accounts[num].avgAccountBal = total / 12;
+                        accounts[num].avgAccountBal = total / periodCount;
                     }
                     next();
                 });
@@ -444,9 +477,16 @@ var formatEntryNumbers = function(entry) {
                 number += '%';
             }
         } 
-        else if (typeof number != 'string') {
-            // null, undefined, and NaN
-            number = '-';
+        else {
+            switch (typeof number) {
+                case 'string':
+                case 'object':
+                    break;
+                default:
+                    // null, undefined, and NaN
+                    number = '-';
+                    break;
+            }
         }
         entry[field] = number;
     }
