@@ -36,6 +36,20 @@ arryDataItems.forEach(function(data){
         if (field == 'email') {
     %>                            <td field="<%=field%>"><a href="mailto:<%= value %>"><%= value %></a></td>
     <%
+        } else if (field == 'monthsInDeficit' && value > 0) {
+            var deficitsString = '';
+            if (data.deficits) {
+                var deficitsList = [];
+                for (var period in data.deficits) {
+                    deficitsList.push('<b>'+period+'</b>: ' + data.deficits[period]);
+                }
+                deficitsString = deficitsList.join(',<br>');
+            }
+            %>
+                                <td class="balrep-deficit" field="<%= field %>" title="<%= deficitsString %>">
+                                    <%= value %>
+                                </td>
+            <%
         } else {
 
             // figure out any class attachments.
@@ -49,11 +63,6 @@ arryDataItems.forEach(function(data){
             // when accountBal < 0 then should be red
             if ((field == 'accountBal') && ( value < 0)) {
                 rowClass = 'balrep-deficit';
-            }
-
-            // when monthsInDeficit > 0 then should be red
-            if ((field == 'monthsInDeficit') && ( value > 0)) {
-                rowClass = 'balrep-months-deficit';
             }
 
     %>                            <td class="<%== rowClass %>" field="<%=field%>"><%= data[field] %></td>

@@ -202,7 +202,7 @@ function(){
         
         
 
-        displayData: function (regionKey) {
+        displayData: function(regionKey) {
             var tableData;
             
             // Default region for US / National staff
@@ -231,6 +231,12 @@ function(){
             $table.html(can.view(this.options.templateTable, {
                 dataSet:tableData
             }));
+            
+            // Init Bootstrap tooltips
+            $table.find('td.balrep-deficit[title]').tooltip({
+                placement: 'right',
+                container: 'body'
+            });
 
         },
 
