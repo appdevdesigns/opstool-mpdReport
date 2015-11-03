@@ -152,6 +152,56 @@ module.exports = {
             });
 
         });
+    },
+    
+    
+    /**
+     * GET /opstool-mpdReport/StaffReportNS/incomeAndExpenditure?account=:account
+     */
+    incomeAndExpenditure: function(req, res) {
+        
+        var results = [];
+        var period; // fiscal period from 12 months ago
+        var account = req.param('account') || '';
+        
+        async.series([
+            function(next) {
+                account = account.replace(/\D/g, '')
+                if (!account.match(/^10\d\d\d\d$/)) {
+                    next(new Error('Invalid staff account number'));
+                }
+                else {
+                    next();
+                }
+            },
+            
+            function(next) {
+                // Find the starting fiscal period
+                LNSSCoreGLTrans.getPastPeriod(12)
+                .fail(next)
+                .done(function(data) {
+                    period = data;
+                    next();
+                });
+            },
+            
+            function(next) {
+                LNSSCoreGLTrans.monthlyIncomeExpenditure(period, account)
+                .fail(next)
+                .done(function(data) {
+                    results = data;
+                    next();
+                });
+            }
+        
+        ], function(err) {
+            if (err) {
+                res.AD.error(err);
+            } else {
+                res.AD.success(results);
+            }
+        });
+        
     }
 
 };

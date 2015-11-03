@@ -15,12 +15,15 @@
                             <th>Months until Deficit</th>
                             <th>Phone</th>
                             <th>Email</th>
+                            <% if (canDrillDown) { %>
+                            <th>I&amp;E</th>
+                            <% } %>
                         </tr>
                     </thead>
                     <tbody>
 
 <%
-var fields = [ 'accountNum', 'name', 'accountBal', 'avgAccountBal', 'monthsInDeficit', 'monthsTilDeficit', 'phone', 'email' ];
+var fields = [ 'accountNum', 'name', 'accountBal', 'avgAccountBal', 'monthsInDeficit', 'monthsTilDeficit', 'phone', 'email', 'I&E' ];
 
 // foreach row 
 arryDataItems.forEach(function(data){
@@ -36,6 +39,14 @@ arryDataItems.forEach(function(data){
         if (field == 'email') {
     %>                            <td field="<%=field%>"><a href="mailto:<%= value %>"><%= value %></a></td>
     <%
+        } else if (field == 'I&E') {
+            if (canDrillDown) {
+            %>
+                                <td class="income-expenditure">
+                                    <a href="#" account="<%= data.accountNum %>" class="btn">...</a>
+                                </td>
+            <%
+            }
         } else if (field == 'monthsInDeficit' && value > 0) {
             var deficitsString = '';
             if (data.deficits) {

@@ -6,6 +6,7 @@ steal(
         '//opstools/MPDReport/views/MPDReportReview/MPDReportReview.ejs',
         '//opstools/MPDReport/views/MPDReportReview/filter.ejs',
         '//opstools/MPDReport/views/MPDReportReview/table.ejs',
+        '//opstools/MPDReport/views/MPDReportReview/iAndE.ejs',
 
 function(){
 
@@ -18,7 +19,8 @@ function(){
             this.options = AD.defaults({
                     templateDOM: '//opstools/MPDReport/views/MPDReportReview/MPDReportReview.ejs',
                     templateFilter: '//opstools/MPDReport/views/MPDReportReview/filter.ejs',
-                    templateTable: '//opstools/MPDReport/views/MPDReportReview/table.ejs'
+                    templateTable: '//opstools/MPDReport/views/MPDReportReview/table.ejs',
+                    templateIncomeExpenditure: '//opstools/MPDReport/views/MPDReportReview/iAndE.ejs'
             }, options);
             
 //// TODO: Multilingual & call _super() on init.
@@ -204,6 +206,8 @@ function(){
 
         displayData: function(regionKey) {
             var tableData;
+            var self = this;
+            var canDrillDown = false;
             
             // Default region for US / National staff
             if (typeof regionKey == 'undefined') {
@@ -221,23 +225,66 @@ function(){
                 tableData = this.reportData.staffByRegion[regionKey];
             }
             
+            // National staff have I&E info that can be drilled down to
+            if (this.toolState.staffType == '#NATIONAL') {
+                canDrillDown = true;
+            }
+            
             // Update the tag buttons
             this.updateFilterTag(regionKey);
             
             var $table = this.element.find('.op-table-container');
             
             if (!tableData) return;
-
+            tableData.canDrillDown = canDrillDown;
+            
             $table.html(can.view(this.options.templateTable, {
-                dataSet:tableData
+                dataSet: tableData,
+                canDrillDown: canDrillDown
             }));
             
-            // Init Bootstrap tooltips
+            // Init Bootstrap tooltips for "months in deficit"
             $table.find('td.balrep-deficit[title]').tooltip({
                 placement: 'right',
                 container: 'body'
             });
-
+            
+            // Init drill down button for I&E details
+            if (canDrillDown) {
+                $table.find('td.income-expenditure a[account]').on('click', function(ev) {
+                    var account = $(this).attr('account');
+                    
+                    AD.comm.service.get({ 
+                        url: '/opstool-mpdReport/StaffReportNS/incomeAndExpenditure',
+                        params: { "account": account }
+                    })
+                    .fail(function(err){
+                        console.log(arguments);
+                    })
+                    .done(function(data){
+                        var template = can.view(self.options.templateIncomeExpenditure, {
+                            dataSet: data,
+                            accountNum: account
+                        });
+                        var html = template.firstChild.innerHTML;
+                        var $div = $(html);
+                        $div.html();
+                        $div.modal({ 
+                            backdrop: true,
+                            show: true
+                        });
+                        // Destroy the div when it is dismissed
+                        $div.on('hidden.bs.modal', function() {
+                            $div.remove();
+                            delete $div;
+                        });
+                        
+                    });
+                    
+                    ev.preventDefault();
+                    return false;
+                });
+            }
         },
 
 

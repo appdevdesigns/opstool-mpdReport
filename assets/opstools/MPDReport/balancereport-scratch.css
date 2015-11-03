@@ -1,6 +1,6 @@
 #balrep-type-list { float: none; text-align: center; margin: 3em auto; }
 #balrep-type-list > li { float: none; display: inline; }
-#balrep-type-list li a, #balrep-type-list li a:hover { 
+#balrep-type-list li a, #balrep-type-list li a:hover {
 	display: inline-block; width: 150px; height: 150px; border-radius: 50%; background-color: #737373; line-height: 150px; color: #fff; text-decoration: none; margin: 0 30px; font-weight: bold;
 }
 #balrep-type-list li a { opacity: 0.75; }
@@ -17,6 +17,15 @@
     margin: .5em auto;
     width: 20em;
     height: 10em;
+}
+
+.balrep-income-expenditure.modal-content {
+  padding: 1em;
+}
+
+.balrep-income-expenditure table th,
+.balrep-income-expenditure table td {
+  padding: .3em 1em;
 }
 
 td.balrep-deficit, td.balrep-months-deficit, td.balrep-12-deficit { background: #f00 !important; font-weight: bold; color: #CC9900;}
@@ -36,7 +45,7 @@ td.balrep-3-deficit { background: #ffff00 !important; font-weight: bold; }
   margin-top: 1.5em;
 }
 
-.balrep-send-container .balrep-send { 
+.balrep-send-container .balrep-send {
 	border: 1px solid transparent;
 	position: relative;
 	background-color: transparent;
@@ -45,7 +54,7 @@ td.balrep-3-deficit { background: #ffff00 !important; font-weight: bold; }
 	background-position: top center;
 	background-size: auto 100px;
 	width: 100% !important;
-	min-height: 100% !important; 
+	min-height: 100% !important;
 	opacity: 0.5;
 }
 
