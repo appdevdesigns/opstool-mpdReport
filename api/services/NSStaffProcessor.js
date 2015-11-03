@@ -91,11 +91,8 @@ module.exports= {
             staff: []
         };
         
-        // Fiscal period from 12 months ago.
-        var fiscalPeriod = {/*
-            date: "YYYY-MM-DD",
-            period: "YYYYMM"
-        */};
+        // Fiscal period from 12 months ago YYYYMM
+        var fiscalPeriod;
         
         // Staff share the same account when they marry. So we keep track
         // of staff & accounts separately until the final grouping.
@@ -106,7 +103,7 @@ module.exports= {
         async.series([
             // Fiscal period from 12 months ago
             function(next) {
-                LegacyStewardwise.fiscalPeriod()
+                LNSSCoreGLTrans.getPastPeriod(12)
                 .fail(next)
                 .done(function(result) {
                     fiscalPeriod = result;
@@ -131,7 +128,7 @@ module.exports= {
             
             // Get GL average salary info
             function(next) {
-                LNSSCoreGLTrans.avgSalary(fiscalPeriod.period)
+                LNSSCoreGLTrans.avgSalary(fiscalPeriod)
                 .fail(next)
                 .done(function(results) {
                     for (var accountNum in results) {
@@ -145,7 +142,7 @@ module.exports= {
             
             // Get GL expenditure info
             function(next) {
-                LNSSCoreGLTrans.avgMonthlyExpenditure(fiscalPeriod.period)
+                LNSSCoreGLTrans.avgMonthlyExpenditure(fiscalPeriod)
                 .fail(next)
                 .done(function(results) {
                     for (var accountNum in results) {
@@ -159,7 +156,7 @@ module.exports= {
             
             // Get GL income info
             function(next) {
-                LNSSCoreGLTrans.avgMonthlyIncome(fiscalPeriod.period)
+                LNSSCoreGLTrans.avgMonthlyIncome(fiscalPeriod)
                 .fail(next)
                 .done(function(results) {
                     for (var accountNum in results) {
@@ -173,7 +170,7 @@ module.exports= {
             
             // Get GL contribution info
             function(next) {
-                LNSSCoreGLTrans.avgLocalContrib(fiscalPeriod.period)
+                LNSSCoreGLTrans.avgLocalContrib(fiscalPeriod)
                 .fail(next)
                 .done(function(results) {
                     for (var accountNum in results) {
@@ -186,7 +183,7 @@ module.exports= {
                 });
             },
             function(next) {
-                LNSSCoreGLTrans.avgForeignContrib(fiscalPeriod.period)
+                LNSSCoreGLTrans.avgForeignContrib(fiscalPeriod)
                 .fail(next)
                 .done(function(results) {
                     for (var accountNum in results) {
@@ -202,7 +199,7 @@ module.exports= {
             // Get short pay periods
             // (array of period numbers 1-12 where short pay was taken)
             function(next) {
-                LNSSCoreGLTrans.shortPayPeriods(fiscalPeriod.period)
+                LNSSCoreGLTrans.shortPayPeriods(fiscalPeriod)
                 .fail(next)
                 .done(function(results) {
                     for (var accountNum in results) {
@@ -218,10 +215,10 @@ module.exports= {
             function(next) {
                 // Make an array of the recent 12 periods.
                 // Start with the fiscal period from 12 months ago
-                var periods = [ fiscalPeriod.period ];
-                // Add on the 11 periods after that
+                var p = String(fiscalPeriod);
+                var periods = [];
+                // Add on the 12 periods after that
                 while (periods.length < 12) {
-                    var p = periods[ periods.length-1 ];
                     var year = parseInt(p.slice(0, 4));
                     var month = parseInt(p.slice(4, 6));
                     month += 1;
@@ -235,6 +232,7 @@ module.exports= {
                         // Double digit month
                         periods.push( String(year) + String(month) );
                     }
+                    p = periods[ periods.length-1 ];
                 }
                 
                 LNSSCoreAccountHistory.balanceForPeriods(periods)
