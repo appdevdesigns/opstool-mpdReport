@@ -72,7 +72,8 @@ module.exports= {
      *          phone           : The staff's current phone (mobile)
      *          email           : The staff's current secure email address
      *          hris_region     : The staff's region info
-     *          avgExpenditure  : The average amount leaving their account over the past 12 months, 
+     *          avgExpenditure  : The average amount leaving their account over the past 12 months
+     *          avgIncome       : The average amount entering their account over the past 12 months
      *      }
      *
      * @param string region
@@ -151,6 +152,20 @@ module.exports= {
                         var num = parseInt(accountNum);
                         accounts[num] = accounts[num] || {};
                         accounts[num].avgExpenditure = results[accountNum];
+                    }
+                    next();
+                });
+            },
+            
+            // Get GL income info
+            function(next) {
+                LNSSCoreGLTrans.avgMonthlyIncome(fiscalPeriod.period)
+                .fail(next)
+                .done(function(results) {
+                    for (var accountNum in results) {
+                        var num = parseInt(accountNum);
+                        accounts[num] = accounts[num] || {};
+                        accounts[num].avgIncome = results[accountNum];
                     }
                     next();
                 });
@@ -279,8 +294,8 @@ module.exports= {
                         }
                         // Calculate months until deficit
                         entry.monthsTilDeficit = LegacyStewardwise.getMonthsTilDeficit({
-                            avgContributions: entry.avgLocalContrib + entry.avgForeignContrib,
-                            avgExpenditures: entry.avgExpenditure,
+                            avgIncome: entry.avgIncome,
+                            avgExpenditure: entry.avgExpenditure,
                             accountBalance: entry.accountBal
                         });
                     } else {
