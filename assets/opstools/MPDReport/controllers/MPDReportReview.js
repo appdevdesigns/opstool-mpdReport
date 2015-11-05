@@ -236,7 +236,6 @@ function(){
             var $table = this.element.find('.op-table-container');
             
             if (!tableData) return;
-            tableData.canDrillDown = canDrillDown;
             
             $table.html(can.view(this.options.templateTable, {
                 dataSet: tableData,
@@ -268,7 +267,6 @@ function(){
                         });
                         var html = template.firstChild.innerHTML;
                         var $div = $(html);
-                        $div.html();
                         $div.modal({ 
                             backdrop: true,
                             show: true

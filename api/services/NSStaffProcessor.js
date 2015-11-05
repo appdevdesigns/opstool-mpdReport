@@ -61,6 +61,7 @@ module.exports= {
      *          baseSalary      : The staff's base monthly salary,
      *          chineseName     : The staff's chinese name
      *          accountBal      : The staff's current account balance 
+     *          estimatedBal    : The staff's estimated account balance after current transactions
      *          avgPayroll      : The average of staff's last 12 payroll salaries paid
      *          avgAccountBal   : The average of staff's last 12 account balances
      *          monthsInDeficit : The # months in last 12 months that account balance < 0
@@ -123,6 +124,31 @@ module.exports= {
                         staff = list;
                         next();
                     }
+                });
+            },
+            
+            // Get current transaction totals
+            function(next) {
+                async.forEachLimit(staff, 1, function(ren, ok) {
+                    LNSSRen.currentTransactions({ nssrenID: ren.nssren_id })
+                    .fail(next)
+                    .done(function(transactions) {
+                        var num = parseInt(ren.accountNum);
+                        accounts[num] = accounts[num] || {};
+                        accounts[num].currentDebit = accounts[num].currentDebit || 0;
+                        accounts[num].currentCredit = accounts[num].currentCredit || 0;
+                        
+                        for (var type in transactions) {
+                            for (var i=0; i<transactions[type].length; i++) {
+                                accounts[num].currentDebit += transactions[type][i].debit;
+                                accounts[num].currentCredit += transactions[type][i].credit;
+                            }
+                        }
+                        ok();
+                    });
+                }, function(err) {
+                    if (err) next(err);
+                    else next();
                 });
             },
             
@@ -296,6 +322,10 @@ module.exports= {
                             avgExpenditure: entry.avgExpenditure,
                             accountBalance: entry.accountBal
                         });
+                        // Calculate estimated current account balance
+                        entry.estimatedBal = entry.accountBal
+                            + entry.currentCredit
+                            - entry.currentDebit;
                     } else {
                         entry.monthsTilDeficit = 'NA';
                     }
