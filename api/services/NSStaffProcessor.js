@@ -121,6 +121,16 @@ module.exports= {
                         next(new Error('No Stewardwise staff found'));
                     }
                     else {
+                        // Combine the base salaries of married couples who 
+                        // share the same account number.
+                        for (var i=0; i<list.length; i++) {
+                            var num = parseInt(list[i].accountNum);
+                            accounts[num] = accounts[num] || {};
+                            accounts[num].baseSalary = accounts[num].baseSalary || 0;
+                            accounts[num].baseSalary += list[i].baseSalary;
+                        }
+                        
+                        // Will be used in further calculations below
                         staff = list;
                         next();
                     }
@@ -339,7 +349,7 @@ module.exports= {
                     // Group by region
                     var region = entry.region;
                     compiledData.staffByRegion[region] = compiledData.staffByRegion[region] || {};
-                    if (!compiledData.staffByRegion[region][num] || entry.poc) {
+                    if (!compiledData.staffByRegion[region][num] || entry.isPOC) {
                         // Add person if account num is not shared or
                         // if person is family point of contact.
                         compiledData.staffByRegion[region][num] = entry;
