@@ -45,6 +45,11 @@ module.exports= {
      *                  'accountNumN' : { staff data packet N }
      *              }
      *          },
+     *          staffByAccount: {
+     *              'accountNum1': { staff data packet 1 },
+     *              'accountNum2': { staff data packet 2 },
+     *              ...
+     *          },
      *          staff:[
      *              { staff data packet 1 },
      *              { staff data packet 1 },
@@ -89,6 +94,7 @@ module.exports= {
         // Final result. See documentation at the top.
         var compiledData = {
             staffByRegion: {},
+            staffByAccount: {},
             staff: []
         };
         
@@ -99,6 +105,21 @@ module.exports= {
         // of staff & accounts separately until the final grouping.
         var accounts = {};
         var staff = [];
+        
+        var combine = function(str1, str2) {
+            str1 = str1 || '';
+            str2 = str2 || '';
+            if (str1 == str2) {
+                return str1;
+            }
+            else if (str1.length && str2.length) {
+                return str1 + ', ' + str2;
+            } 
+            else {
+                // One of the strings was empty. Don't use the comma.
+                return str1 + str2;
+            }
+        }
         
         
         async.series([
@@ -121,13 +142,27 @@ module.exports= {
                         next(new Error('No Stewardwise staff found'));
                     }
                     else {
-                        // Combine the base salaries of married couples who 
-                        // share the same account number.
+                        // Combine info of married couples who share the same
+                        // account number.
                         for (var i=0; i<list.length; i++) {
                             var num = parseInt(list[i].accountNum);
                             accounts[num] = accounts[num] || {};
+                            
+                            // Sum their base salaries
                             accounts[num].baseSalary = accounts[num].baseSalary || 0;
                             accounts[num].baseSalary += list[i].baseSalary;
+                            
+                            // Concatenate their names & contact info
+                            var fields = ['name', 'chineseName', 'phone', 'email'];
+                            fields.forEach(function(field) {
+                                accounts[num][field] = accounts[num][field] || '';
+                                if (list[i].isPOC) {
+                                    // POC info goes in front
+                                    accounts[num][field] = combine(list[i][field], accounts[num][field]);
+                                } else {
+                                    accounts[num][field] = combine(accounts[num][field], list[i][field]);
+                                }
+                            });
                         }
                         
                         // Will be used in further calculations below
@@ -315,8 +350,8 @@ module.exports= {
             },
             
             // Group staff by region & account num
-            // (some staff will be left out due to married couples with 
-            // overlapping accounts)
+            // (if multiple staff share the same account num, only the one
+            // designated as family point of contact will be used)
             function(next) {
                 for (var i=0; i<staff.length; i++) {
                     var entry = staff[i];
@@ -344,14 +379,22 @@ module.exports= {
                     formatEntryNumbers( entry );
                     
                     // Flat list of all staff
+                    // (includes staff with overlapping account numbers)
                     compiledData.staff.push(entry);
                     
-                    // Group by region
+                    // Staff grouped by account number
+                    // (only one staff per account number)
+                    if (!compiledData.staffByAccount[num] || entry.isPOC) {
+                        // family point of contact takes priority
+                        compiledData.staffByAccount[num] = entry;
+                    }
+                    
+                    // Staff grouped by region
+                    // (only one staff per account number)
                     var region = entry.region;
                     compiledData.staffByRegion[region] = compiledData.staffByRegion[region] || {};
                     if (!compiledData.staffByRegion[region][num] || entry.isPOC) {
-                        // Add person if account num is not shared or
-                        // if person is family point of contact.
+                        // family point of contact takes priority
                         compiledData.staffByRegion[region][num] = entry;
                     }
                 }
@@ -468,7 +511,9 @@ module.exports= {
         var numEmails = 0;
         if (Log == null) Log = MPDReportGen.Log;
         
-        async.eachLimit(staffData.staff, MAX_CONCURRENT, function(person, next) {
+        var listObj = staffData.staffByAccount;
+        
+        async.forEachOfLimit(listObj, MAX_CONCURRENT, function(person, num, next) {
             
             EmailNotifications.trigger('mpdreport.ns.individual', {
                 variables: {
