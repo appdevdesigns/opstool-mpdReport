@@ -80,6 +80,9 @@ module.exports= {
      *          hris_region     : The staff's region info
      *          avgExpenditure  : The average amount leaving their account over the past 12 months
      *          avgIncome       : The average amount entering their account over the past 12 months
+     *          mpdGoal         : The family MPD goal amount from HRIS
+     *          monthsOfNeed    :
+     *          percentOfNeed   :
      *      }
      *
      * @param string region
@@ -363,21 +366,41 @@ module.exports= {
                 for (var i=0; i<staff.length; i++) {
                     var entry = staff[i];
                     var num = parseInt(entry.accountNum);
-                    // Merge account GL info into staff entry
+                    
                     if (accounts[num]) {
+                        // Merge account GL info into staff entry
                         for (var field in accounts[num]) {
                             entry[field] = accounts[num][field];
                         }
+                        
                         // Calculate months until deficit
                         entry.monthsTilDeficit = LegacyStewardwise.getMonthsTilDeficit({
                             avgIncome: entry.avgIncome,
                             avgExpenditure: entry.avgExpenditure,
                             accountBalance: entry.accountBal
                         });
+                        
                         // Calculate estimated current account balance
                         entry.estimatedBal = entry.accountBal
                             + entry.currentCredit
                             - entry.currentDebit;
+                        
+                        // Months of Need: 
+                        // ((account balance) / [Greater of ((Avg expenses) or (Base Salary))]
+                        entry.monthsOfNeed = Math.round(
+                            entry.estimatedBal / 
+                            Math.max(entry.baseSalary, entry.avgExpenditure)
+                        );
+                        
+                        // % of Need: 
+                        // (12 month Avg income) / greater of ((avg expenses) or (salary) or (MPD Goal from HRIS))
+                        entry.percentOfNeed = Math.round(
+                            entry.avgIncome / Math.max(
+                                entry.avgExpenditure,
+                                entry.baseSalary,
+                                entry.mpdGoal
+                            )
+                        );
                     } else {
                         entry.monthsTilDeficit = 'NA';
                     }
@@ -563,7 +586,8 @@ module.exports= {
 var formatEntryNumbers = function(entry) {
     var percentageFields = {
         'localPercent': true,
-        'foreignPercent': true
+        'foreignPercent': true,
+        'percentOfNeed': true
     };
     
     for (var field in entry) {
