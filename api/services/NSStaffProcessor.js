@@ -174,6 +174,7 @@ module.exports= {
             
             // Get current transaction totals
             function(next) {
+                var start = new Date();
                 async.forEachLimit(staff, 1, function(ren, ok) {
                     LNSSRen.currentTransactions({ nssrenID: ren.nssren_id })
                     .fail(next)
@@ -194,6 +195,12 @@ module.exports= {
                 }, function(err) {
                     if (err) next(err);
                     else next();
+                    var end = new Date();
+                    console.log(
+                        'Time taken to get estimated balances' 
+                        + ' (' + region + '): '
+                        + (end - start) + 'ms'
+                    );
                 });
             },
             
