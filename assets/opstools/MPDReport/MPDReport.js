@@ -14,6 +14,8 @@ steal(
         },
 		'dropzone.js',
 		//'dropzone.css',
+        'https://cdn.datatables.net/s/bs-3.3.5/dt-1.10.10,fh-3.1.0/datatables.min.css',
+        'https://cdn.datatables.net/s/bs-3.3.5/dt-1.10.10,fh-3.1.0/datatables.min.js',        
 		'site/labels/opstool-MPDReport.js'
 ).then(function(){
 	AD.ui.loading.completed(2);

@@ -245,8 +245,26 @@ function(){
             // Init Bootstrap tooltips for "months in deficit"
             $table.find('td.balrep-deficit[title]').tooltip({
                 placement: 'right',
-                container: 'body'
+                container: 'body',
+                html: true
             });
+            
+            // Make table sortable & searchable
+            $table.find('table').DataTable({
+                // Sort by the Account Balance column
+                order: [[ 2, 'asc' ]],
+                aoColumns: [
+                    // Default sort options on all columns
+                    null, null, null, null, null, null, null, null,
+                    // Except the final I&E column, which is not sortable
+                    { orderSequence: [] }
+                ],
+                lengthMenu: [
+                    [ -1, 50, 25, 10 ],
+                    [ 'All', 50, 25, 10 ],
+                ]
+            });
+            
             
             // Init drill down button for I&E details
             if (canDrillDown) {
