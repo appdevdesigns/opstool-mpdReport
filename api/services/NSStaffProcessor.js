@@ -429,13 +429,6 @@ module.exports= {
                     }
                 }
                 
-                // Sort
-                // (does this have any effect? javascript basic objects do 
-                //  not preserve the order of their elements, especially
-                //  after being transmitted from server to client)
-                for (var region in compiledData.staffByRegion) {
-                    compiledData.staffByRegion[region] = self.sortObj(compiledData.staffByRegion[region], 'value');
-                }
                 next();
             }
         
@@ -449,45 +442,8 @@ module.exports= {
         
         return dfd;
     },
-
-
-
-
-    sortObj: function(obj, type) {
-        var temp_array = [];
-        for (var key in obj) {
-            if (obj.hasOwnProperty(key)) {
-                temp_array.push(key);
-            }
-        }
-        if (typeof type === 'function') {
-            temp_array.sort(type);
-        } else if (type === 'value') {
-            temp_array.sort(function(a,b) {
-                var accountBalA = parseFloat(String(obj[a].accountBal).replace(/\,/g,''));
-                var accountBalB = parseFloat(String(obj[b].accountBal).replace(/\,/g,''));
-                var deficitA = obj[a].monthsTilDeficit;
-                var deficitB = obj[b].monthsTilDeficit;
-                if (obj[a].monthsTilDeficit.toString().indexOf("NA") != -1){
-                    deficitA = obj[a].monthsTilDeficit.replace(/\NA/g,'9999999999999999999999');
-                }
-                if (obj[b].monthsTilDeficit.toString().indexOf("NA") != -1){
-                    deficitB = obj[b].monthsTilDeficit.replace(/\NA/g,'9999999999999999999999');
-                }
-                //return accountBalA - accountBalB || parseInt(deficitA) - parseInt(deficitB);
-                return parseInt(deficitA) - parseInt(deficitB) || accountBalA - accountBalB;
-            });
-        } else {
-            temp_array.sort();
-        }
-        var temp_obj = {};
-        for (var i=0; i<temp_array.length; i++) {
-            temp_obj[temp_array[i]] = obj[temp_array[i]];
-        }
-        return temp_obj;
-    },
-
-
+    
+    
     
     // @param object regionData
     //     Basic object containing staff data grouped by region
@@ -502,11 +458,23 @@ module.exports= {
         
         // Iterate over each region
         // region == regionData[region]
-        async.forEachOf(regionData, function(people, region, next) {
+        async.forEachOfLimit(regionData, MAX_CONCURRENT, function(people, region, next) {
+            
+            // `people` is a basic object indexed by account number. Convert it
+            // to a flat array sorted by account balance.
+            var sortedList = [];
+            for (var num in people) {
+                sortedList.push( people[num] );
+            }
+            sortedList.sort(function(a, b) {
+                var numericA = Number(a.estimatedBal.replace(',', ''));
+                var numericB = Number(b.estimatedBal.replace(',', ''));
+                return numericA - numericB;
+            });
             
             EmailNotifications.trigger('mpdreport.ns.region.'+(region.toLowerCase()), {
                 variables: {
-                    people: people,
+                    people: sortedList,
                     extra: extra
                 },
                 to: []
