@@ -76,7 +76,7 @@
                         }
                     %>
                     <td class="balrep-deficit" field="<%= field %>" title="<%= deficitsString %>">
-                        <%= value %>
+                        <%= value || '-' %>
                     </td>
                 
                 <% } else { %>
@@ -102,7 +102,7 @@
                         }
                     %>
                     <td class="<%== rowClass %>" field="<%=field%>">
-                        <%= data[field] %>
+                        <%= data[field] || '-' %>
                     </td>
                 
                 <% } %>
