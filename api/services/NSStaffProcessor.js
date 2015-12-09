@@ -166,6 +166,21 @@ module.exports= {
                                     accounts[num][field] = combine(accounts[num][field], list[i][field]);
                                 }
                             });
+                            
+                            // Use the earlier of the dates when they joined
+                            accounts[num].periodJoined = accounts[num].periodJoined || '999999';
+                            accounts[num].periodJoined = String(Math.min(
+                                accounts[num].periodJoined, 
+                                list[i].periodJoined
+                            ));
+                            
+                            // Period offset for staff who have joined within
+                            // the past 12 months.
+                            accounts[num].months = 12;
+                            if (accounts[num].periodJoined > fiscalPeriod) {
+                                var offset = periodDiff(accounts[num].periodJoined, fiscalPeriod);
+                                accounts[num].months = Math.max(1, 12 - offset);
+                            }
                         }
                         
                         // Will be used in further calculations below
@@ -209,13 +224,15 @@ module.exports= {
             
             // Get GL average salary info
             function(next) {
-                LNSSCoreGLTrans.avgSalary(fiscalPeriod)
+                LNSSCoreGLTrans.sumSalary(fiscalPeriod)
                 .fail(next)
                 .done(function(results) {
                     for (var accountNum in results) {
                         var num = parseInt(accountNum);
                         accounts[num] = accounts[num] || {};
-                        accounts[num].avgSalary = results[accountNum];
+                        accounts[num].avgSalary = Math.round(
+                            results[accountNum] / accounts[num].months
+                        );
                     }
                     next();
                 });
@@ -223,13 +240,15 @@ module.exports= {
             
             // Get GL expenditure info
             function(next) {
-                LNSSCoreGLTrans.avgMonthlyExpenditure(fiscalPeriod)
+                LNSSCoreGLTrans.sumExpenditure(fiscalPeriod)
                 .fail(next)
                 .done(function(results) {
                     for (var accountNum in results) {
                         var num = parseInt(accountNum);
                         accounts[num] = accounts[num] || {};
-                        accounts[num].avgExpenditure = results[accountNum];
+                        accounts[num].avgExpenditure = Math.round(
+                            results[accountNum] / accounts[num].months
+                        );
                     }
                     next();
                 });
@@ -237,13 +256,15 @@ module.exports= {
             
             // Get GL income info
             function(next) {
-                LNSSCoreGLTrans.avgMonthlyIncome(fiscalPeriod)
+                LNSSCoreGLTrans.sumIncome(fiscalPeriod)
                 .fail(next)
                 .done(function(results) {
                     for (var accountNum in results) {
                         var num = parseInt(accountNum);
                         accounts[num] = accounts[num] || {};
-                        accounts[num].avgIncome = results[accountNum];
+                        accounts[num].avgIncome = Math.round(
+                            results[accountNum] / accounts[num].months
+                        );
                     }
                     next();
                 });
@@ -251,26 +272,30 @@ module.exports= {
             
             // Get GL contribution info
             function(next) {
-                LNSSCoreGLTrans.avgLocalContrib(fiscalPeriod)
+                LNSSCoreGLTrans.sumLocalContrib(fiscalPeriod)
                 .fail(next)
                 .done(function(results) {
                     for (var accountNum in results) {
                         var num = parseInt(accountNum);
                         accounts[num] = accounts[num] || {};
-                        accounts[num].avgLocalContrib = results[accountNum];
+                        accounts[num].avgLocalContrib = Math.round(
+                            results[accountNum] / accounts[num].months
+                        );
                         accounts[num].localPercent = results[accountNum] / accounts[num].avgExpenditure * 100;
                     }
                     next();
                 });
             },
             function(next) {
-                LNSSCoreGLTrans.avgForeignContrib(fiscalPeriod)
+                LNSSCoreGLTrans.sumForeignContrib(fiscalPeriod)
                 .fail(next)
                 .done(function(results) {
                     for (var accountNum in results) {
                         var num = parseInt(accountNum);
                         accounts[num] = accounts[num] || {};
-                        accounts[num].avgForeignContrib = results[accountNum];
+                        accounts[num].avgForeignContrib = Math.round(
+                            results[accountNum] / accounts[num].months
+                        );
                         accounts[num].foreignPercent = results[accountNum] / accounts[num].avgExpenditure * 100;
                     }
                     next();
@@ -338,6 +363,10 @@ module.exports= {
                         var total = 0;
                         
                         for (var period in balances) {
+                            if (accounts[num].periodJoined > period) {
+                                continue;
+                            }
+                            
                             var thisBalance = balances[period];
                             periodCount += 1;
                             total += thisBalance;
@@ -587,4 +616,22 @@ var formatEntryNumbers = function(entry) {
         }
         entry[field] = number;
     }
+};
+
+
+/**
+ * Compute the number of periods between two yyyymm fiscal periods.
+ *
+ *      p1 - p2
+ *
+ * @param string p1
+ * @param string p2
+ * @return int
+ */
+var periodDiff = function(p1, p2) {
+    var y1 = String(p1).substr(0, 4),
+        m1 = String(p1).substr(4, 2),
+        y2 = String(p2).substr(0, 4),
+        m2 = String(p2).substr(4, 2);
+    return ((y1 - y2) * 12) + (m1 - m2);
 };
