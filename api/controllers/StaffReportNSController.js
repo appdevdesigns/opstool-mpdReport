@@ -65,18 +65,27 @@ module.exports = {
      * @return  [ { staff2Obj }, { staff2Obj }, ... ];
      */
     dataForRegion: function(req, res) {
-        var region = req.param('region');
+        var region = req.param('region') || null;
         
         NSStaffProcessor.compileStaffData(region)
         .fail(function(err) {
             res.AD.error(err);
         })
         .done(function(results) {
-            if (results.staffByRegion[region]) {
+            var list;
+            if (region) {
+                // Filter by region
+                list = results.staffByRegion[region];
+            } else {
+                // No region requested, so return all staff
+                list = results.staffByAccount;
+            }
+            
+            if (list) {
                 // Reformat into a flat array
                 var finalResult = [];
-                for (var account in results.staffByRegion[region]) {
-                    finalResult.push( results.staffByRegion[region][account] );
+                for (var account in list) {
+                    finalResult.push( list[account] );
                 }
                 res.AD.success(finalResult);
             } 
@@ -102,9 +111,13 @@ module.exports = {
             res.AD.error(err, 500);
         })
         .done(function(staffData) {
-
+            
             var extra = { memo: memo };
+            // Staff grouped by region
             var regionData = staffData.staffByRegion;
+            // plus an additional group with all staff
+            regionData['all'] = staffData.staffByAccount;
+            
             NSStaffProcessor.compileRenderedEmails(regionData, extra)
             .fail(function(err) {
                 res.AD.error(err, 500);
