@@ -428,7 +428,7 @@ module.exports= {
                                 entry.avgExpenditure,
                                 entry.baseSalary,
                                 entry.mpdGoal
-                            )
+                            ) * 100
                         );
                     } else {
                         entry.monthsTilDeficit = 'NA';
