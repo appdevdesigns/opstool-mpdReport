@@ -371,9 +371,12 @@ module.exports= {
                             periodCount += 1;
                             total += thisBalance;
                             
-                            // Count number of months in defict
+                            //// Count number of months in defict
+                            // Either balance is below 10
                             var isLowBalance = thisBalance < 10;
-                            var isShortPay = shortPeriods.indexOf(period) >= 0;
+                            // Or balance is below 500 and short pay pas taken
+                            var isShortPay = (thisBalance < 500 &&
+                                    shortPeriods.indexOf(period) >= 0);
                             if (isLowBalance || isShortPay) {
                                 accounts[num].monthsInDeficit += 1;
                                 accounts[num].deficits[ period ] = thisBalance;
