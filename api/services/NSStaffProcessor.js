@@ -254,6 +254,7 @@ module.exports= {
                 });
             },
             
+            /*
             // Get GL income info
             function(next) {
                 LNSSCoreGLTrans.sumIncome(fiscalPeriod)
@@ -269,6 +270,7 @@ module.exports= {
                     next();
                 });
             },
+            */
             
             // Get GL contribution info
             function(next) {
@@ -297,6 +299,8 @@ module.exports= {
                             results[accountNum] / accounts[num].months
                         );
                         accounts[num].foreignPercent = results[accountNum] / accounts[num].avgExpenditure * 100;
+                        
+                        accounts[num].avgIncome = accounts[num].avgLocalContrib + accounts[num].avgForeignContrib;
                     }
                     next();
                 });
