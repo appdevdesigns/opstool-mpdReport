@@ -230,7 +230,7 @@ module.exports= {
                     for (var accountNum in results) {
                         var num = parseInt(accountNum);
                         accounts[num] = accounts[num] || {};
-                        accounts[num].avgSalary = Math.round(
+                        accounts[num].avgSalary = (
                             results[accountNum] / accounts[num].months
                         );
                     }
@@ -246,7 +246,7 @@ module.exports= {
                     for (var accountNum in results) {
                         var num = parseInt(accountNum);
                         accounts[num] = accounts[num] || {};
-                        accounts[num].avgExpenditure = Math.round(
+                        accounts[num].avgExpenditure = (
                             results[accountNum] / accounts[num].months
                         );
                     }
@@ -263,7 +263,7 @@ module.exports= {
                     for (var accountNum in results) {
                         var num = parseInt(accountNum);
                         accounts[num] = accounts[num] || {};
-                        accounts[num].avgIncome = Math.round(
+                        accounts[num].avgIncome = (
                             results[accountNum] / accounts[num].months
                         );
                     }
@@ -280,7 +280,7 @@ module.exports= {
                     for (var accountNum in results) {
                         var num = parseInt(accountNum);
                         accounts[num] = accounts[num] || {};
-                        accounts[num].avgLocalContrib = Math.round(
+                        accounts[num].avgLocalContrib = (
                             results[accountNum] / accounts[num].months
                         );
                         accounts[num].localPercent = results[accountNum] / accounts[num].avgExpenditure * 100;
@@ -295,7 +295,7 @@ module.exports= {
                     for (var accountNum in results) {
                         var num = parseInt(accountNum);
                         accounts[num] = accounts[num] || {};
-                        accounts[num].avgForeignContrib = Math.round(
+                        accounts[num].avgForeignContrib = (
                             results[accountNum] / accounts[num].months
                         );
                         accounts[num].foreignPercent = results[accountNum] / accounts[num].avgExpenditure * 100;
@@ -430,14 +430,14 @@ module.exports= {
                         
                         // Months of Need: 
                         // ((account balance) / [Greater of ((Avg expenses) or (Base Salary))]
-                        entry.monthsOfNeed = Math.round(
+                        entry.monthsOfNeed = (
                             entry.estimatedBal / 
                             Math.max(entry.baseSalary, entry.avgExpenditure)
                         );
                         
                         // % of Need: 
                         // (12 month Avg income) / greater of ((avg expenses) or (salary) or (MPD Goal from HRIS))
-                        entry.percentOfNeed = Math.round(
+                        entry.percentOfNeed = (
                             entry.avgIncome / Math.max(
                                 entry.avgExpenditure,
                                 entry.baseSalary,
@@ -601,11 +601,15 @@ var formatEntryNumbers = function(entry) {
         'percentOfNeed': true
     };
     
+    var decimalPlaces = {
+        'monthsOfNeed': 1
+    };
+    
     for (var field in entry) {
         var number = entry[field];
         if (typeof number == 'number' && !isNaN(number)) {
-            // Round up to 0 decimal places
-            number = number.toFixed(0);
+            // Round up decimal places
+            number = number.toFixed(decimalPlaces[field] || 0);
             
             // Add commas
             while (/(\d+)(\d{3})/.test(number.toString())){
