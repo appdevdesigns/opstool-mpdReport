@@ -299,14 +299,18 @@ module.exports= {
                             results[accountNum] / accounts[num].months
                         );
                         accounts[num].foreignPercent = results[accountNum] / accounts[num].avgExpenditure * 100;
-                        
-                        // Income is the sum of all contributions
-                        accounts[num].avgIncome = 
-                            (accounts[num].avgLocalContrib || 0) + 
-                            (accounts[num].avgForeignContrib || 0);
                     }
                     next();
                 });
+            },
+            function(next) {
+                for (var num in accounts) {
+                    // Income is the sum of all contributions
+                    accounts[num].avgIncome = 
+                        (accounts[num].avgLocalContrib || 0) + 
+                        (accounts[num].avgForeignContrib || 0);
+                }
+                next();
             },
             
             // Get short pay periods
