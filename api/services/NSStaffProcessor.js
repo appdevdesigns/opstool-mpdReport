@@ -300,7 +300,10 @@ module.exports= {
                         );
                         accounts[num].foreignPercent = results[accountNum] / accounts[num].avgExpenditure * 100;
                         
-                        accounts[num].avgIncome = accounts[num].avgLocalContrib + accounts[num].avgForeignContrib;
+                        // Income is the sum of all contributions
+                        accounts[num].avgIncome = 
+                            (accounts[num].avgLocalContrib || 0) + 
+                            (accounts[num].avgForeignContrib || 0);
                     }
                     next();
                 });
@@ -434,7 +437,7 @@ module.exports= {
                             entry.avgIncome / Math.max(
                                 entry.avgExpenditure,
                                 entry.baseSalary,
-                                entry.mpdGoal
+                                entry.mpdGoal || 0
                             ) * 100
                         );
                     } else {
