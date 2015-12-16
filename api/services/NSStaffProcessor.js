@@ -516,7 +516,9 @@ module.exports= {
             })
             .fail(function(err){
                 Log('Error queueing NS MPD email for region: ' + region);
-                next(err);
+                Log(err);
+                
+                next();
             })
             .done(function(){
                 numEmails += 1;
@@ -556,8 +558,10 @@ module.exports= {
                 to: [ person.email ]
             })
             .fail(function(err){
-                //Log('Error queueing NS MPD individual email');
-                next(err);
+                Log('Error queueing NS MPD individual email');
+                Log(err);
+                
+                next();
             })
             .done(function(){
                 //Log('Queued NS MPD individual email:', person.name);
