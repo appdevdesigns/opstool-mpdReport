@@ -206,23 +206,25 @@ module.exports= {
 
 
         findValue: function(csv, row, lookup) {
-
+            
             for (var r = row; r <= (row + numRowsPerEntry); r++) {
                 for (var c=0; c< csv[row].length; c++){
-
-                    var val = csv[r][c];
-                    if (val == lookup.key) {
-
-                        var val = csv[r][c + lookup.col];
-                        if (typeof lookup.parse != 'undefined') {
-                            val = lookup.parse(val);
+                    
+                    if (csv[r]) {
+                        var val = csv[r][c];
+                        if (val == lookup.key) {
+                            
+                            var val = csv[r][c + lookup.col];
+                            if (typeof lookup.parse != 'undefined') {
+                                val = lookup.parse(val);
+                            }
+                            return val;
+                            
                         }
-                        return val;
-
                     }
                 }
             }
-
+            
         },
 
 
