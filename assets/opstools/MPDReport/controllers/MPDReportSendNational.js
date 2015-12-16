@@ -50,9 +50,11 @@ function(){
         
         
         ".balrep-send a click": function ($el, ev) {
+            ev.preventDefault();
+            if ($el.attr('disabled')) return;
             var self = this;
             var serviceURL;
-
+            
             var action = $el.attr('href');
             if (action == '#send-individual') {
                 serviceURL = '/nsmpdreport/email/individual/send';
@@ -61,8 +63,11 @@ function(){
             }
             
             var $memo = self.element.find('textarea#mpd-report-memo');
+            var $buttons = self.element.find('.balrep-send a');
             
             self.busyIndicator.show();
+            $buttons.attr('disabled', 1);
+            
             AD.comm.service.post({
                 url: serviceURL,
                 params: {
@@ -71,6 +76,7 @@ function(){
             })
             .always(function(){
                 self.busyIndicator.hide();
+                $buttons.removeAttr('disabled');
             })
             .fail(function(err){
                 console.log(err);
@@ -80,7 +86,6 @@ function(){
                 alert("Completed");
             });
             
-            ev.preventDefault();
         }
         
     });

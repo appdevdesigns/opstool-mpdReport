@@ -47,11 +47,15 @@ function(){
         "#balance-report-send-btn click": function ($el, ev) {
             var self = this;
             ev.preventDefault();
+            if ($el.attr('disabled')) return;
             
             var serviceURL = '/mpdreport/email/send';
             var $memo = self.element.find('textarea#mpd-report-memo');
+            var $buttons = self.element.find('.balrep-send a');
 
             self.busyIndicator.show();
+            $buttons.attr('disabled', 1);
+            
             AD.comm.service.post({
                 url: serviceURL,
                 params: {
@@ -60,6 +64,7 @@ function(){
             })
             .always(function(){
                 self.busyIndicator.hide();
+                $buttons.removeAttr('disabled');
             })
             .fail(function(err){
                 console.log(err);
