@@ -230,9 +230,7 @@ module.exports= {
                     for (var accountNum in results) {
                         var num = parseInt(accountNum);
                         accounts[num] = accounts[num] || {};
-                        accounts[num].avgSalary = (
-                            results[accountNum] / accounts[num].months
-                        );
+                        accounts[num].avgSalary = results[accountNum] / accounts[num].months;
                     }
                     next();
                 });
@@ -246,9 +244,7 @@ module.exports= {
                     for (var accountNum in results) {
                         var num = parseInt(accountNum);
                         accounts[num] = accounts[num] || {};
-                        accounts[num].avgExpenditure = (
-                            results[accountNum] / accounts[num].months
-                        );
+                        accounts[num].avgExpenditure = results[accountNum] / accounts[num].months;
                     }
                     next();
                 });
@@ -280,10 +276,8 @@ module.exports= {
                     for (var accountNum in results) {
                         var num = parseInt(accountNum);
                         accounts[num] = accounts[num] || {};
-                        accounts[num].avgLocalContrib = (
-                            results[accountNum] / accounts[num].months
-                        );
-                        accounts[num].localPercent = results[accountNum] / accounts[num].avgExpenditure * 100;
+                        accounts[num].avgLocalContrib = results[accountNum] / accounts[num].months;
+                        accounts[num].localPercent = accounts[num].avgLocalContrib / accounts[num].avgExpenditure * 100;
                     }
                     next();
                 });
@@ -295,10 +289,8 @@ module.exports= {
                     for (var accountNum in results) {
                         var num = parseInt(accountNum);
                         accounts[num] = accounts[num] || {};
-                        accounts[num].avgForeignContrib = (
-                            results[accountNum] / accounts[num].months
-                        );
-                        accounts[num].foreignPercent = results[accountNum] / accounts[num].avgExpenditure * 100;
+                        accounts[num].avgForeignContrib = results[accountNum] / accounts[num].months;
+                        accounts[num].foreignPercent = accounts[num].avgForeignContrib / accounts[num].avgExpenditure * 100;
                     }
                     next();
                 });
