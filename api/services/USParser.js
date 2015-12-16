@@ -467,7 +467,7 @@ var renderStandardEmails = function(opts) {
                         to: emailOptions.To(emailAddr),
                         cc: emailOptions.CC(),
                         bcc: emailOptions.BCC(),
-                        subject:'PREVIEW: US Staff Account Info ('+emailName+')',
+                        subject:'US Staff Account Info ('+emailName+')',
                         html:html,
                         text:text
                     };
@@ -527,7 +527,7 @@ var renderMissingRegionsEmails = function(opts) {
                             to: emailOptions.To(emailAddr),
                             cc: emailOptions.CC(),
                             bcc: emailOptions.BCC(),
-                            subject:'PREVIEW: US Staff Account Info ('+emailAddr+') for staff with Missing Assignments',
+                            subject:'US Staff Account Info ('+emailAddr+') for staff with Missing Assignments',
                             html:html,
                             text:text
                     };
@@ -587,7 +587,7 @@ var renderMissingStaffEmails = function(opts) {
                             to: emailOptions.To(emailAddr),
                             cc: emailOptions.CC(),
                             bcc: emailOptions.BCC(),
-                            subject:'PREVIEW: Missing US Staff Accounts Info ('+emailAddr+') ',
+                            subject:'Missing US Staff Accounts Info ('+emailAddr+') ',
                             html:html,
                             text:text
                     };
