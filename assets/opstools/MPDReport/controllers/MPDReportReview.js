@@ -7,6 +7,7 @@ steal(
         '//opstools/MPDReport/views/MPDReportReview/filter.ejs',
         '//opstools/MPDReport/views/MPDReportReview/table.ejs',
         '//opstools/MPDReport/views/MPDReportReview/iAndE.ejs',
+        'appdev/widgets/ad_icon_busy',
 
 function(){
 
@@ -77,7 +78,7 @@ function(){
             
             this.key = '#review';
             this.initDOM();
-
+            
             AD.comm.hub.subscribe('ad.mpdreport.file.uploaded', function(msg, data){
                 self.loadResults();
             });
@@ -318,7 +319,6 @@ function(){
             this.filter = this.element.find('.op-filter');
 
         },
-
 
 
         getData: function(done) {
