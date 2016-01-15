@@ -60,7 +60,25 @@ module.exports= {
 
             if (Log == null) Log = MPDReportGen.Log; 
 
-            var compiledData = {};
+            var compiledData = {
+                staffByRegion: {
+                /*
+                    <region1>: {
+                        <staffAccount1> : { ... },
+                        <staffACcount2> : { ... },
+                        ...
+                    },
+                    <region2>: { ... },
+                    ...
+                */
+                },
+                missing: {
+                /*
+                    <staffAccount> : { ... },
+                    ...
+                */
+                }
+            };
 
             var csvParsed = this.parseCSV(fileName);
             var staffFound = LHRISWorker.workersByAccount({
@@ -76,9 +94,6 @@ module.exports= {
                 return done({});
             })
             .done(function(csvInfo, usStaff) {
-                compiledData.staffByRegion = {};
-                compiledData.missing = {};
-                
                 for (var account in csvInfo) {
                     if (usStaff[account]) {
                         // HRIS data found
