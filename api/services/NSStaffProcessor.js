@@ -178,7 +178,9 @@ module.exports= {
                             // the past 12 months.
                             accounts[num].months = 12;
                             if (accounts[num].periodJoined > fiscalPeriod) {
-                                var offset = periodDiff(accounts[num].periodJoined, fiscalPeriod);
+                                var offset = LNSSCoreGLTrans.periodDiff(
+                                    accounts[num].periodJoined, fiscalPeriod
+                                );
                                 accounts[num].months = Math.max(1, 12 - offset);
                             }
                         }
@@ -632,20 +634,3 @@ var formatEntryNumbers = function(entry) {
     }
 };
 
-
-/**
- * Compute the number of periods between two yyyymm fiscal periods.
- *
- *      p1 - p2
- *
- * @param string p1
- * @param string p2
- * @return int
- */
-var periodDiff = function(p1, p2) {
-    var y1 = String(p1).substr(0, 4),
-        m1 = String(p1).substr(4, 2),
-        y2 = String(p2).substr(0, 4),
-        m2 = String(p2).substr(4, 2);
-    return ((y1 - y2) * 12) + (m1 - m2);
-};
