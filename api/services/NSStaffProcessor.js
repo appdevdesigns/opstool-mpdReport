@@ -459,11 +459,33 @@ module.exports= {
                     // Staff grouped by region
                     // (only one staff per account number)
                     var region = entry.region;
+                    var isInternational = false;
+                    if (region == "Int'l") {
+                        // For international NS, use their HRIS sending region.
+                        // LNSSRen looks for the sending region label in the
+                        // 'mpd' language (not 'en' or 'zh-hans').
+                        // This allows us to customize the region text to match
+                        // Stewardwise without affecting their appearance in
+                        // HRIS.
+                        isInternational = true;
+                        region = entry.region = entry.sendingRegion;
+                    }
+                    
                     compiledData.staffByRegion[region] = compiledData.staffByRegion[region] || {};
                     if (!compiledData.staffByRegion[region][num] || entry.isPOC) {
                         // family point of contact takes priority
                         compiledData.staffByRegion[region][num] = entry;
                     }
+                    
+                    if (isInternational) {
+                        // Also add entry into "Int'l" region for international staff
+                        compiledData.staffByRegion["Int'l"] = compiledData.staffByRegion["Int'l"] || {};
+                        if (!compiledData.staffByRegion["Int'l"][num] || entry.isPOC) {
+                            compiledData.staffByRegion["Int'l"][num] = entry;
+                        }
+                        
+                    }
+                    
                 }
                 
                 next();

@@ -75,23 +75,18 @@ module.exports = {
             var list;
             if (region) {
                 // Filter by region
-                list = results.staffByRegion[region];
+                list = results.staffByRegion[region] || {};
             } else {
                 // No region requested, so return all staff
-                list = results.staffByAccount;
+                list = results.staffByAccount || {};
             }
             
-            if (list) {
-                // Reformat into a flat array
-                var finalResult = [];
-                for (var account in list) {
-                    finalResult.push( list[account] );
-                }
-                res.AD.success(finalResult);
-            } 
-            else {
-                res.AD.error(new Error('No matches for that region'));
+            // Reformat into a flat array
+            var finalResult = [];
+            for (var account in list) {
+                finalResult.push( list[account] );
             }
+            res.AD.success(finalResult);
         });
     },
     
