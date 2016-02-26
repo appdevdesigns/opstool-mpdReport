@@ -32,6 +32,11 @@ td.balrep-deficit, td.balrep-months-deficit, td.balrep-12-deficit { background: 
 td.balrep-warn { background: #CC9900 !important; font-weight: bold; }
 td.balrep-3-deficit { background: #ffff00 !important; font-weight: bold; }
 
+td.balrep-red { background: #f00 !important; font-weight: bold; color: black; }
+td.balrep-orange { background: #ff722e !important; font-weight: bold; color: black; }
+td.balrep-yellow { background: #ffdf00 !important; font-weight: bold; color: black; }
+
+
 .balrep-send-container {
   position: relative;
 /*  border: 1px solid rgba(0, 0, 0, 0.1);

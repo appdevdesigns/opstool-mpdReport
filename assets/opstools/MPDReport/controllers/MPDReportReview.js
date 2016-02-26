@@ -6,6 +6,7 @@ steal(
         '//opstools/MPDReport/views/MPDReportReview/MPDReportReview.ejs',
         '//opstools/MPDReport/views/MPDReportReview/filter.ejs',
         '//opstools/MPDReport/views/MPDReportReview/table.ejs',
+        '//opstools/MPDReport/views/MPDReportReview/tableUS.ejs',
         '//opstools/MPDReport/views/MPDReportReview/iAndE.ejs',
         'appdev/widgets/ad_icon_busy',
 
@@ -20,7 +21,8 @@ function(){
             this.options = AD.defaults({
                     templateDOM: '//opstools/MPDReport/views/MPDReportReview/MPDReportReview.ejs',
                     templateFilter: '//opstools/MPDReport/views/MPDReportReview/filter.ejs',
-                    templateTable: '//opstools/MPDReport/views/MPDReportReview/table.ejs',
+                    templateTableNS: '//opstools/MPDReport/views/MPDReportReview/table.ejs',
+                    templateTableUS: '//opstools/MPDReport/views/MPDReportReview/tableUS.ejs',
                     templateIncomeExpenditure: '//opstools/MPDReport/views/MPDReportReview/iAndE.ejs'
             }, options);
             
@@ -207,6 +209,7 @@ function(){
 
         displayData: function(regionKey) {
             var tableData;
+            var templateTable;
             var self = this;
             var canDrillDown = false;
             
@@ -229,6 +232,9 @@ function(){
             // National staff have I&E info that can be drilled down to
             if (this.toolState.staffType == '#NATIONAL') {
                 canDrillDown = true;
+                templateTable = this.options.templateTableNS;
+            } else {
+                templateTable = this.options.templateTableUS;
             }
             
             // Update the tag buttons
@@ -238,7 +244,7 @@ function(){
             
             if (!tableData) return;
             
-            $table.html(can.view(this.options.templateTable, {
+            $table.html(can.view(templateTable, {
                 dataSet: tableData,
                 canDrillDown: canDrillDown
             }));
@@ -250,16 +256,20 @@ function(){
                 html: true
             });
             
+            // Default sort options on all columns except the last column, which
+            // is not sortable.
+            var colSortOpts = [];
+            var numCols = $table.find('thead tr').children().length;
+            for (var i=0; i<numCols-1; i++) {
+                colSortOpts.push(null);
+            }
+            colSortOpts.push({ orderSequence: [] });
+            
             // Make table sortable & searchable
             $table.find('table').DataTable({
                 // Sort by the Account Balance column
                 order: [[ 2, 'asc' ]],
-                aoColumns: [
-                    // Default sort options on all columns
-                    null, null, null, null, null, null, null, null,
-                    // Except the final I&E column, which is not sortable
-                    { orderSequence: [] }
-                ],
+                aoColumns: colSortOpts,
                 lengthMenu: [
                     [ -1, 50, 25, 10 ],
                     [ 'All', 50, 25, 10 ],

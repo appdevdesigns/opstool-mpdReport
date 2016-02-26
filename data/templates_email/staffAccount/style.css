@@ -7,6 +7,10 @@
     color: #CC9900;
 }
 
+td.balrep-red { background: #f00; font-weight: bold; color: black; }
+td.balrep-orange { background: #ff722e; font-weight: bold; color: black; }
+td.balrep-yellow { background: #ffdf00; font-weight: bold; color: black; }
+
 .jumbotron {
     background-color: #333333;
     color: #EEEEEE;
