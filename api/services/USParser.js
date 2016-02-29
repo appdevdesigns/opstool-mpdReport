@@ -243,7 +243,18 @@ module.exports= {
         },
 
 
-
+        /**
+         * @param string sourceData
+         *      The CSV filename
+         * @param function done
+         *      {
+         *          <region1>: { ... },
+         *          <region2>: { ... },
+         *          ...
+         *          'missing': { ... }
+         *      }
+         * @return Deferred
+         */
         compileEmailData: function(sourceData, done) {
             var dfd = $.Deferred();
 
@@ -263,7 +274,7 @@ module.exports= {
                     emailData[ emailDefs[region]] = foundData[region];
                 }
 
-                // now, tack on the 'missing' group of people:
+                // tack on the 'missing' group of people:
                 emailData.missing = data.missing;
 
                 if (done) done(emailData);
@@ -274,7 +285,22 @@ module.exports= {
             return dfd;
         },
 
-
+        
+        /**
+         * @param string templatesDir
+         * @param object emailData
+         *      {
+         *          <region1>: { ... },
+         *          <region2>: { ... },
+         *          ...
+         *          'missing': { ... }
+         *      }
+         * @param object extra
+         *      Any other information
+         * @param function done
+         *      function(err, emails)
+         * @return Deferred
+         */
         compileRenderedEmails: function(templatesDir, emailData, extra, done) {
             var dfd = $.Deferred();
 
@@ -500,7 +526,9 @@ var renderStandardEmails = function(opts) {
 
 
 
-
+/**
+ * Report of staff with no HRIS assignment
+ */
 var renderMissingRegionsEmails = function(opts) {
     var dfd = $.Deferred();
 
@@ -509,50 +537,50 @@ var renderMissingRegionsEmails = function(opts) {
 //        opts.data       The data to use for our
 //        opts.extra      Any extra data to add
 //        opts.dir        The template directory (why do we need this again?)
-
-
-
-    // for each regional email address:
-    for (var emailAddr in opts.data) {
-
-        if ((emailAddr != 'undefined')
-                && (emailAddr != 'missing')) {
-
-            // NOTE: this is NOT asynchronous...
-            // NOTE: region = 'undefined' means that we couldn't find their region
-            var people = arrayOrderedBy(opts.data['undefined'], 'accountBal');
-            var renderData = { 
-                people: people,
-                extra: opts.extra
-            }
-            opts.renderer(renderData, opts.dir, function(err, html, text) {
-                if (err) {
-                    Log.error(LogKey+' error rendering email: ', err);
-
-                    // bail out!!!!
-                    dfd.reject(err);
-                    return dfd;
-
-                } else {
-
-                    if (emailOptions == null) { emailOptions = MPDReportGen.emailOptionsUS };
-
-                    var email = {
-                            from: emailOptions.From(),
-                            to: emailOptions.To(emailAddr),
-                            cc: emailOptions.CC(),
-                            bcc: emailOptions.BCC(),
-                            subject:'US Staff Account Info ('+emailAddr+') for staff with Missing Assignments',
-                            html:html,
-                            text:text
+    
+    // Sending the missing assignment list to all region addresses.
+    
+    // Only proceed if there are staff with no assignments
+    if (_.size(opts.data['undefined']) > 0) {
+    
+        // for each regional email address:
+        for (var emailAddr in opts.data) {
+    
+            if ((emailAddr != 'undefined') && (emailAddr != 'missing')) {
+    
+                // NOTE: this is NOT asynchronous...
+                // NOTE: region = 'undefined' means that we couldn't find their region
+                var people = arrayOrderedBy(opts.data['undefined'], 'accountBal');
+                var renderData = { 
+                    people: people,
+                    extra: opts.extra
+                }
+                opts.renderer(renderData, opts.dir, function(err, html, text) {
+                    if (err) {
+                        Log.error(LogKey+' error rendering email: ', err);
+                        dfd.reject(err);
+                        return dfd;
+    
+                    } else {
+    
+                        if (emailOptions == null) { emailOptions = MPDReportGen.emailOptionsUS };
+                        var email = {
+                                from: emailOptions.From(),
+                                to: emailOptions.To(emailAddr),
+                                cc: emailOptions.CC(),
+                                bcc: emailOptions.BCC(),
+                                subject:'US Staff Account Info ('+emailAddr+') for staff with Missing Assignments',
+                                html:html,
+                                text:text
+                        };
+    
+                        opts.listEmails.push(email);
                     };
-
-                    opts.listEmails.push(email);
-                };
-            });
-        };
-    } // next region
-
+                });
+            };
+        } // next region
+    }
+    
     dfd.resolve(opts.listEmails);
 
     return dfd;
@@ -560,7 +588,9 @@ var renderMissingRegionsEmails = function(opts) {
 
 
 
-
+/**
+ * Report of staff with missing HRIS info
+ */
 var renderMissingStaffEmails = function(opts) {
     var dfd = $.Deferred();
 
@@ -570,48 +600,51 @@ var renderMissingStaffEmails = function(opts) {
 //        opts.extra      Any extra data to add
 //        opts.dir        The template directory (why do we need this again?)
 
-
-
-    // for each regional email address:
-    for (var emailAddr in opts.data) {
-
-        if ((emailAddr != 'undefined')
-                && (emailAddr != 'missing')) {
-
-            // NOTE: this is NOT asynchronous...
-            // NOTE: region = 'undefined' means that we couldn't find their region
-            var people = arrayOrderedBy(opts.data['missing'], 'accountBal');
-            var renderData = { 
-                people: people,
-                extra: opts.extra
-            }
-            opts.renderer(renderData, opts.dir, function(err, html, text) {
-                if (err) {
-                    Log.error(LogKey+' error rendering email: ', err);
-
-                    // bail out!!!!
-                    dfd.reject(err);
-                    return dfd;
-
-                } else {
-
-                    if (emailOptions == null) { emailOptions = MPDReportGen.emailOptionsUS };
-
-                    var email = {
-                            from: emailOptions.From(),
-                            to: emailOptions.To(emailAddr),
-                            cc: emailOptions.CC(),
-                            bcc: emailOptions.BCC(),
-                            subject:'Missing US Staff Accounts Info ('+emailAddr+') ',
-                            html:html,
-                            text:text
+    // Sending the missing staff to all region addresses
+    
+    // Only proceed if there are staff with missing HRIS info
+    if (_.size(opts.data['missing']) > 0) {
+        // for each regional email address:
+        for (var emailAddr in opts.data) {
+    
+            if ((emailAddr != 'undefined')
+                    && (emailAddr != 'missing')) {
+    
+                // NOTE: this is NOT asynchronous...
+                // NOTE: region = 'undefined' means that we couldn't find their region
+                var people = arrayOrderedBy(opts.data['missing'], 'accountBal');
+                var renderData = { 
+                    people: people,
+                    extra: opts.extra
+                }
+                opts.renderer(renderData, opts.dir, function(err, html, text) {
+                    if (err) {
+                        Log.error(LogKey+' error rendering email: ', err);
+    
+                        // bail out!!!!
+                        dfd.reject(err);
+                        return dfd;
+    
+                    } else {
+    
+                        if (emailOptions == null) { emailOptions = MPDReportGen.emailOptionsUS };
+    
+                        var email = {
+                                from: emailOptions.From(),
+                                to: emailOptions.To(emailAddr),
+                                cc: emailOptions.CC(),
+                                bcc: emailOptions.BCC(),
+                                subject:'Missing US Staff Accounts Info ('+emailAddr+') ',
+                                html:html,
+                                text:text
+                        };
+    
+                        opts.listEmails.push(email);
                     };
-
-                    opts.listEmails.push(email);
-                };
-            });
-        };
-    } // next region
+                });
+            };
+        } // next region
+    }
 
     dfd.resolve(opts.listEmails);
 
