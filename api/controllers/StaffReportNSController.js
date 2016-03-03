@@ -91,6 +91,58 @@ module.exports = {
     },
     
     
+    
+    /**
+     * View the output of a regional report without actually sending
+     */
+    emailPreview: function(req, res) {
+        
+        var region = req.param('region') || 'all';
+        
+        if (Log == null) Log = MPDReportGen.Log;
+        var logKey = '<green><bold>NS:Regional (' + region + '):</bold></green>';
+        Log(logKey + ' ... emailPreview()');
+        
+        // Optional memo note to be added to the email
+        var memo = req.param('memo') || null;
+
+        NSStaffProcessor.compileStaffData(region)
+        .fail(function(err) {
+            AD.log.error('... error compilingStaffData:', err);
+            res.AD.error(err, 500);
+        })
+        .done(function(staffData) {
+            
+            var extra = { memo: memo };
+            var staff = staffData.staff;
+            
+            // sort by account balance.
+            staff.sort(function(a, b) {
+                var numericA = Number(a.estimatedBal.replace(',', ''));
+                var numericB = Number(b.estimatedBal.replace(',', ''));
+                return numericA - numericB;
+            });
+            
+            EmailNotifications.previewTrigger('mpdreport.ns.region.'+(region.toLowerCase()), {
+                variables: {
+                    people: staff,
+                    extra: extra
+                }
+            })
+            .fail(function(err) {
+                res.AD.error(err, 500);
+            })
+            .done(function(output) {
+                Log(logKey+'<bold> ... preview complete! </bold>');
+                // Send HTML output
+                res.send(output);
+            });
+
+        });
+    },
+    
+    
+    
     emailSend: function(req, res) {
 
         if (Log == null) Log = MPDReportGen.Log;

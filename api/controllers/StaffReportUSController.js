@@ -178,9 +178,59 @@ module.exports = {
         });
     },
     
+    
+    
+    emailPreview: function(req, res) {
+        
+        var region = req.param('region') || 'missing';
+        var memo = req.param('memo') || null;
+        var extra = { memo: memo };
 
+        // Generate the Regional Report Data
+        USParser.compileStaffData('sas_curr.csv', function(data) {
+            
+            // Use only the requested region
+            var people = {};
+            if (region == 'missing') {
+                people = data.missing;
+            } else {
+                people = data.staffByRegion[region];
+            }
+            
+            // Convert `people` object into an array
+            var list = [];
+            for (var num in people) {
+                list.push(people[num]);
+            }
+            
+            // Sort by account balance
+            list.sort(function(a, b) {
+                var valueA = a.accountBal;
+                var valueB = b.accountBal;
+                if (typeof valueA == 'string') {
+                    valueA = Number(valueA.replace(',', ''));
+                }
+                if (typeof valueB == 'string') {
+                    valueB = Number(valueB.replace(',', ''));
+                }
+                return valueA - valueB;
             });
-        })
+            
+            EmailNotifications.previewTrigger('mpdreport.us.region.'+(region.toLowerCase()), {
+                variables: {
+                    people: list,
+                    extra: extra
+                },
+                to: []
+            })
+            .fail(function(err){
+                res.AD.error(err, 500);
+            })
+            .done(function(output){
+                res.send(output);
+            });
+            
+        });
     }
 
 };

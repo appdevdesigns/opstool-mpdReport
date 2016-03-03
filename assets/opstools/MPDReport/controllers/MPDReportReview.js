@@ -33,6 +33,8 @@ function(){
             self.toolState = options.toolState;
 
             this.btnReload = null;
+            this.currentRegion = null;
+            this.isDataVisible = false;
             
             this.reportData = {
                 staffByRegion: {
@@ -189,6 +191,7 @@ function(){
 
             // find the value of the currently selected filter
             var selected = this.defaultFilter();
+            this.currentRegion = selected;
 
 
             if (this.toolState.staffType == '#US') {
@@ -241,6 +244,7 @@ function(){
             this.updateFilterTag(regionKey);
             
             var $table = this.element.find('.op-table-container');
+            this.isDataVisible = false;
             
             if (!tableData) return;
             
@@ -248,6 +252,7 @@ function(){
                 dataSet: tableData,
                 canDrillDown: canDrillDown
             }));
+            this.isDataVisible = true;
             
             // Init Bootstrap tooltips for "months in deficit"
             $table.find('td.balrep-deficit[title]').tooltip({
@@ -477,7 +482,7 @@ function(){
 
                     // step 4: display information
                     function(next) {
-
+                        
                         self.displayFilters();
                         self.displayData(currentRegion);
                     }
@@ -507,7 +512,9 @@ function(){
          * @param [string] regionKey    : one of the values of an existing filter
          */
         updateFilterTag:function(regionKey){
-
+            
+            this.currentRegion = regionKey;
+            
             // Update the tag buttons
             this.filter.find('.balrep-filter-tag').removeClass('filter-on');
             this.filter.find('a[data-balrep-filter="'+regionKey+'"]').addClass('filter-on');
@@ -527,6 +534,27 @@ function(){
             this.loadResults();
             ev.preventDefault();
         },
+        
+        
+        
+        // Handle clicks on the "Preview" button
+        "a[href='#balrep-report-preview'] click": function($el, ev) {
+            ev.preventDefault();
+            var self = this;
+            var href = '';
+            
+            if (!this.isDataVisible) {
+                return;
+            }
+            else if (this.toolState.staffType == '#US') {
+                href = '/usmpdreport/email/preview?region=' + this.currentRegion;
+            }
+            else {
+                href = '/nsmpdreport/email/preview?region=' + this.currentRegion;
+            }
+            
+            window.open(href, '_blank');
+        },
 
         
 
@@ -542,9 +570,9 @@ function(){
         'a.balrep-filter-tag click': function ($el, ev) {
             var self = this;
             var regionKey = $el.attr('data-balrep-filter');
-
+            
             self.updateFilterTag(regionKey);
-
+            
             // keep us staff working as before:
             if (self.toolState.staffType == '#US') {
                 self.displayData(regionKey);
