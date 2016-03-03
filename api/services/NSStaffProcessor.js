@@ -138,7 +138,7 @@ module.exports= {
             
             // Get NS with HRIS info
             function(next) {
-                LNSSRen.staffInfo(region)
+                LNSSRen.staffInfo({ regionCode: region })
                 .fail(next)
                 .done(function(list) {
                     if (!list || !list.length) {
