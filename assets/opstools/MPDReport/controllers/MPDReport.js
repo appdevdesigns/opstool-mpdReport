@@ -107,13 +107,16 @@ function(){
             if (type == '#US') {
                 this.element.find('ul.national-report-steps').hide();
                 this.element.find('ul.us-report-steps').show();
+                this.element.find('#staff-report-uploader').parent().show();
                 this.showTool('#upload');
                 // Reset the review table
                 this.toolReview.clearData();
             } else {
                 this.element.find('ul.us-report-steps').hide();
                 this.element.find('ul.national-report-steps').show();
-                this.showTool('#review');
+                this.element.find('#staff-report-uploader').parent().hide();
+                this.showTool('#upload');
+                //this.showTool('#review');
                 // Load the review table
                 this.toolReview.loadResults();
             }

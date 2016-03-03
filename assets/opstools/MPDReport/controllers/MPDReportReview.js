@@ -542,15 +542,19 @@ function(){
             ev.preventDefault();
             var self = this;
             var href = '';
+            var $memo = $('textarea#mpd-report-memo');
+            var memo = encodeURIComponent($memo.val());
             
             if (!this.isDataVisible) {
                 return;
             }
             else if (this.toolState.staffType == '#US') {
-                href = '/usmpdreport/email/preview?region=' + this.currentRegion;
+                href = '/usmpdreport/email/preview?region=' + this.currentRegion
+                     + '&memo=' + memo;
             }
             else {
-                href = '/nsmpdreport/email/preview?region=' + this.currentRegion;
+                href = '/nsmpdreport/email/preview?region=' + this.currentRegion
+                     + '&memo=' + memo;
             }
             
             window.open(href, '_blank');

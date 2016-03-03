@@ -62,7 +62,7 @@ function(){
                 serviceURL = '/nsmpdreport/email/send';
             }
             
-            var $memo = self.element.find('textarea#mpd-report-memo');
+            var $memo = $('textarea#mpd-report-memo');
             var $buttons = self.element.find('.balrep-send a');
             
             self.busyIndicator.show();
