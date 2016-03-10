@@ -81,7 +81,7 @@
                 
                 <% } else if (field == 'monthsTilDeficit') { %>
                     <%
-                        // See Mantis 2876
+                        // See Mantis 2878
                         var rowClass = '';
                         if (value <= 1) {
                             rowClass = 'balrep-red';
@@ -89,7 +89,7 @@
                         else if (value <= 3) {
                             rowClass = 'balrep-orange';
                         }
-                        else if (value < 6) {
+                        else if (value <= 6) {
                             rowClass = 'balrep-yellow';
                         }
                         else {
