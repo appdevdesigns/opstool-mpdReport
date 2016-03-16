@@ -3,64 +3,86 @@
     for (var d in dataSet) {
         arryDataItems.push(dataSet[d]);
     }
-%>
-
-
-                <table class="table opsportal-table" id="balreport-review-table">
-                    <thead>
-                        <tr>
-                            <th>Account Number</th>
-                            <th>Name</th>
-                            <th>Current Account Balance</th>
-                            <th>Avg Monthly Balance</th>
-                            <th># Months in Deficit</th>
-                            <th>Months until Deficit</th>
-                            <th>Phone</th>
-                            <th>Email</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-
-<%
-var fields = [ 'accountNum', 'name', 'accountBal', 'avgAccountBal', 'monthsInDeficit', 'monthsTilDeficit', 'phone', 'email' ];
-
-arryDataItems.forEach(function(data){
-
-%>                        <tr>
-<%
-
-    fields.forEach(function(field){
-
+    var fields = [ 
+        'accountNum', 
+        'name', 
+        'accountBal', 
+        'avgAccountBal', 
+        'monthsInDeficit', 
+        'monthsTilDeficit', 
+        'phone', 
+        'email' 
+    ];
+    
+    var getClass = function(data, field) {
+        var result = '';
         var value = data[field];
-
-        if (field == 'email') {
-    %>                            <td field="<%=field%>"><a href="mailto:<%= value %>"><%= value %></a></td>
-    <%
-        } else {
-
-            // figure out any class attachments.
-            var rowClass = '';
-
-            // when accountBal < 0 then should be red
-            if ((field == 'accountBal') && ( value < 0)) {
-                rowClass = 'class="balrep-deficit" ';
+        
+        if (field == 'accountBal') {
+            if (value <= 0 || value < data.avgPayroll) {
+                result = 'class="balrep-red" ';
             }
-
-            // when monthsInDeficit > 0 then should be red
-            if ((field == 'monthInDeficit') && ( value > 0)) {
-                rowClass = 'class="balrep-months-deficit" ';
+            else if (value < data.avgPayroll * 1.5) {
+                result = 'class="balrep-orange" ';
             }
-
-    %>                            <td <%=rowClass%> field="<%=field%>"><%= data[field] %></td>
-    <%
+            else if (value < data.avgPayroll * 2) {
+                result = 'class="balrep-yellow" ';
+            }
         }
-    });
 
-
-%>                       </tr>
-
-<%
-});
+        else if (field == 'monthsInDeficit') {
+            if (value == 1) {
+                result = 'class="balrep-yellow" ';
+            }
+            else if (value == 2) {
+                result = 'class="balrep-orange" ';
+            }
+            else if (value == 3) {
+                result = 'class="balrep-red" ';
+            }
+        }
+        
+        return result;
+    };
 %>
-                    </tbody>
-                </table>
+
+<table class="table op-table" id="balreport-review-table">
+    <thead>
+        <tr>
+            <th>Account Number</th>
+            <th>Name</th>
+            <th>Current Account Balance</th>
+            <th>Avg Monthly Balance</th>
+            <th># Months in Deficit</th>
+            <th>Months until Deficit</th>
+            <th>Phone</th>
+            <th>Email</th>
+        </tr>
+    </thead>
+    <tbody>
+
+    <% arryDataItems.forEach(function(data) { %>
+        <tr>
+        <% fields.forEach(function(field) { %>
+            <% var value = data[field]; %>
+            
+            <% if (field == 'email') { %>
+                
+                <td field="<%=field%>">
+                    <a href="mailto:<%= value %>"><%= value %></a>
+                </td>
+                
+            <% } else { %>
+
+                <td <%= getClass(data, field) %> field="<%=field%>">
+                    <%= value %>
+                </td>
+                
+            <% } %>
+        <% }); %>
+        </tr>
+    <% }); %>
+    
+    </tbody>
+</table>
+    

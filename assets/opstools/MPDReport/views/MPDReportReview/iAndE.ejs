@@ -1,0 +1,36 @@
+<div><% /* this outer div is to make can.view() work with Bootstrap modal  */ %>
+
+<div class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content balrep-income-expenditure">
+            
+            <div class="modal-header">
+                <h2><%= accountNum %></h2>
+            </div>
+            
+            <div class="modal-body">
+                <table class="balrep-income-expenditure">
+                    <tr>
+                        <th>Period</th>
+                        <th>Income</th>
+                        <th>Expenditure</th>
+                    </tr>
+                    <% for (var i=0; i<dataSet.length; i++) { %>
+                    <tr>
+                        <td><%= dataSet[i].period %></td>
+                        <td><%= dataSet[i].income %></td>
+                        <td><%= dataSet[i].expenditure %></td>
+                    </tr>
+                    <% } %>
+                </table>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        
+        </div>
+    </div>
+</div>
+
+</div>

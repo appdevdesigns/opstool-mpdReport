@@ -1,5 +1,5 @@
 <% if (extra.memo) { %>
-<p><%= extra.memo.replace(/\n/, '<br>') %></p>
+<p><%- extra.memo.replace(/\n/g, '<br>') %></p>
 <% } %>
 
 <div class="jumbotron" id="jumbo">
@@ -28,7 +28,7 @@
 <%
 
     //// NOTE: changing the display logic will also need to change the 
-    //// assets/opstool/MPDReport/views/MPDReportReview/row.ejs
+    //// assets/opstool/MPDReport/views/MPDReportReview/tableUS.ejs
     //// 
     
     // Returns the integer value of a number string that may include commas.
@@ -36,45 +36,55 @@
         return parseInt(('' + numString).replace(/,/g, ''));
     }
 
-
-    var getBalanceClass = function(person) {
-    
-        var retClass = '';
+    var getClass = function(data, field) {
+        var result = '';
+        var value = int(data[field]);
         
-        if (int(person.accountBal) <= 2000) { retClass = ' class="warning" '; }
-        if (int(person.accountBal) <= 0) { retClass = ' class="danger" '; }
-         
-        return retClass;
-    }
-    
-    
-    var getFieldClass = function(person) {
-        var retClass = '';
-        
-         if (int(person.monthsInDeficit) > 0) { retClass = ' class="danger" '; }
-         
-         return retClass;
-    }
-    
+        if (field == 'accountBal') {
+            if (value <= 0 || value < int(data.avgPayroll)) {
+                result = 'class="balrep-red" ';
+            }
+            else if (value < int(data.avgPayroll) * 1.5) {
+                result = 'class="balrep-orange" ';
+            }
+            else if (value < int(data.avgPayroll) * 2) {
+                result = 'class="balrep-yellow" ';
+            }
+        }
 
-//    for (var acct in people) {
-    
-//        var person = people[acct];
-    people.forEach(function(person) {
+        else if (field == 'monthsInDeficit') {
+            if (value == 1) {
+                result = 'class="balrep-yellow" ';
+            }
+            else if (value == 2) {
+                result = 'class="balrep-orange" ';
+            }
+            else if (value == 3) {
+                result = 'class="balrep-red" ';
+            }
+        }
+        
+        return result;
+    };
+
 %>
+
+    <% people.forEach(function(person) { %>
         <tr>
             <td><%= person.accountNum %></td>
             <td><%= person.hrisName %></td>
-            <td <%- getBalanceClass(person) %> ><%= person.accountBal %></td>
+            <td <%- getClass(person, 'accountBal') %> >
+                <%= person.accountBal %>
+            </td>
             <td><%= person.avgAccountBal %></td>
-            <td <%- getFieldClass(person) %> ><%= person.monthsInDeficit %></td>
+            <td <%- getClass(person, 'monthsInDeficit') %> >
+                <%= person.monthsInDeficit %>
+            </td>
             <td> ??? </td>
             <td><%= person.phone %></td>
             <td><%= person.email %></td>
         </tr>
-<%        
-    });
-%>
+    <% }); %>
     </tbody>
 </table>    
  

@@ -8,6 +8,7 @@ var fs = require('fs');
 var path = require('path');
 //var $ = require('jquery');
 
+var async = require('async');
 var AD = require('ad-utils');
 
 var Log = null;
@@ -111,46 +112,125 @@ module.exports = {
         var templatesDir = MPDReportGen.pathTemplates();
         var memo = req.param('memo') || null;
         var extra = { memo: memo };
+        
+        var numEmails = 0;
 
         // Generate the Regional Report Data
-        USParser.compileEmailData('sas_curr.csv', function(regionData) {
+        USParser.compileStaffData('sas_curr.csv', function(data) {
             
-            // Convert data into an array of generated emails
-            USParser.compileRenderedEmails(templatesDir, regionData, extra, function(err, emails) {
-
-                if (err) {
-                    Log.error(logKey + ' error rendering emails.', err);
-                    res.AD.error(err, 500);
-                    return;
+            var regionData = data.staffByRegion;
+            if (data.missing) {
+                regionData.missing = data.missing;
+            }
+            
+            // Send reports for each region
+            async.forEachOfLimit(regionData, 5, function(people, region, next) {
+            
+                // Convert `people` object into an array
+                var list = [];
+                for (var num in people) {
+                    list.push(people[num]);
                 }
-
-                AD.log(logKey + 'Sending ' + emails.length + ' emails...');
                 
-                // Process up to 5 emails concurrently
-                async.eachLimit(emails, 5, function(email, next) {
-                    Log(logKey + ' sending email to:'+email.to+'    subj:'+email.subject);
-
-                    Nodemailer.send(email)
-                    .fail(function(err){
-                        Log.error(logKey + 'error sending email.', err);
-                        MPDReportGen.emailDump(email);
-                        next(err);
-                    })
-                    .then(function(response){
-                        next();
-                    });
-                    
-                }, function(err) {
-                    if (err) {
-                        res.AD.error(err, 500);
-                    } else {
-                        Log(logKey + '<green><bold> ... sending emails complete!</bold></green>');
-                        res.AD.success({});
+                if (list.length == 0) return next();
+                
+                // Sort by account balance
+                list.sort(function(a, b) {
+                    var valueA = a.accountBal;
+                    var valueB = b.accountBal;
+                    if (typeof valueA == 'string') {
+                        valueA = Number(valueA.replace(',', ''));
                     }
+                    if (typeof valueB == 'string') {
+                        valueB = Number(valueB.replace(',', ''));
+                    }
+                    return valueA - valueB;
                 });
-
+                
+                EmailNotifications.trigger('mpdreport.us.region.'+(region.toLowerCase()), {
+                    variables: {
+                        people: list,
+                        extra: extra
+                    },
+                    to: []
+                })
+                .fail(function(err){
+                    Log('Error queueing US MPD email for region: ' + region);
+                    Log(err);
+                    
+                    next();
+                })
+                .done(function(){
+                    numEmails += 1;
+                    Log('Queued US MPD email for region: ' + region);
+                    next();
+                });
+    
+            }, function(err) {
+                if (err) {
+                    res.AD.error(err, 500);
+                }
+                else {
+                    res.AD.success({ emailsSent: numEmails });
+                }
             });
-        })
+            
+        });
+    },
+    
+    
+    
+    emailPreview: function(req, res) {
+        
+        var region = req.param('region') || 'missing';
+        var memo = req.param('memo') || null;
+        var extra = { memo: memo };
+
+        // Generate the Regional Report Data
+        USParser.compileStaffData('sas_curr.csv', function(data) {
+            
+            // Use only the requested region
+            var people = {};
+            if (region == 'missing') {
+                people = data.missing;
+            } else {
+                people = data.staffByRegion[region];
+            }
+            
+            // Convert `people` object into an array
+            var list = [];
+            for (var num in people) {
+                list.push(people[num]);
+            }
+            
+            // Sort by account balance
+            list.sort(function(a, b) {
+                var valueA = a.accountBal;
+                var valueB = b.accountBal;
+                if (typeof valueA == 'string') {
+                    valueA = Number(valueA.replace(',', ''));
+                }
+                if (typeof valueB == 'string') {
+                    valueB = Number(valueB.replace(',', ''));
+                }
+                return valueA - valueB;
+            });
+            
+            EmailNotifications.previewTrigger('mpdreport.us.region.'+(region.toLowerCase()), {
+                variables: {
+                    people: list,
+                    extra: extra
+                },
+                to: []
+            })
+            .fail(function(err){
+                res.AD.error(err, 500);
+            })
+            .done(function(output){
+                res.send(output);
+            });
+            
+        });
     }
 
 };

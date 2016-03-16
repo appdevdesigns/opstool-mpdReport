@@ -1,71 +1,134 @@
 <%
-    var arryDataItems = [];
+    var availableFields = {};
     for (var d in dataSet) {
-        arryDataItems.push(dataSet[d]);
-    }
-%>
-                <table class="table opsportal-table" id="balreport-review-table">
-                    <thead>
-                        <tr>
-                            <th>Account Number</th>
-                            <th>Name</th>
-                            <th>Current Account Balance</th>
-                            <th>Avg Monthly Balance</th>
-                            <th># Months in Deficit</th>
-                            <th>Months until Deficit</th>
-                            <th>Phone</th>
-                            <th>Email</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-
-<%
-var fields = [ 'accountNum', 'name', 'accountBal', 'avgAccountBal', 'monthsInDeficit', 'monthsTilDeficit', 'phone', 'email' ];
-
-// foreach row 
-arryDataItems.forEach(function(data){
-
-%>                        <tr>
-<%
-
-    // foreach field
-    fields.forEach(function(field){
-
-        var value = data[field];
-
-        if (field == 'email') {
-    %>                            <td field="<%=field%>"><a href="mailto:<%= value %>"><%= value %></a></td>
-    <%
-        } else {
-
-            // figure out any class attachments.
-            var rowClass = '';
-
-            // when accountBal < 2000 then should be yellow (warning)
-            if ((field == 'accountBal') && ( value < 2000)) {
-                rowClass = 'balrep-warn';
-            }
-
-            // when accountBal < 0 then should be red
-            if ((field == 'accountBal') && ( value < 0)) {
-                rowClass = 'balrep-deficit';
-            }
-
-            // when monthsInDeficit > 0 then should be red
-            if ((field == 'monthsInDeficit') && ( value > 0)) {
-                rowClass = 'balrep-months-deficit';
-            }
-
-    %>                            <td class="<%== rowClass %>" field="<%=field%>"><%= data[field] %></td>
-    <%
+        for (var field in dataSet[d]) {
+            availableFields[field] = true;
         }
-    }); // next field
+        break;
+    }
+    
+    var fields = [ 
+        'accountNum', 'name', 'accountBal', 'avgAccountBal', 
+        'monthsInDeficit', 'monthsTilDeficit', 'phone', 'email'
+    ];
 
-
-%>                       </tr>
-
-<%
-}); // next row
+    // Change 'accountBal' to 'estimatedBal' if possible
+    if (availableFields.estimatedBal) {
+        fields[2] = 'estimatedBal';
+    }
+    // Add optional I&E column
+    if (canDrillDown) {
+        fields.push('I&E');
+    }
+    
 %>
-                    </tbody>
-                </table>
+    <table class="table op-table" id="balreport-review-table">
+        <thead>
+            <tr>
+                <th>Account Number</th>
+                <th>Name</th>
+                <th>
+                <% if (availableFields.estimatedBal) { %>
+                    Estimated Account Balance
+                <% } else { %>
+                    Account Balance
+                <% } %>
+                </th>
+                <th>Avg Monthly Balance</th>
+                <th># Months in Deficit</th>
+                <th>Months until Deficit</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <% if (canDrillDown) { %>
+                    <th>I&amp;E</th>
+                <% } %>
+            </tr>
+        </thead>
+        
+        <tbody>
+        <% for (var d in dataSet) { %>
+            <% var data = dataSet[d]; %>
+            <tr>
+            <% fields.forEach(function(field) { %>
+                <% var value = data[field]; %>
+                
+                <% if (field == 'email') { %>
+                    <td field="<%=field%>">
+                        <a href="mailto:<%= value %>"><%= value %></a>
+                    </td>
+                
+                <% } else if (field == 'I&E') { %>
+                    <td class="income-expenditure">
+                        <a href="#" account="<%= data.accountNum %>" class="btn">...</a>
+                    </td>
+                    
+                <% } else if (field == 'monthsInDeficit' && value > 0) { %>
+                    <% 
+                        // Make a tooltip with details of the periods that were
+                        // in deficit.
+                        var deficitsString = '';
+                        if (data.deficits) {
+                            var deficitsList = [];
+                            for (var period in data.deficits) {
+                                deficitsList.push('<b>'+period+'</b>: ' + data.deficits[period]);
+                            }
+                            deficitsString = deficitsList.join(',<br>');
+                        }
+                    %>
+                    <td class="balrep-deficit" field="<%= field %>" title="<%= deficitsString %>">
+                        <%= value || '-' %>
+                    </td>
+                
+                <% } else if (field == 'monthsTilDeficit') { %>
+                    <%
+                        // See Mantis 2878
+                        var rowClass = '';
+                        if (value <= 1) {
+                            rowClass = 'balrep-red';
+                        } 
+                        else if (value <= 3) {
+                            rowClass = 'balrep-orange';
+                        }
+                        else if (value <= 6) {
+                            rowClass = 'balrep-yellow';
+                        }
+                        else {
+                            rowClass = 'balrep-green';
+                        }
+                    %>
+                    <td class="<%== rowClass %>" field="<%= field %>"">
+                        <%= value || '-' %>
+                    </td>
+                    
+                <% } else { %>
+                    <%
+                        // figure out any class attachments.
+                        var rowClass = '';
+                        
+                        var isBalanceField = {
+                            'accountBal': true, 
+                            'estimatedBal': true
+                        };
+                        
+                        var numVal = Number(String(value).replace(',', ''));
+                        
+                        // when balance < 2000 then should be yellow (warning)
+                        if (isBalanceField[field] && (numVal < 2000)) {
+                            rowClass = 'balrep-warn';
+                        }
+                        
+                        // when balance < 0 then should be red
+                        if (isBalanceField[field] && (numVal < 0)) {
+                            rowClass = 'balrep-deficit';
+                        }
+                    %>
+                    <td class="<%== rowClass %>" field="<%=field%>">
+                        <%= value || '-' %>
+                    </td>
+                
+                <% } %>
+            <% }); %>
+            </tr>
+        <% } %>
+        </tbody>
+    </table>

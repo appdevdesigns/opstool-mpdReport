@@ -1,239 +1,229 @@
-
-<div class="opsportal-stage-main">
-
 <div class="row">
-	<div class="col-md-12 center-block opsportal-filter">
-
-	</div>
-
-	<div class="col-md-12 opsportal-content-block opsportal-margin-top-2x">
-		<div class="gen-btn-list">
-			<!-- <h5 class="opsportal-content-block-title">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</h5> -->
-			<ul class="list-unstyled list-inline">
-            <li><a href="#balrep-report-reload" class="btn opsportal-btn opsportal-btn-dk ad-staffrpt-reload">Reload</a><li>
-			<li><a href="#balrep-report-approve" class="btn opsportal-btn opsportal-btn-dk" role="button">Approve Report</a></li>
-			<li><a href="#balrep-report-error" class="btn opsportal-btn opsportal-btn-dk" role="button" data-toggle="modal">Report Error</a></li>
-			</ul>
-		</div>
-		
-		<div class="modal fade" id="balrep-report-error" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-			<div class="modal-dialog modal-lg">
-			<div class="modal-content">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-					<h4 class="modal-title" id="myModalLabel">Report Error</h4>
-				</div>
-				<div class="modal-body">
-					<div class="balrep-form-container" id="balrep-contact-form">
-					<form class="form-horizontal">
-					<fieldset>
-
-					<!-- Form Name -->
-					<legend class="hidden">Report Error</legend>
-
-					<div class="form-group">
-						<div class="col-md-12">
-
-						</div>
-					</div>
-
-					</fieldset>
-					</form>
-					</div> <!-- end #hris-user-legal -->
-
-				</div><!-- .container -->
-
-				<div class="modal-footer">
-					<button type="button" class="btn opsportal-btn opsportal-btn-dk" data-dismiss="modal">Cancel</button>
-					<button type="button" class="btn btn-primary pull-right opsportal-btn">Send</button>
-				</div>
-			</div><!-- /.modal-content -->
-		</div><!-- /.modal-dialog -->
-		</div><!-- /.modal -->
-		
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <div class="loading-indicator"></div>
-            </div>
-        </div>		
-
-		<div class="row">
-			<div class="col-md-12 opsportal-table-container">
-			<!--
-				<table class="table opsportal-table" id="balreport-review-table">
-					<thead>
-						<tr>
-							<th>Account Number</th>
-							<th>Name</th>
-							<th>Current Account Balance</th>
-							<th>Avg Monthly Balance</th>
-							<th># Months in Deficit</th>
-							<th>Months until Deficit</th>
-							<th>Phone</th>
-							<th>Email</th>
-						</tr>
-					</thead>
-					<tbody>
-					    <tr class="template-row">
-					        <td field="accountNum"></td>
-					        <td field="name"></td>
-					        <td field="accountBal"></td>
-					        <td field="avgAccountBal"></td>
-					        <td field="monthsInDeficit"></td>
-					        <td field="monthsTilDeficit"></td>
-					        <td field="phone"></td>
-					        <td field="email"><a></a></td>
-					    </tr>
-					    
-					    
-						<tr>
-							<td>000119225</td>
-							<td>Beverly, Peter Michael (Peter)</td>
-							<td>16794</td>
-							<td>17031</td>
-							<td>0</td>
-							<td>???</td>
-							<td>15928694459 (m)</td>
-							<td><a href="mailto:pbeverly@ccomm.biz">pbeverly@ccomm.biz</a></td>
-						</tr>
-						<tr class="alt">
-							<td>000119231</td>
-							<td>Doe, Jane (Jane)</td>
-							<td class="balrep-deficit">-7651</td>
-							<td>17031</td>
-							<td class="balrep-months-deficit">2</td>
-							<td>???</td>
-							<td>15928694459 (m)</td>
-							<td><a href="mailto:pbeverly@ccomm.biz">pbeverly@ccomm.biz</a></td>
-						</tr>
-						<tr>
-							<td>000119873</td>
-							<td>Hausmann, Johnny (Johnny)</td>
-							<td>16794</td>
-							<td>17031</td>
-							<td>0</td>
-							<td class="balrep-12-deficit">1</td>
-							<td>15928694459 (m)</td>
-							<td><a href="mailto:pbeverly@ccomm.biz">pbeverly@ccomm.biz</a></td>
-						</tr>
-						<tr class="alt">
-							<td>000119917</td>
-							<td>Poolman, Ric (Ric)</td>
-							<td>17462</td>
-							<td>13769</td>
-							<td>0</td>
-							<td class="balrep-3-deficit">3</td>
-							<td>15928694459 (m)</td>
-							<td><a href="mailto:pbeverly@ccomm.biz">pbeverly@ccomm.biz</a></td>
-						</tr>
-						<tr>
-							<td>000119225</td>
-							<td>Beverly, Peter Michael (Peter)</td>
-							<td>16794</td>
-							<td>17031</td>
-							<td>0</td>
-							<td>???</td>
-							<td>15928694459 (m)</td>
-							<td><a href="mailto:pbeverly@ccomm.biz">pbeverly@ccomm.biz</a></td>
-						</tr>
-						
-						<tr class="alt">
-							<td>000119225</td>
-							<td>Beverly, Peter Michael (Peter)</td>
-							<td>16794</td>
-							<td>17031</td>
-							<td>0</td>
-							<td>???</td>
-							<td>15928694459 (m)</td>
-							<td><a href="mailto:pbeverly@ccomm.biz">pbeverly@ccomm.biz</a></td>
-						</tr>
-						<tr>
-							<td>000119225</td>
-							<td>Beverly, Peter Michael (Peter)</td>
-							<td>16794</td>
-							<td>17031</td>
-							<td>0</td>
-							<td>???</td>
-							<td>15928694459 (m)</td>
-							<td><a href="mailto:pbeverly@ccomm.biz">pbeverly@ccomm.biz</a></td>
-						</tr>
-						<tr class="alt">
-							<td>000119225</td>
-							<td>Beverly, Peter Michael (Peter)</td>
-							<td>16794</td>
-							<td>17031</td>
-							<td>0</td>
-							<td>???</td>
-							<td>15928694459 (m)</td>
-							<td><a href="mailto:pbeverly@ccomm.biz">pbeverly@ccomm.biz</a></td>
-						</tr>
-						<tr>
-							<td>000119225</td>
-							<td>Beverly, Peter Michael (Peter)</td>
-							<td>16794</td>
-							<td>17031</td>
-							<td>0</td>
-							<td>???</td>
-							<td>15928694459 (m)</td>
-							<td><a href="mailto:pbeverly@ccomm.biz">pbeverly@ccomm.biz</a></td>
-						</tr>
-						<tr class="alt">
-							<td>000119225</td>
-							<td>Beverly, Peter Michael (Peter)</td>
-							<td>16794</td>
-							<td>17031</td>
-							<td>0</td>
-							<td>???</td>
-							<td>15928694459 (m)</td>
-							<td><a href="mailto:pbeverly@ccomm.biz">pbeverly@ccomm.biz</a></td>
-						</tr>
-						<tr>
-							<td>000119225</td>
-							<td>Beverly, Peter Michael (Peter)</td>
-							<td>16794</td>
-							<td>17031</td>
-							<td>0</td>
-							<td>???</td>
-							<td>15928694459 (m)</td>
-							<td><a href="mailto:pbeverly@ccomm.biz">pbeverly@ccomm.biz</a></td>
-						</tr>
-						<tr class="alt">
-							<td>000119225</td>
-							<td>Beverly, Peter Michael (Peter)</td>
-							<td>16794</td>
-							<td>17031</td>
-							<td>0</td>
-							<td>???</td>
-							<td>15928694459 (m)</td>
-							<td><a href="mailto:pbeverly@ccomm.biz">pbeverly@ccomm.biz</a></td>
-						</tr>
-						<tr>
-							<td>000119225</td>
-							<td>Beverly, Peter Michael (Peter)</td>
-							<td>16794</td>
-							<td>17031</td>
-							<td>0</td>
-							<td>???</td>
-							<td>15928694459 (m)</td>
-							<td><a href="mailto:pbeverly@ccomm.biz">pbeverly@ccomm.biz</a></td>
-						</tr>
-						<tr class="alt">
-							<td>000119225</td>
-							<td>Beverly, Peter Michael (Peter)</td>
-							<td>16794</td>
-							<td>17031</td>
-							<td>0</td>
-							<td>???</td>
-							<td>15928694459 (m)</td>
-							<td><a href="mailto:pbeverly@ccomm.biz">pbeverly@ccomm.biz</a></td>
-						</tr>
-						
-					</tbody>
-				</table>
-			-->
-			</div>
-		</div>
+	<div class="col-md-12 center-block op-filter">
 	</div>
 </div>
-		
-</div> <!-- end .opsportal-stage-main -->
+
+<div class="op-container row">
+	<div class="col-md-2">
+		<ul class="op-list">
+	        <li><a href="#balrep-report-reload" class="btn btn-block op-btn op-btn-dk active-btn ad-staffrpt-reload" role="button">Reload</a></li>
+	        <li title="Preview the report for this region"><a href="#balrep-report-preview" class="btn btn-block op-btn op-btn-dk op-margin-top" role="button">Preview</a></li>
+	        <li><a href="#balrep-report-approve" class="btn btn-block op-btn op-btn-dk op-margin-top" role="button">Approve Report</a></li>
+	        <li><a href="#balrep-report-error" class="btn btn-block op-btn op-btn-dk op-margin-top" role="button" data-toggle="modal">Report Error</a></li>
+		</ul>
+		<div class="balrep-report-review">
+            <div class="loading-indicator"></div>
+        </div>
+	</div>
+	
+	<div class="col-md-10 op-table-container">
+	<!--
+		<table class="table op-table" id="balreport-review-table">
+			<thead>
+				<tr>
+					<th>Account Number</th>
+					<th>Name</th>
+					<th>Current Account Balance</th>
+					<th>Avg Monthly Balance</th>
+					<th># Months in Deficit</th>
+					<th>Months until Deficit</th>
+					<th>Phone</th>
+					<th>Email</th>
+				</tr>
+			</thead>
+			<tbody>
+			    <tr class="template-row">
+			        <td field="accountNum"></td>
+			        <td field="name"></td>
+			        <td field="accountBal"></td>
+			        <td field="avgAccountBal"></td>
+			        <td field="monthsInDeficit"></td>
+			        <td field="monthsTilDeficit"></td>
+			        <td field="phone"></td>
+			        <td field="email"><a></a></td>
+			    </tr>
+			    
+			    
+				<tr>
+					<td>000119225</td>
+					<td>Beverly, Peter Michael (Peter)</td>
+					<td>16794</td>
+					<td>17031</td>
+					<td>0</td>
+					<td>???</td>
+					<td>15928694459 (m)</td>
+					<td><a href="mailto:pbeverly@ccomm.biz">pbeverly@ccomm.biz</a></td>
+				</tr>
+				<tr class="alt">
+					<td>000119231</td>
+					<td>Doe, Jane (Jane)</td>
+					<td class="balrep-deficit">-7651</td>
+					<td>17031</td>
+					<td class="balrep-months-deficit">2</td>
+					<td>???</td>
+					<td>15928694459 (m)</td>
+					<td><a href="mailto:pbeverly@ccomm.biz">pbeverly@ccomm.biz</a></td>
+				</tr>
+				<tr>
+					<td>000119873</td>
+					<td>Hausmann, Johnny (Johnny)</td>
+					<td>16794</td>
+					<td>17031</td>
+					<td>0</td>
+					<td class="balrep-12-deficit">1</td>
+					<td>15928694459 (m)</td>
+					<td><a href="mailto:pbeverly@ccomm.biz">pbeverly@ccomm.biz</a></td>
+				</tr>
+				<tr class="alt">
+					<td>000119917</td>
+					<td>Poolman, Ric (Ric)</td>
+					<td>17462</td>
+					<td>13769</td>
+					<td>0</td>
+					<td class="balrep-3-deficit">3</td>
+					<td>15928694459 (m)</td>
+					<td><a href="mailto:pbeverly@ccomm.biz">pbeverly@ccomm.biz</a></td>
+				</tr>
+				<tr>
+					<td>000119225</td>
+					<td>Beverly, Peter Michael (Peter)</td>
+					<td>16794</td>
+					<td>17031</td>
+					<td>0</td>
+					<td>???</td>
+					<td>15928694459 (m)</td>
+					<td><a href="mailto:pbeverly@ccomm.biz">pbeverly@ccomm.biz</a></td>
+				</tr>
+				
+				<tr class="alt">
+					<td>000119225</td>
+					<td>Beverly, Peter Michael (Peter)</td>
+					<td>16794</td>
+					<td>17031</td>
+					<td>0</td>
+					<td>???</td>
+					<td>15928694459 (m)</td>
+					<td><a href="mailto:pbeverly@ccomm.biz">pbeverly@ccomm.biz</a></td>
+				</tr>
+				<tr>
+					<td>000119225</td>
+					<td>Beverly, Peter Michael (Peter)</td>
+					<td>16794</td>
+					<td>17031</td>
+					<td>0</td>
+					<td>???</td>
+					<td>15928694459 (m)</td>
+					<td><a href="mailto:pbeverly@ccomm.biz">pbeverly@ccomm.biz</a></td>
+				</tr>
+				<tr class="alt">
+					<td>000119225</td>
+					<td>Beverly, Peter Michael (Peter)</td>
+					<td>16794</td>
+					<td>17031</td>
+					<td>0</td>
+					<td>???</td>
+					<td>15928694459 (m)</td>
+					<td><a href="mailto:pbeverly@ccomm.biz">pbeverly@ccomm.biz</a></td>
+				</tr>
+				<tr>
+					<td>000119225</td>
+					<td>Beverly, Peter Michael (Peter)</td>
+					<td>16794</td>
+					<td>17031</td>
+					<td>0</td>
+					<td>???</td>
+					<td>15928694459 (m)</td>
+					<td><a href="mailto:pbeverly@ccomm.biz">pbeverly@ccomm.biz</a></td>
+				</tr>
+				<tr class="alt">
+					<td>000119225</td>
+					<td>Beverly, Peter Michael (Peter)</td>
+					<td>16794</td>
+					<td>17031</td>
+					<td>0</td>
+					<td>???</td>
+					<td>15928694459 (m)</td>
+					<td><a href="mailto:pbeverly@ccomm.biz">pbeverly@ccomm.biz</a></td>
+				</tr>
+				<tr>
+					<td>000119225</td>
+					<td>Beverly, Peter Michael (Peter)</td>
+					<td>16794</td>
+					<td>17031</td>
+					<td>0</td>
+					<td>???</td>
+					<td>15928694459 (m)</td>
+					<td><a href="mailto:pbeverly@ccomm.biz">pbeverly@ccomm.biz</a></td>
+				</tr>
+				<tr class="alt">
+					<td>000119225</td>
+					<td>Beverly, Peter Michael (Peter)</td>
+					<td>16794</td>
+					<td>17031</td>
+					<td>0</td>
+					<td>???</td>
+					<td>15928694459 (m)</td>
+					<td><a href="mailto:pbeverly@ccomm.biz">pbeverly@ccomm.biz</a></td>
+				</tr>
+				<tr>
+					<td>000119225</td>
+					<td>Beverly, Peter Michael (Peter)</td>
+					<td>16794</td>
+					<td>17031</td>
+					<td>0</td>
+					<td>???</td>
+					<td>15928694459 (m)</td>
+					<td><a href="mailto:pbeverly@ccomm.biz">pbeverly@ccomm.biz</a></td>
+				</tr>
+				<tr class="alt">
+					<td>000119225</td>
+					<td>Beverly, Peter Michael (Peter)</td>
+					<td>16794</td>
+					<td>17031</td>
+					<td>0</td>
+					<td>???</td>
+					<td>15928694459 (m)</td>
+					<td><a href="mailto:pbeverly@ccomm.biz">pbeverly@ccomm.biz</a></td>
+				</tr>
+				
+			</tbody>
+		</table>
+	-->
+	</div>
+</div>
+
+<div class="modal fade" id="balrep-report-error" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg">
+	<div class="modal-content">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+			<h4 class="modal-title" id="myModalLabel">Report Error</h4>
+		</div>
+		<div class="modal-body">
+			<div class="balrep-form-container" id="balrep-contact-form">
+			<form class="form-horizontal">
+			<fieldset>
+
+			<!-- Form Name -->
+			<legend class="hidden">Report Error</legend>
+
+			<div class="form-group">
+				<div class="col-md-12">
+
+				</div>
+			</div>
+
+			</fieldset>
+			</form>
+			</div> <!-- end #hris-user-legal -->
+
+		</div><!-- .container -->
+
+		<div class="modal-footer">
+			<button type="button" class="btn op-btn op-btn-dk" data-dismiss="modal">Cancel</button>
+			<button type="button" class="btn btn-primary pull-right op-btn">Send</button>
+		</div>
+	</div><!-- /.modal-content -->
+</div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+

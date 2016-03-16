@@ -1,18 +1,21 @@
-module.exports={
-    // map: {
-    // },
-    paths: {
-        "dropzone.js" : "js/dropzone.min.js",
-        "dropzone.css" : "styles/dropzone.css"
+module.exports = {
+    "paths": {
+        "opstools/MPDReport": "opstools/MPDReport/MPDReport.js",
     },
-    shim : {
-        'dropzone.js' : { packaged:false },
-        'dropzone.css' : {packaged:false },
-        'site/labels/opstool-MPDReport.js' : { packaged:false, ignore:true }
-    }
-    // ext: {
-    // }
+    "bundle": ['opstools/MPDReport'],
+	"meta": {
+		"js/datatables.min": {
+			"format": "global",
+			"sideBundle": true,
+			"deps": [
+				'js/datatables.min.css'
+			]
+		},
+		"opstools/MPDReport": {
+            "deps": [
+				'js/datatables.min',
+				'dropzone'
+            ]
+        }
+	}
 };
-    
-
-
