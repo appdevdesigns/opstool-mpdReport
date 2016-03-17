@@ -4,10 +4,12 @@ steal(
 	'opstools/MPDReport/views/MPDReportUpload/MPDReportUpload.ejs',
 	function() {
 		System.import('appdev').then(function() {
-			steal.import('appdev/ad',
-				'appdev/control/control',
-				'dropzone').then(function() {
-
+			steal.import(
+                'appdev/ad',              // 0
+                'appdev/control/control', // 1
+                'dropzone'                // 2
+            ).then(function(imports) {
+                    var Dropzone = imports[2];
 					AD.Control.extend('opstools.MPDReport.MPDReportUpload', {
 
 
