@@ -28,6 +28,7 @@ steal(
 
 							var busyIcon = this.element.find('.balrep-indicator span');
 							this.busyIndicator = new AD.widgets.ad_icon_busy(busyIcon);
+							this.memo = null; // will be assigned by parent controller
 
 							// listen for resize notifications
 							AD.comm.hub.subscribe('opsportal.resize', function(key, data) {
@@ -65,7 +66,6 @@ steal(
 								serviceURL = '/nsmpdreport/email/send';
 							}
 
-							var $memo = $('textarea#mpd-report-memo');
 							var $buttons = self.element.find('.balrep-send a');
 
 							self.busyIndicator.show();
@@ -74,7 +74,7 @@ steal(
 							AD.comm.service.post({
 								url: serviceURL,
 								params: {
-									memo: $memo.val()
+									memo: self.memo.getHTML()
 								}
 							})
 								.always(function() {

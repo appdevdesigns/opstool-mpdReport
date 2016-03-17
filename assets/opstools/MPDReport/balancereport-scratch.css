@@ -11,13 +11,16 @@
 }
 
 .opsportal-area-tool-MPDReport div.memo {
-    /*margin: 1em 0;*/
     padding: 2em;
 }
-.opsportal-area-tool-MPDReport .memo textarea#mpd-report-memo {
-    margin: .5em auto;
-    width: 100%;
-    height: 212px;
+/* Quill toolbar container */
+.opsportal-area-tool-MPDReport div.memo #mpd-report-memo-toolbar {
+    padding: 4px;
+}
+/* Quill text area */
+.opsportal-area-tool-MPDReport div.memo #mpd-report-memo {
+    height: 196px;
+    border: 1px solid #bbbbbb;
 }
 
 .balrep-income-expenditure.modal-content {

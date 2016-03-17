@@ -67,7 +67,15 @@ steal(
 							can.bind.call(self.toolReview, 'approved', function() {
 								self.showTool('#email');
 							});
-
+							
+                            // Get a reference to the memo Quill widget when it is ready
+                            can.bind.call(self.toolUpload, 'memoReady', function(event, widget) {
+                                self.memo = widget;
+                                self.toolReview.memo = widget;
+                                self.toolReportSend.memo = widget;
+                                self.toolReportSendNS.memo = widget;
+                            });
+							
 						},
 
 						// Show a tool and hide its siblings

@@ -7,9 +7,12 @@ steal(
 			steal.import(
                 'appdev/ad',              // 0
                 'appdev/control/control', // 1
-                'dropzone'                // 2
+                'dropzone',               // 2
+                'js/quill'                // 3
             ).then(function(imports) {
                     var Dropzone = imports[2];
+                    var Quill = imports[3];
+                    
 					AD.Control.extend('opstools.MPDReport.MPDReportUpload', {
 
 
@@ -51,8 +54,22 @@ steal(
 								// Notify the parent controller about the upload
 								can.trigger(self, 'uploaded');
 							});
-
-
+                            
+                            self.quill = new Quill('#mpd-report-memo', {
+                                theme: 'snow',
+                                modules: {
+                                    'link-tooltip': true,
+                                    'toolbar': {
+                                        container: '#mpd-report-memo-toolbar'
+                                    }
+                                }
+                            });
+                            // Have to wait for this control to finish instantiating before
+                            // calling can.trigger()
+                            setTimeout(function() {
+                                can.trigger(self, 'memoReady', [self.quill]);
+                            }, 500);
+                            
 						},
 
 
