@@ -72,8 +72,8 @@ steal(
                             can.bind.call(self.toolUpload, 'memoReady', function(event, widget) {
                                 self.memo = widget;
                                 self.toolReview.memo = widget;
-                                self.toolReportSend.memo = widget;
-                                self.toolReportSendNS.memo = widget;
+                                self.toolSend.memo = widget;
+                                self.toolSendNS.memo = widget;
                             });
 							
 						},
