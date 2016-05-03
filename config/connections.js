@@ -34,7 +34,7 @@ module.exports = {
 
     // The connection settings to connect to HRiS data.
     hris: {
-        module: 'sails-mysql',
+        adapter: 'sails-mysql',
         host: '....',
         port: '....',
         user: '....',
@@ -46,7 +46,7 @@ module.exports = {
 
     // The connection settings to connect with the NSS data
     nss: {
-        module: 'sails-mysql',
+        adapter: 'sails-mysql',
         host: '....',
         port: '....',
         user: '....',
@@ -59,7 +59,7 @@ module.exports = {
 
     // The connection settings to connect with the hrdb data
     hrdb: {
-        module: 'sails-mysql',
+        adapter: 'sails-mysql',
         host: '....',
         port: '....',
         user: '....',
