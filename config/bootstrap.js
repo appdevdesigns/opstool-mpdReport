@@ -11,6 +11,8 @@ var path = require('path');
 var AD = require('ad-utils');
 module.exports = function (cb) {
 
-    AD.module.permissions(path.join(__dirname, '..', 'setup', 'permissions'), cb);
-    // cb(err);   // in case of an unrecoverable error
+    // handle our common bootstrap setup instructions:
+        // - verify permissions are created
+        // - verify opsportal tool definitions are defined.
+    AD.module.bootstrap(__dirname, cb);
 };
