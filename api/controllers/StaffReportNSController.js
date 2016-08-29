@@ -151,7 +151,10 @@ module.exports = {
         
         // Optional memo note to be added to each email
         var memo = req.param('memo') || null;
-
+        
+        // Can optionally limit to just one specified region
+        var regionFilter = req.param('region') || null;
+        
         NSStaffProcessor.compileStaffData()
         .fail(function(err) {
             AD.log.error('... error compilingStaffData:', err);
@@ -164,6 +167,15 @@ module.exports = {
             var regionData = staffData.staffByRegion;
             // plus an additional group with all staff
             regionData['all'] = staffData.staffByAccount;
+            
+            // If a specific region was requested, drop all the others
+            if (regionFilter) {
+                for (var r in regionData) {
+                    if (r != regionFilter) {
+                        delete regionData[r];
+                    }
+                }
+            }
             
             NSStaffProcessor.compileRenderedEmails(regionData, extra)
             .fail(function(err) {
