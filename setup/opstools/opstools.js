@@ -7,11 +7,11 @@ module.exports = [
 
     { 
         key:'mpd.report', 
-        permissions:'mpdreports.balancereports, adcore.developer', 
+        permissions:'mpdreports.balancereports', 
         icon:'fa-area-chart', 
         controller:'MPDReport',
-        label:'mpd.toolMPDReport',
-        context:'opsportal',
+        label:'MPD Report',
+        // context:'opsportal',
         isController:true, 
         options:{}, 
         version:'0' 
