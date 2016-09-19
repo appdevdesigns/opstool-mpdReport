@@ -51,9 +51,13 @@ steal(
 							this.toggleStaffType('#US');
 
 							// listen for resize notifications
-							AD.comm.hub.subscribe('opsportal.resize', function(key, data) {
-								self.element.css("height", data.height + "px");
-								self.element.find(".opsportal-stage-container").css("height", data.height + "px");
+							this.idResize = AD.comm.hub.subscribe('opsportal.resize', function(key, data) {
+								if (self.element) {
+									self.element.css("height", data.height + "px");
+									self.element.find(".opsportal-stage-container").css("height", data.height + "px");
+								} else {
+									AD.comm.hub.unsubscribe(self.idResize);
+								}
 							});
 
 							// Show the Review panel after a file is uploaded

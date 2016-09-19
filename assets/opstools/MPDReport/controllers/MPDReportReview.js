@@ -85,8 +85,12 @@ steal(
                             this.key = '#review';
                             this.initDOM();
 
-                            AD.comm.hub.subscribe('ad.mpdreport.file.uploaded', function(msg, data) {
-                                self.loadResults();
+                            this.idFileUploaded = AD.comm.hub.subscribe('ad.mpdreport.file.uploaded', function(msg, data) {
+                                if (self.element) {
+                                    self.loadResults();
+                                } else {
+                                    AD.comm.hub.unsubscribe(self.idFileUploaded);
+                                }
                             });
 
                         },
