@@ -5,8 +5,7 @@
 }
 #balrep-type-list li a { opacity: 0.75; }
 
-/* fix invisible links */
-.opsportal-area-tool-MPDReport a.btn {
+#balreport-review-table a.btn {
     background-color: #000;
 }
 
@@ -14,11 +13,11 @@
     padding: 2em;
 }
 /* Quill toolbar container */
-.opsportal-area-tool-MPDReport div.memo #mpd-report-memo-toolbar {
+#mpd-report-memo-toolbar {
     padding: 4px;
 }
 /* Quill text area */
-.opsportal-area-tool-MPDReport div.memo #mpd-report-memo {
+#mpd-report-memo {
     height: 196px;
     border: 1px solid #bbbbbb;
 }
