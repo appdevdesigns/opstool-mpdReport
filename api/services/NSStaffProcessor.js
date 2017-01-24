@@ -253,6 +253,7 @@ module.exports= {
             },
             
             /*
+            // NOT USED. INSTEAD: avgIncome = avgLocalContrib + avgForeignContrib
             // Get GL income info
             function(next) {
                 LNSSCoreGLTrans.sumIncome(fiscalPeriod)
@@ -379,7 +380,7 @@ module.exports= {
                             //// Count number of months in defict
                             // Either balance is below 10
                             var isLowBalance = thisBalance < 10;
-                            // Or balance is below 500 and short pay pas taken
+                            // Or balance is below 500 and short pay was taken
                             var isShortPay = (thisBalance < 500 &&
                                     shortPeriods.indexOf(period) >= 0);
                             if (isLowBalance || isShortPay) {
