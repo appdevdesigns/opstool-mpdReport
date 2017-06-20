@@ -56,13 +56,7 @@ steal(
 							});
                             
                             self.quill = new Quill('#mpd-report-memo', {
-                                theme: 'snow',
-                                modules: {
-                                    'link-tooltip': true,
-                                    'toolbar': {
-                                        container: '#mpd-report-memo-toolbar'
-                                    }
-                                }
+                                theme: 'snow'
                             });
                             // Have to wait for this control to finish instantiating before
                             // calling can.trigger()
