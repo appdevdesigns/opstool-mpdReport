@@ -8,7 +8,7 @@ steal(
                 'appdev/ad',              // 0
                 'appdev/control/control', // 1
                 'dropzone',               // 2
-                'js/quill'                // 3
+                'js/quill-1.2.6.min'      // 3
             ).then(function(imports) {
                     var Dropzone = imports[2];
                     var Quill = imports[3];
