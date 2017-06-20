@@ -549,7 +549,7 @@ steal(
                             var self = this;
                             var href = '';
                             var memoData = encodeURIComponent(
-                                self.memo.getHTML()
+                                self.$memo.html()
                             );
 
                             if (!this.isDataVisible) {

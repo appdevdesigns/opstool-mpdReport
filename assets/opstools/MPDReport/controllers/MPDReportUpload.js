@@ -61,7 +61,7 @@ steal(
                             // Have to wait for this control to finish instantiating before
                             // calling can.trigger()
                             setTimeout(function() {
-                                can.trigger(self, 'memoReady', [self.quill]);
+                                can.trigger(self, 'memoReady', [self.quill, $('#mpd-report-memo .ql-editor')]);
                             }, 500);
                             
 						},

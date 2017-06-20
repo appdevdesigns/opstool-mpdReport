@@ -73,11 +73,15 @@ steal(
 							});
 							
                             // Get a reference to the memo Quill widget when it is ready
-                            can.bind.call(self.toolUpload, 'memoReady', function(event, widget) {
+                            can.bind.call(self.toolUpload, 'memoReady', function(event, widget, $memo) {
                                 self.memo = widget;
                                 self.toolReview.memo = widget;
                                 self.toolSend.memo = widget;
                                 self.toolSendNS.memo = widget;
+                                
+                                self.toolReview.$memo = $memo;
+                                self.toolSend.$memo = $memo;
+                                self.toolSendNS.$memo = $memo;
                             });
 							
 						},

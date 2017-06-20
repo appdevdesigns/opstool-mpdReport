@@ -74,7 +74,7 @@ steal(
 							AD.comm.service.post({
 								url: serviceURL,
 								params: {
-									memo: self.memo.getHTML()
+									memo: self.$memo.html()
 								}
 							})
 								.always(function() {
