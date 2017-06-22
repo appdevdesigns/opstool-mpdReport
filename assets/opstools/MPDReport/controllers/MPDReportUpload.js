@@ -8,10 +8,8 @@ steal(
                 'appdev/ad',              // 0
                 'appdev/control/control', // 1
                 'dropzone',               // 2
-                'js/quill-1.2.6.min'      // 3
             ).then(function(imports) {
                     var Dropzone = imports[2];
-                    var Quill = imports[3];
                     
 					AD.Control.extend('opstools.MPDReport.MPDReportUpload', {
 
@@ -55,14 +53,26 @@ steal(
 								can.trigger(self, 'uploaded');
 							});
                             
+                            /*
                             self.quill = new Quill('#mpd-report-memo', {
                                 theme: 'snow'
                             });
-                            // Have to wait for this control to finish instantiating before
-                            // calling can.trigger()
-                            setTimeout(function() {
-                                can.trigger(self, 'memoReady', [self.quill, $('#mpd-report-memo .ql-editor')]);
-                            }, 500);
+                            */
+                            
+                            webix.ready(function() {
+                                webix.ui({
+                                    view: 'richtext',
+                                    id: 'mpd-report-memo',
+                                    value: '',
+                                    container: 'mpd-report-memo'
+                                });
+                                
+                                // Have to wait for this control to finish instantiating before
+                                // calling can.trigger()
+                                setTimeout(function() {
+                                    can.trigger(self, 'memoReady', [$$('mpd-report-memo'), $('#mpd-report-memo .webix_richtext_editor')]);
+                                }, 500);
+                            });
                             
 						},
 
