@@ -261,11 +261,13 @@ steal(
                             this.isDataVisible = true;
 
                             // Init Bootstrap tooltips for "months in deficit"
+                            /*
                             $table.find('td.balrep-deficit[title]').tooltip({
                                 placement: 'right',
                                 container: 'body',
                                 html: true
                             });
+                            */
 
                             // Default sort options on all columns except the last column, which
                             // is not sortable.
