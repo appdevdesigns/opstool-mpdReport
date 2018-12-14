@@ -62,6 +62,9 @@ module.exports = {
      * Return a set of account analysis for the Staff in the given
      * region.
      *
+     * If the region is given in the format of C### then it will be 
+     * treated as a territory code instead.
+     *
      * @return  [ { staff2Obj }, { staff2Obj }, ... ];
      */
     dataForRegion: function(req, res) {
