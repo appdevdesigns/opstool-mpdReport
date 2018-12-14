@@ -47,6 +47,10 @@ module.exports = {
             // now convert these to a simple array of regionTexts
             var regionsFinal = [];
             for (var r in regions) regionsFinal.push(r);
+            
+            // add special cases
+            regionsFinal.push('C901');
+            regionsFinal.push('C910');
 
             // use our framework success response:
             res.AD.success(regionsFinal);
