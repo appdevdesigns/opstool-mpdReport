@@ -98,7 +98,7 @@ module.exports= {
         var usingTerritoryCode = false;
         
         // Is region actually a territory code?
-		if (region.match(/^C\d\d\d$/)) {
+		if (region && region.match(/^C\d\d\d$/)) {
         	usingTerritoryCode = true;
         }
         
