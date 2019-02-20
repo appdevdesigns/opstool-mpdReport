@@ -1,8 +1,8 @@
 /**
  * @function reauth()
  *
- * Automatically invoked by comm.js when it receives a 403 response
- * from the server.
+ * Automatically invoked by comm.js when it receives a 401 Unauthorized 
+ * response from the server.
  */
 
 
@@ -59,7 +59,8 @@ export default function reauth() {
 	})
 	.then((authType) => {
 		// If we have recently reauthenticated, this reauth() call was
-		// probably queued. So just resolve immediately.
+		// probably queued from before the session was renewed. So just resolve
+		// immediately now that there is a valid session.
 		if (Date.now() - lastAuthTime < (1000 * 60)) {
 			return;
 		}
@@ -138,8 +139,11 @@ var localAuth = function() {
 				show: true,
 			});
 			
+			var $username = $form.find('#username');
+			var $password = $form.find('#password');
 			var $button = $form.find('button.login');
 			var $message = $form.find('.alert');
+			var $spinner = $('<span class="fa fa-spin fa-cog"></span>');
 			
 			var inProgress = false;
 			var doLogin = function() {
@@ -150,12 +154,15 @@ var localAuth = function() {
 				
 				// Hide any previous messages
 				$message.hide();
+				// Show loading animation
+				$button.after($spinner);
+				$spinner.show();
 				
 				comm.post({
 					url: '/site/login',
 					data: {
-						username: $form.find('#username').val(),
-						password: $form.find('#password').val()
+						username: $username.val(),
+						password: $password.val()
 					}
 				})
 				.then(() => {
@@ -177,18 +184,31 @@ var localAuth = function() {
 					$message.text(message).show();
 					
 					// Clear password field
-					$form.find('#password').val('');
+					$password.val('');
 					
 					// Allow user to retry
 					inProgress = false;
 					$button.show();
+					$spinner.hide();
 				});
 			}
 			
 			$button.on('click', doLogin);
+			$password.on('keypress', (ev) => {
+				// Pressing Enter should submit
+				if ([3,10,13].indexOf(ev.keyCode) >= 0) {
+					ev.preventDefault();
+					doLogin();
+				}
+			});
 			$form.find('form').on('submit', (ev) => {
 				ev.preventDefault();
 				doLogin();
+			});
+			
+			// Auto focus the username field when form is shown
+			$form.on('shown.bs.modal', () => {
+				$username.focus();
 			});
 		})
 		
