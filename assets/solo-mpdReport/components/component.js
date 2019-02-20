@@ -16,12 +16,19 @@ export default class Component extends EventEmitter {
 	 * @param {object|function} [options.templateData]
 	 *		JSON data to merge into EJS template.
 	 * @param {object} [options.subTemplates]
-	 *		Dictionary of EJS sub template names and paths.
+	 *		Dictionary of EJS sub template names and paths:
 	 *		{
 	 *			<name>: <path>,
 	 *			...
 	 *		}
-	 *		These templates will be compiled into `this.subTemplates`.
+	 *		These templates will be compiled into `this.subTemplates` as a
+	 *		dictionary:
+	 *		{
+	 *			<name>: <compiled template>,
+	 *			...
+	 *		}
+	 *		A compiled template can be merged with data later by
+	 *		calling `this.subTemplates[ <name> ](data)`.
 	 * @param {string} [options.css]
 	 *		Full path and filename of the CSS file.
 	 */
@@ -73,7 +80,7 @@ export default class Component extends EventEmitter {
 			this.$element.html(html);
 		})
 		.then(() => {
-			// Compile any sub templates if they were given
+			// Compile sub-templates if they were given
 			if (options.subTemplates) {
 				return new Promise((subTemplatesDone, subTemplatesFail) => {
 					this.subTemplates = {
@@ -137,7 +144,11 @@ export default class Component extends EventEmitter {
 	
 	
 	/**
-	 * jQuery select something within the component
+	 * jQuery select something within the component.
+	 * 
+	 * So if you use `this.$(".some-class-name")` you can be sure it won't
+	 * select any elements from outside the component. Plus, it should run
+	 * faster since there is a smaller search space.
 	 * 
 	 * @param {string} selector
 	 *		DOM selector string
