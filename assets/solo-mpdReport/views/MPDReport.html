@@ -1,0 +1,39 @@
+<nav class="navbar navbar-expand-lg">
+	
+	<div class="navbar-brand"><h2><span class="badge badge-secondary"></span> MPD Report</h2></div>
+	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapsible" aria-controls="navbarCollapsible" aria-expanded="false">
+		<span class="navbar-toggler-icon fa fa-bars"></span>
+	</button>	
+	
+	<div class="collapse navbar-collapse" id="navbarCollapsible">
+	<ul class="navbar-nav nav-pills mr-auto report-steps">
+		<li class="nav-item stafftype-us stafftype-ns"><a href="#start" class="nav-link">Start</a></li>
+		<li class="nav-item stafftype-us"><a href="#upload" class="nav-link">Upload CSV</a></li>
+		<li class="nav-item stafftype-us stafftype-ns"><a href="#memo" class="nav-link">Memo</a></li>
+		<li class="nav-item stafftype-us"><a href="#reviewUS" class="nav-link">Review Report</a></li>
+		<li class="nav-item stafftype-ns"><a href="#reviewNS" class="nav-link">Review Report</a></li>
+		<li class="nav-item stafftype-us"><a href="#sendUS" class="nav-link">Send Email</a></li>
+		<li class="nav-item stafftype-ns"><a href="#sendNS" class="nav-link">Send Email</a></li>
+	</ul>
+	</div>
+</nav>
+
+<div class="alert alert-danger" id="mpdreport-error-alert">
+	<h4 class="alert-heading">
+		Error
+		<button type="button" class="close">
+			<span aria-hidden="true">&times;</span>
+		</button>
+	</h4>
+	<p></p>
+</div>
+
+<div class="main-body jumbotron">
+	<div id="mpd-report-start"></div>
+	<div id="mpd-report-upload"></div>
+	<div id="mpd-report-memo"></div>
+	<div id="mpd-report-review-us"></div>
+	<div id="mpd-report-review-ns"></div>
+	<div id="mpd-report-send-us"></div>
+	<div id="mpd-report-send-ns"></div>
+</div>

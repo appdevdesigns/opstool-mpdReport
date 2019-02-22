@@ -87,12 +87,20 @@ module.exports= {
      *
      * @param string region
      *      Optional. Compile only staff from this region.
+     *		If region is given in the format of C### then it will be understood as a
+     *		territory code instead.
      * @return Deferred
      */
     compileStaffData: function(region) {
         var self = this;
-        var region = region || null;
         var dfd = AD.sal.Deferred();
+        var region = region || null;
+        var usingTerritoryCode = false;
+        
+        // Is region actually a territory code?
+		if (region && region.match(/^C\d\d\d$/)) {
+        	usingTerritoryCode = true;
+        }
         
         // Final result. See documentation at the top.
         var compiledData = {
@@ -138,7 +146,13 @@ module.exports= {
             
             // Get NS with HRIS info
             function(next) {
-                LNSSRen.staffInfo({ regionCode: region })
+	            var options = { regionCode: region };
+	            if (usingTerritoryCode) {
+		            // Special case where we match against a territory instead of a region
+		            options = { territoryCode: region };
+				};
+	            
+                LNSSRen.staffInfo(options)
                 .fail(next)
                 .done(function(list) {
                     if (!list || !list.length) {
@@ -459,33 +473,42 @@ module.exports= {
                     
                     // Staff grouped by region
                     // (only one staff per account number)
-                    var region = entry.region;
-                    var isInternational = false;
-                    if (region == "Int'l") {
-                        // For international NS, use their HRIS sending region.
-                        // LNSSRen looks for the sending region label in the
-                        // 'mpd' language (not 'en' or 'zh-hans').
-                        // This allows us to customize the region text to match
-                        // Stewardwise without affecting their appearance in
-                        // HRIS.
-                        isInternational = true;
-                        region = entry.region = entry.sendingRegion;
-                    }
                     
-                    compiledData.staffByRegion[region] = compiledData.staffByRegion[region] || {};
-                    if (!compiledData.staffByRegion[region][num] || entry.isPOC) {
-                        // family point of contact takes priority
-                        compiledData.staffByRegion[region][num] = entry;
-                    }
-                    
-                    if (isInternational) {
-                        // Also add entry into "Int'l" region for international staff
-                        compiledData.staffByRegion["Int'l"] = compiledData.staffByRegion["Int'l"] || {};
-                        if (!compiledData.staffByRegion["Int'l"][num] || entry.isPOC) {
-                            compiledData.staffByRegion["Int'l"][num] = entry;
-                        }
-                        
-                    }
+                    if (usingTerritoryCode) {
+	                    // `region` from the function param is the territory code
+						compiledData.staffByRegion[region] = compiledData.staffByRegion[region] || {};
+						compiledData.staffByRegion[region][num] = entry;
+					} 
+					else {
+		                    
+						var entryRegion = entry.region;
+						var isInternational = false;
+						if (entryRegion == "Int'l") {
+							// For international NS, use their HRIS sending region.
+							// LNSSRen looks for the sending region label in the
+							// 'mpd' language (not 'en' or 'zh-hans').
+                            // This allows us to customize the region text to match
+							// Stewardwise without affecting their appearance in
+							// HRIS.
+							isInternational = true;
+							entryRegion = entry.region = entry.sendingRegion;
+						}
+						
+						compiledData.staffByRegion[entryRegion] = compiledData.staffByRegion[entryRegion] || {};
+						if (!compiledData.staffByRegion[entryRegion][num] || entry.isPOC) {
+							// family point of contact takes priority
+							compiledData.staffByRegion[entryRegion][num] = entry;
+						}
+						
+						if (isInternational) {
+							// Also add entry into "Int'l" region for international staff
+							compiledData.staffByRegion["Int'l"] = compiledData.staffByRegion["Int'l"] || {};
+							if (!compiledData.staffByRegion["Int'l"][num] || entry.isPOC) {
+								compiledData.staffByRegion["Int'l"][num] = entry;
+							}
+							
+						}
+					}
                     
                 }
                 

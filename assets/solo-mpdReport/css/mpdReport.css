@@ -1,0 +1,74 @@
+/* overall container */
+#mpd-report {
+	margin: 1em;
+}
+
+
+/* hide spinner icons in buttons */
+#mpd-report button .fa-spin {
+	display: none;
+}
+/* show spinner icons in buttons when they are disabled */
+#mpd-report button[disabled] .fa-spin {
+	display: inline-block;
+}
+/* show checkmark icons in buttons only when complete */
+#mpd-report button .fa-check {
+	display: none;
+}
+#mpd-report button.completed .fa-check {
+	display: inline-block;
+	padding-right: 1em;
+	color: lightgreen;
+}
+
+/* error message alert box hidden by default */
+#mpd-report #mpdreport-error-alert {
+	display: none;
+}
+
+/* REVIEW */
+/* review report region filter */
+#mpd-report .card.report-review ul.region-filter {
+	
+}
+	#mpd-report ul.region-filter li {
+		
+	}
+#mpd-report .card.report-review .card-body {
+	position: relative;
+}
+	#mpd-report .report-review ul.report-review-sidebar {
+		list-style-type: none;
+		margin: 0; 
+		padding: 0;
+	}
+	#mpd-report .report-review ul.report-review-sidebar li {
+		margin-top: 10px;
+		text-align: center;
+	}
+	#mpd-report .report-review ul.report-review-sidebar li a {
+		width: 8em;
+	}
+	
+	#mpd-report .report-review .report-review-table {
+	}
+	/* spinner icon hidden by default */
+	#mpd-report .report-review .report-review-loading {
+		display: none;
+		position: absolute;
+		left: 150px; right: 0; bottom: 0; top: 0;
+		text-align: center;
+		vertical-align: middle;
+		padding-top: 4em;
+	}
+
+/* SEND */
+/* mail envelope icon */
+#mpd-report .card.report-send .card-body {
+	padding-top: 110px;
+	background-image: url('/images/opstool-mpdReport/icon-mail.png');
+	background-position: center 5px;
+	background-size: auto 100px;
+	background-repeat: no-repeat;
+}

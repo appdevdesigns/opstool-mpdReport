@@ -47,6 +47,10 @@ module.exports = {
             // now convert these to a simple array of regionTexts
             var regionsFinal = [];
             for (var r in regions) regionsFinal.push(r);
+            
+            // add special cases
+            regionsFinal.push('C901');
+            regionsFinal.push('C910');
 
             // use our framework success response:
             res.AD.success(regionsFinal);
@@ -61,6 +65,9 @@ module.exports = {
      *
      * Return a set of account analysis for the Staff in the given
      * region.
+     *
+     * If the region is given in the format of C### then it will be 
+     * treated as a territory code instead.
      *
      * @return  [ { staff2Obj }, { staff2Obj }, ... ];
      */
