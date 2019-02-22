@@ -4,7 +4,7 @@ import EventEmitter from 'eventemitter2';
 import async from 'async';
 import css from '../css.js';
 
-export default class Component extends EventEmitter {
+export default class Controller extends EventEmitter {
 	
 	/**
 	 * @param {object} options
@@ -119,13 +119,7 @@ export default class Component extends EventEmitter {
 		})
 		.then(() => {
 			this.initDOM();
-			
-			// If there's a link to '#next', clicking on it will emit
-			// a 'next' event.
-			this.$('a[href="#next"]').on('click', (ev) => {
-				ev.preventDefault();
-				this.emit('next');
-			});
+			this.emit('loadedDOM');
 		});
 		
 	}

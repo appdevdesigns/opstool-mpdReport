@@ -1,5 +1,5 @@
 //import $ from 'jquery';
-import Component from './component.js';
+import MPDReportComponent from './mpdReportComponent.js';
 import comm from '../comm.js';
 
 /**
@@ -10,7 +10,7 @@ import comm from '../comm.js';
  * Note that this works differently from the US MPDReport Review controller,
  * even though the end result appears similar.
  */
-export default class Memo extends Component {
+export default class Memo extends MPDReportComponent {
 	
 	/**
 	 * @param {object} options

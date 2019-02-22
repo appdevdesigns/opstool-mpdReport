@@ -1,9 +1,9 @@
 //import $ from 'jquery';
 import Quill from 'quill';
-import Component from './component.js';
+import MPDReportComponent from './mpdReportComponent.js';
 
 
-export default class Memo extends Component {
+export default class Memo extends MPDReportComponent {
 	
 	constructor(options) {
 		options.template = options.template || '/solo-mpdReport/views/memo.html';

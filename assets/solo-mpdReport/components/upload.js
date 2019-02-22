@@ -1,9 +1,9 @@
 //import $ from 'jquery';
 import Dropzone from 'dropzone';
-import Component from './component.js';
+import MPDReportComponent from './mpdReportComponent.js';
 import comm from '../comm.js';
 
-export default class Upload extends Component {
+export default class Upload extends MPDReportComponent {
 	
 	constructor(options) {
 		options.template = options.template || '/solo-mpdReport/views/upload.html';

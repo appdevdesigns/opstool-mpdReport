@@ -1,7 +1,7 @@
 //import $ from 'jquery';
-import Component from './component.js';
+import MPDReportComponent from './mpdReportComponent.js';
 
-export default class Start extends Component {
+export default class Start extends MPDReportComponent {
 	
 	constructor(options) {
 		options.template = '/solo-mpdReport/views/start.html';
@@ -15,6 +15,7 @@ export default class Start extends Component {
 	
 	
 	initDOM() {
+		// User clicks on either '#US' or '#NS'
 		this.$('.staff-type a').on('click', (ev) => {
 			ev.preventDefault();
 			var $a = $(ev.target);

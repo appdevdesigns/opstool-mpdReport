@@ -1,5 +1,5 @@
 //import $ from 'jquery';
-import Component from './component.js';
+import Controller from './controller.js';
 import Start from './start.js';
 import Upload from './upload.js';
 import Memo from './memo.js';
@@ -9,7 +9,7 @@ import SendNS from './sendNS.js';
 import SendUS from './sendUS.js';
 import comm from '../comm.js';
 
-export default class MPDReport extends Component {
+export default class MPDReport extends Controller {
 	
 	constructor(options) {
 		options.template = '/solo-mpdReport/views/mpdReport.html';

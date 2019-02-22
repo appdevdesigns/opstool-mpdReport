@@ -1,9 +1,9 @@
 //import $ from 'jquery';
-import Component from './component.js';
+import MPDReportComponent from './mpdReportComponent.js';
 import comm from '../comm.js';
 
 
-export default class Send extends Component {
+export default class Send extends MPDReportComponent {
 	
 	/**
 	 * @param {object} options
