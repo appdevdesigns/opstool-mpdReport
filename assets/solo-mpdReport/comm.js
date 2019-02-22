@@ -160,7 +160,7 @@ class Comm extends EventEmitter {
 					}
 					// Some other error
 					else {
-						console.error('Unable to fetch: ' + options.url, obj);
+						//console.error('Unable to fetch: ' + options.url, obj);
 						// AppDev JSON response
 						if (obj.body && obj.body.status && obj.body.data) {
 							if (obj.body.message && !obj.body.data.message) {

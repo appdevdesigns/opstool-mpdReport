@@ -80,7 +80,7 @@ export default class MPDReport extends Component {
 		for (var id in this.steps) {
 			((step) => {
 				
-				// When a step is complete, automatically move on to the next
+				// When a step is complete, automatically navigate to the next
 				step.on('next', () => {
 					// Each component declares what is next for a given staff type
 					this.step = step.nextStep[ this.staffType ];
