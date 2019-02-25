@@ -28,15 +28,20 @@ export default class Upload extends MPDReportComponent {
 			paramName: 'csvFile',
 			headers: this.dropzoneHeaders,
 			accept: (file, done) => {
-				// Update to the current CSRF token before uploading
-				this.dropzoneHeaders['X-CSRF-Token'] = comm.csrfToken;
-				done();
+				comm.fetchCSRFToken()
+				.then((token) => {
+					// Update the current CSRF token before uploading
+					this.dropzoneHeaders['X-CSRF-Token'] = token;
+					done();
+				});
 			}
 		});
 		
 		this.dropzone.on('success', (file, response) => {
 			// Notify parent about the upload
 			this.emit('uploaded');
+			
+			// After the upload, go to the next step
 			this.emit('next');
 		});
 	}

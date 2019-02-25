@@ -7,7 +7,6 @@ import ReviewNS from './reviewNS.js';
 import ReviewUS from './reviewUS.js';
 import SendNS from './sendNS.js';
 import SendUS from './sendUS.js';
-import comm from '../comm.js';
 
 export default class MPDReport extends Controller {
 	

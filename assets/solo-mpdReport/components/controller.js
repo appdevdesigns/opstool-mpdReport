@@ -1,3 +1,19 @@
+/**
+ * @class Controller
+ *
+ * A base class to extend for making interactive pages or widgets.
+ *
+ * `options.element` is the only required parameter. The specified DOM element
+ * must already be present on the page before the controller object is created.
+ * You may optionally also supply an HTML template that will be inserted into
+ * the element with `options.template`. And if you also specify 
+ * the`options.templateData` parameter, the template will be parsed as EJS
+ * and merged with the data before insertion.
+ *
+ * After the HTML has been inserted into the DOM, the object's initDOM() method
+ * will be called. The `loadedDOM` event will also get emitted at that point.
+ */
+
 //import $ from 'jquery';
 //import ejs from 'ejs/ejs.min.js';
 import EventEmitter from 'eventemitter2';
@@ -9,7 +25,7 @@ export default class Controller extends EventEmitter {
 	/**
 	 * @param {object} options
 	 * @param {element|string} options.element
-	 *		DOM element for this component.
+	 *		The container DOM element for this component.
 	 *		Can also be a CSS selector string.
 	 * @param {string} [options.template]
 	 *		Full path and filename of the HTML or EJS template.
@@ -80,7 +96,7 @@ export default class Controller extends EventEmitter {
 			this.$element.html(html);
 		})
 		.then(() => {
-			// Compile sub-templates if they were given
+			// Compile sub-templates if any were given
 			if (options.subTemplates) {
 				return new Promise((subTemplatesDone, subTemplatesFail) => {
 					this.subTemplates = {
@@ -128,8 +144,8 @@ export default class Controller extends EventEmitter {
 	
 	/**
 	 * Any initialization that depends on, or makes use of the DOM should
-	 * go here. This includes initializing sub-components, because components
-	 * have DOM elements.
+	 * go here. This includes initializing sub-controllers, because those
+	 * have DOM elements themselves.
 	 */
 	initDOM() {
 		// the subclass should override this
