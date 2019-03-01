@@ -15,13 +15,15 @@ export default class Start extends MPDReportComponent {
 	
 	
 	initDOM() {
+		var self = this;
+		
 		// User clicks on either '#US' or '#NS'
-		this.$('.staff-type a').on('click', (ev) => {
+		this.$('.staff-type a').on('click', function(ev) {
 			ev.preventDefault();
-			var $a = $(ev.target);
-			this.emit('selected', $a.attr('href'));
+			var $a = $(this);
+			self.emit('selected', $a.attr('href'));
 			
-			this.emit('next');
+			self.emit('next');
 		});
 	}
 	

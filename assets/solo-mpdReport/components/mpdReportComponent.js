@@ -9,7 +9,7 @@ export default class MPDReportComponent extends Controller {
 	constructor(options={}) {
 		super(options);
 		
-		this.on('domLoaded', () => {
+		this.on('loadedDOM', () => {
 			// If there's a link to '#next', clicking on it will emit
 			// a 'next' event so that the parent controller can navigate
 			// to the following component.

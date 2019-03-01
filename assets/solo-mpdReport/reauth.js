@@ -13,12 +13,16 @@ import comm from './comm.js';
 // timestamp of last authentication
 var lastAuthTime = 0;
 
-
-var config, casTemplate, localTemplate;
+// Mutex lock to ensure only one reauth at a time
+var lock = new Lock();
+// Also used to make sure config files are loaded before authentication
+// is attempted.
+lock.acquire();
 
 // Fetch config & templates right after this file is loaded.
 // Slight delay to avoid circular dependency problems, since comm.js also
 // depends on this reauth.js.
+var config, casTemplate, localTemplate;
 setTimeout(() => {
 
 	// @return {Promise}
@@ -37,16 +41,19 @@ setTimeout(() => {
 		json: false
 	});
 	
+	lock.release();
+	
 }, 100);
-
-// Mutex lock to ensure only one reauth at a time
-var lock = new Lock();
 
 
 
 /**
  * Display a re-login form to allow the user to reauthenticate after
  * the session has timed out.
+ *
+ * If additional calls to this function are made while a reauth is already
+ * taking place, those additional calls will be queued and resolved immediately
+ * once the reauth completes.
  *
  * @return {Promise}
  *		Resolves after successful authentication.
@@ -58,7 +65,7 @@ export default function reauth() {
 		return config;
 	})
 	.then((authType) => {
-		// If we have recently reauthenticated, this reauth() call was
+		// If we have already recently reauthenticated, this reauth() call was
 		// probably queued from before the session was renewed. So just resolve
 		// immediately now that there is a valid session.
 		if (Date.now() - lastAuthTime < (1000 * 60)) {

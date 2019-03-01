@@ -1,3 +1,32 @@
+/**
+ * HTTP requests that automatically handle CSRF tokens, authentication, and
+ * parsing JSON data.
+ *
+ * @usage:
+ *
+ *		import comm from './comm.js';
+ *
+ *		comm.get('/some/server/data')
+ *		.then((data) => {
+ *			alert('Got data: ' + JSON.stringify(data));
+ *		});
+ *
+ *		comm.get({ url: '/some/server/html', json: false })
+ *		.then((html) => {
+ *			myDiv.innerHTML = html;
+ *		});
+ *
+ *		comm.post({
+ *			url: '/some/json/service',
+ *			data: { param1: 'value1', param2: 'value2' },
+ *			qs: { querystringArg1: 'qsValue1' }
+ *		})
+ *		.catch((err) => {
+ *			console.error(err);
+ *		});
+ *
+ *		
+ */
 import request from 'browser-request';
 import EventEmitter from 'eventemitter2';
 import reauth from './reauth.js';
@@ -18,6 +47,7 @@ class Comm extends EventEmitter {
 		})
 		.catch((err) => {
 			console.error('Error while trying to fetch CSRF token');
+			throw err;
 		});
 	}
 
@@ -114,20 +144,26 @@ class Comm extends EventEmitter {
 							requestOK(body.data);
 						}
 						else if (body.status && body.status != 'success') {
-							// Does this ever happen? Typically if not successful,
-							// the status code will not be 200, so the `err`
-							// argument would be set and we won't reach here.
+							// No `err` produced by `request` library, but the
+							// JSON response wrapper says there was an error.
+							requestErr({ res, body });
+						}
+						else if (res.statusCode >= 500) {
+							// The `request` library doesn't produce an `err`
+							// even if the server sends a 5XX response.
+							// "Internal Server Error", etc.
+							// That seems wrong since it's clearly an error. 
 							requestErr({ res, body });
 						}
 						else {
-							// Plain response
+							// Plain string response
 							requestOK(body);
 						}
 					});
 				});
 			})
 			.then((data) => {
-				// FINAL RESULT HERE
+				// SUCCESSFUL FINAL RESULT HERE
 				resolve(data);
 			})
 			.catch((obj) => {

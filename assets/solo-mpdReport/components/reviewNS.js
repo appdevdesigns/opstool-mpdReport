@@ -71,6 +71,7 @@ export default class Memo extends MPDReportComponent {
 				);
 			}
 		});
+		
 	}
 	
 	
