@@ -7,6 +7,7 @@ import ReviewNS from './reviewNS.js';
 import ReviewUS from './reviewUS.js';
 import SendNS from './sendNS.js';
 import SendUS from './sendUS.js';
+import Translate from '../translate.js';
 
 export default class MPDReport extends Controller {
 	
@@ -24,10 +25,19 @@ export default class MPDReport extends Controller {
 		
 		// Ensure getMemoHTML() always knows what `this` is
 		this.getMemoHTML = this.getMemoHTML.bind(this);
+		
+		// Initialize multilingual labels
+		this.translate = new Translate({
+			context: 'mpdreport',
+			base: this.$element,
+			loggingEnabled: true,
+		});
 	}
 	
 	
 	initDOM() {
+		var self = this;
+		
 		// Components for all steps
 		this.steps = {
 			'#start': new Start({
@@ -63,11 +73,11 @@ export default class MPDReport extends Controller {
 		});
 		
 		// User navigated to different step
-		this.$('ul.report-steps li a').on('click', (ev) => {
-			var $a = $(ev.target);
+		this.$('ul.report-steps li a').on('click', function(ev) {
+			var $a = $(this);
 			ev.preventDefault();
-			this.step = $a.attr('href');
-			this.navigateToStep();
+			self.step = $a.attr('href');
+			self.navigateToStep();
 		});
 		
 		// User selected a staff type
@@ -132,7 +142,7 @@ export default class MPDReport extends Controller {
 			this.staffType = type;
 			// Use only the alphanumeric chars for the badge label
 			var label = this.staffType.replace(/\W/g, '');
-			this.$('.navbar-brand .badge').text(label);
+			this.$('.navbar-brand .badge').text(this.translate.t(label));
 		}
 		
 		// Hide all step options first
