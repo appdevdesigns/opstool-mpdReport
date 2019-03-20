@@ -18,6 +18,7 @@
 //import ejs from 'ejs/ejs.min.js';
 import EventEmitter from 'eventemitter2';
 import async from 'async';
+import comm from '../comm.js';
 import css from '../css.js';
 
 export default class Controller extends EventEmitter {
@@ -61,7 +62,7 @@ export default class Controller extends EventEmitter {
 			}
 			if (options.template) {
 				// If template was provided, load that into the DOM element
-				return $.get(options.template);
+				return comm.get({ url: options.template, json: false });
 			}
 		})
 		.then((result) => {
@@ -106,8 +107,8 @@ export default class Controller extends EventEmitter {
 					*/
 					};
 					async.eachOf(options.subTemplates, (templateFile, templateName, ok) => {
-						$.get(templateFile)
-						.done((content) => {
+						comm.get({ url: templateFile, json: false })
+						.then((content) => {
 							try {
 								// Replace CanJS tags with regular EJS tags
 								content = content.replace(/<%==/g, '<%-');
@@ -119,7 +120,7 @@ export default class Controller extends EventEmitter {
 							}
 							ok();
 						})
-						.fail((xhr, status, err) => {
+						.catch((err) => {
 							ok(err);
 						});
 					}, (err) => {

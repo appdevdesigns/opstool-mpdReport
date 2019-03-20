@@ -1,6 +1,11 @@
 /* overall container */
 #mpd-report {
-	margin: 1em;
+	/*margin: 1em;*/
+}
+#mpd-report .main-body {
+	background-image: url(bg1.jpg);
+	background-size: 100% auto;
+	background-repeat: repeat-y;
 }
 
 

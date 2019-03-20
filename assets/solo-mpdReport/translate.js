@@ -10,10 +10,11 @@
  * Text within <T> tags will likewise be translated:
  *	  <h2><t>Hello world</t></h2>
  *
- * Placeholder text will be also be translated:
+ * Placeholder text will also be translated:
  *	  <input placeholder="Enter your name">
  *
  */
+//import $ from 'jquery';
 import EventEmitter from 'eventemitter2';
 import comm from './comm.js';
 

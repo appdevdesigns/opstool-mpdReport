@@ -12,7 +12,7 @@ import Translate from '../translate.js';
 export default class MPDReport extends Controller {
 	
 	constructor(options) {
-		options.template = '/solo-mpdReport/views/mpdReport.html';
+		options.template = '/solo-mpdReport/views/MPDReport.html';
 		options.css = '/solo-mpdReport/css/mpdReport.css';
 		super(options);	
 		
