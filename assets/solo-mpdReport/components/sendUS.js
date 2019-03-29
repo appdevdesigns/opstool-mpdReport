@@ -25,9 +25,11 @@ export default class Send extends MPDReportComponent {
 	
 	
 	initDOM() {
+		var self = this;
+		
 		// "Send" button
 		var $button = this.$('button');
-		$button.on('click', (ev) => {
+		$button.on('click', function(ev) {
 			// Disable button while request is active
 			$button.prop('disabled', true);
 			$button.removeClass('completed');
@@ -35,7 +37,7 @@ export default class Send extends MPDReportComponent {
 			comm.post({
 				url: '/mpdreport/email/send',
 				data: {
-					memo: this.getMemoHTML()
+					memo: self.getMemoHTML()
 				}
 			})
 			.then(() => {
@@ -45,7 +47,7 @@ export default class Send extends MPDReportComponent {
 			})
 			.catch((err) => {
 				$button.prop('disabled', false);
-				this.emit('error', err);
+				self.emit('error', err);
 			});
 		});
 		
