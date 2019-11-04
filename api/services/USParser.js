@@ -103,7 +103,9 @@ module.exports= {
                         csvInfo[account].phone = usStaff[account].Phone;
                         csvInfo[account].email = usStaff[account].Email;
                         csvInfo[account].hrisName = usStaff[account].Name;
-                        
+                        csvInfo[account].city = usStaff[account].City;
+                        csvInfo[account].region = region;
+
                         // Group by region -> account
                         compiledData.staffByRegion[region] = compiledData.staffByRegion[region] || {};
                         compiledData.staffByRegion[region][account] = csvInfo[account];
