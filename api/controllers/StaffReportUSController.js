@@ -245,11 +245,22 @@ module.exports = {
         // Generate the Regional Report Data
         USParser.compileStaffData('sas_curr.csv', function(data) {
             
-            // Use only the requested region
             var people = {};
+            // Use only the "missing" region
             if (region == 'missing') {
                 people = data.missing;
-            } else {
+            } 
+            // Use all regions
+            else if (region == 'all') {
+                people = data.missing;
+                for (var r in data.staffByRegion) {
+                    for (var staffNum in data.staffByRegion[r]) {
+                        people[staffNum] = data.staffByRegion[r][staffNum];
+                    }
+                }
+            }
+            // Use only the requested region
+            else {
                 people = data.staffByRegion[region];
             }
             
