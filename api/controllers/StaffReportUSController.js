@@ -123,50 +123,106 @@ module.exports = {
                 regionData.missing = data.missing;
             }
             
-            // Send reports for each region
-            async.forEachOfLimit(regionData, 5, function(people, region, next) {
+            async.series([
+                // Combo report containing all regions
+                (next) => {
+                    var comboData = [];
+                    
+                    // Combine all regions into a single array
+                    for (var region in regionData) {
+                        var people = regionData[region];
+                        for (var staffNum in people) {
+                            var staffData = people[staffNum];
+                            comboData.push(staffData);
+                        }
+                    }
+                    
+                    // Sort by account balance
+                    comboData.sort(function(a, b) {
+                        var valueA = a.accountBal;
+                        var valueB = b.accountBal;
+                        if (typeof valueA == 'string') {
+                            valueA = Number(valueA.replace(',', ''));
+                        }
+                        if (typeof valueB == 'string') {
+                            valueB = Number(valueB.replace(',', ''));
+                        }
+                        return valueA - valueB;
+                    });
+                    
+                    EmailNotifications.trigger('mpdreports.us.region.all', {
+                        variables: {
+                            people: comboData,
+                            extra: extra
+                        },
+                        to: []
+                    })
+                    .fail((err) => {
+                        Log('Error queueing US MPD email for combined regions');
+                        Log(err);
+                        next();
+                    })
+                    .done(() => {
+                        numEmails += 1;
+                        Log('Queued US MPD email for combined regions');
+                        next();
+                    });
+                    
+                },
+                
+                // Inidividual regions separately
+                (next) => {
             
-                // Convert `people` object into an array
-                var list = [];
-                for (var num in people) {
-                    list.push(people[num]);
+                    // Send reports for each region
+                    async.forEachOfLimit(regionData, 5, function(people, region, nextRegion) {
+                    
+                        // Convert `people` object into an array
+                        var list = [];
+                        for (var num in people) {
+                            list.push(people[num]);
+                        }
+                        
+                        if (list.length == 0) return next();
+                        
+                        // Sort by account balance
+                        list.sort(function(a, b) {
+                            var valueA = a.accountBal;
+                            var valueB = b.accountBal;
+                            if (typeof valueA == 'string') {
+                                valueA = Number(valueA.replace(',', ''));
+                            }
+                            if (typeof valueB == 'string') {
+                                valueB = Number(valueB.replace(',', ''));
+                            }
+                            return valueA - valueB;
+                        });
+                        
+                        EmailNotifications.trigger('mpdreport.us.region.'+(region.toLowerCase()), {
+                            variables: {
+                                people: list,
+                                extra: extra
+                            },
+                            to: []
+                        })
+                        .fail(function(err){
+                            Log('Error queueing US MPD email for region: ' + region);
+                            Log(err);
+                            
+                            nextRegion();
+                        })
+                        .done(function(){
+                            numEmails += 1;
+                            Log('Queued US MPD email for region: ' + region);
+                            nextRegion();
+                        });
+            
+                    }, function(err) {
+                        if (err) next(err);
+                        else next();
+                    });
                 }
                 
-                if (list.length == 0) return next();
-                
-                // Sort by account balance
-                list.sort(function(a, b) {
-                    var valueA = a.accountBal;
-                    var valueB = b.accountBal;
-                    if (typeof valueA == 'string') {
-                        valueA = Number(valueA.replace(',', ''));
-                    }
-                    if (typeof valueB == 'string') {
-                        valueB = Number(valueB.replace(',', ''));
-                    }
-                    return valueA - valueB;
-                });
-                
-                EmailNotifications.trigger('mpdreport.us.region.'+(region.toLowerCase()), {
-                    variables: {
-                        people: list,
-                        extra: extra
-                    },
-                    to: []
-                })
-                .fail(function(err){
-                    Log('Error queueing US MPD email for region: ' + region);
-                    Log(err);
-                    
-                    next();
-                })
-                .done(function(){
-                    numEmails += 1;
-                    Log('Queued US MPD email for region: ' + region);
-                    next();
-                });
-    
-            }, function(err) {
+            ], (err) => {
                 if (err) {
                     res.AD.error(err, 500);
                 }
