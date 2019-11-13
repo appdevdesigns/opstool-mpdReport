@@ -11,9 +11,7 @@
  * http://sailsjs.org/#documentation
  */
 
-// var path = require('path');
-// var ADCore = require(path.join(process.cwd(), 'api', 'services', 'ADCore.js'));
-// var serviceStack = ADCore.policy.serviceStack();
+var serviceStack = ADCore.policy.serviceStack();
 
 module.exports = {
 
@@ -32,5 +30,10 @@ module.exports = {
 //    }
 
 //// TODO:  configure permissions for our Controllers.
+
+    'opstool-mpdReport/NSDashboardController': {
+        //thirteenMonthIandE: serviceStack.concat(['mpdReportStaffInfo', 'stewardwiseToken']),
+        thirteenMonthIandE: 'stewardwiseToken'
+    }
 
 };
