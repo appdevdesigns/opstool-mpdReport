@@ -10,7 +10,6 @@ module.exports = function(req, res, next) {
         return LNSSRen.findByToken(token);
     })
     .then((result) => {
-        console.log(result);
         if (result && result[0]) {
             req.stewardwise = req.stewardwise || {};
             req.stewardwise.nssren = result[0];

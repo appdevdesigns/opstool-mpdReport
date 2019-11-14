@@ -33,6 +33,7 @@ module.exports = {
         };
         var period; // fiscal period from 13 months ago
         var account = req.stewardwise.nssren.account_number;
+        res.set('Access-Control-Allow-Origin', '*');
         
         
         async.series([
@@ -62,7 +63,7 @@ module.exports = {
                 LNSSCoreGLTrans.incomeExpensesGroupedByPeriod(period, account)
                 .then((data) => {
                     for (var period in data) {
-                        // Format date
+                        // Format dates
                         results.periods.push(period.substr(0, 4) + '年' + period.substr(4, 2) + '月');
                         
                         // Round up numbers
