@@ -33,6 +33,7 @@ module.exports = {
         };
         var period; // fiscal period from 13 months ago
         var account = req.stewardwise.nssren.account_number;
+        var periodLookup = {};
         res.set('Access-Control-Allow-Origin', '*');
         
         
@@ -60,11 +61,24 @@ module.exports = {
             },
             
             (next) => {
+                LNSSCoreFiscalPeriod.fiscalPeriodsToCalendar({
+                    min: period,
+                    format: 'YYYY年MM月'
+                })
+                .then((results) => {
+                    periodLookup = results;
+                    next();
+                })
+                .catch(next);
+            },
+            
+            (next) => {
                 LNSSCoreGLTrans.incomeExpensesGroupedByPeriod(period, account)
                 .then((data) => {
                     for (var period in data) {
                         // Format dates
-                        results.periods.push(period.substr(0, 4) + '年' + period.substr(4, 2) + '月');
+                        //results.periods.push(period.substr(0, 4) + '年' + period.substr(4, 2) + '月');
+                        results.periods.push(periodLookup[period] || '*'+period);
                         
                         // Round up numbers
                         results.foreignIncome.push(Math.round(data[period].foreignIncome));
