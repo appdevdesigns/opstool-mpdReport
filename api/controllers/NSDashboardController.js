@@ -61,25 +61,12 @@ module.exports = {
             },
             
             (next) => {
-                LNSSCoreFiscalPeriod.fiscalPeriodsToCalendar({
-                    min: period,
-                    format: 'YYYY年MM月'
-                })
-                .then((results) => {
-                    periodLookup = results;
-                    next();
-                })
-                .catch(next);
-            },
-            
-            (next) => {
                 LNSSCoreGLTrans.incomeExpensesGroupedByPeriod(period, account)
                 .then((data) => {
                     for (var period in data) {
                         // Format dates
-                        //results.periods.push(period.substr(0, 4) + '年' + period.substr(4, 2) + '月');
-                        results.periods.push(periodLookup[period] || '*'+period);
-                        
+                        results.periods.push(period.substr(0, 4) + '年' + period.substr(4, 2) + '月');
+ 
                         // Round up numbers
                         results.foreignIncome.push(Math.round(data[period].foreignIncome));
                         results.localIncome.push(Math.round(data[period].localIncome));
