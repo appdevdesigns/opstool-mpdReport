@@ -1,0 +1,51 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+    <head>
+        <title><%- pageTitle %></title>
+        <meta http-equiv="Content-Type" content="application/vnd.ms-excel; charset=utf-8" />
+        <style>
+            .num { msp-number-format: General; }
+            .currency { mso-number-format: "\#\,\#\#0\.\00_ \;\[Red\]\-\#\,\#\#0\.00\ "; }
+            .text { mso-number-format: "\@"; }
+        </style>
+    </head>
+    
+    <body>
+        <table>
+            <tr>
+                <th rowspan="2">Name</th>
+                <th rowspan="2">Account</th>
+                <th colspan="13">Local support</th>
+                <th colspan="13">Foreign support</th>
+                <th colspan="13">Expenses</th>
+            </tr>
+            <tr>
+                <% [1,2,3].forEach((i) => { %>
+                    <% periods.forEach((period) => { %>
+                        <th><%- period %></th>
+                    <% }) %>
+                <% }) %>
+            </tr>
+            
+            <% staffList.forEach((staff) => { %>
+                <tr>
+                    <th><%- staff.name %></th>
+                    <th><%- staff.accountNum %></th>
+                    <% periods.forEach((period) => { %>
+                        <% 
+                            data[staff.accountNum] = data[staff.accountNum] || {};
+                            data[staff.accountNum][period] = data[staff.accountNum][period] || {};
+                        %>
+                        <td class="currency"><%- Math.round(data[staff.accountNum][period]['localIncome']) %></td>
+                    <% }) %>
+                    <% periods.forEach((period) => { %>
+                        <td class="currency"><%- Math.round(data[staff.accountNum][period]['foreignIncome']) %></td>
+                    <% }) %>
+                    <% periods.forEach((period) => { %>
+                        <td class="currency"><%- Math.round(data[staff.accountNum][period]['expenses']) %></td>
+                    <% }) %>
+                </tr>
+            <% }) %>
+        </table>
+        
+    </body>
+</html>

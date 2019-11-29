@@ -88,6 +88,85 @@ module.exports = {
             }
         });
         
+    },
+    
+    
+    /**
+     * GET /opstool-mpdReport/NSDashboard/dataReport
+     *
+     * 
+     */
+    dataReport: function(req, res) {
+        var results = {};
+        var startingPeriod, staffList;
+        
+        async.series([
+            // Get period from 13 months ago
+            (next) => {
+                LNSSCoreGLTrans.getPastPeriod(13)
+                .done((period) => {
+                    startingPeriod = period;
+                    next();
+                })
+                .fail(next);
+            },
+            
+            // Get list of active staff
+            (next) => {
+                LNSSRen.staffInfo()
+                .done((list) => {
+                    staffList = list;
+                    next();
+                })
+                .fail(next);
+            },
+            
+            // Get I&E for each staff
+            (next) => {
+                async.eachSeries(
+                    staffList, 
+                    (staff, nextStaff) => {
+                        LNSSCoreGLTrans.incomeExpensesGroupedByPeriod(startingPeriod, staff.accountNum)
+                        .then((data) => {
+                            results[staff.accountNum] = data;
+                            nextStaff();
+                        })
+                        .catch(nextStaff);
+                    },
+                    (err) => {
+                        if (err) next(err);
+                        else next();
+                    }
+                );
+            },
+            
+        ], (err) => {
+            if (err) res.serverError(err);
+            else {
+                // Get list of calendar periods
+                var periods = [];
+                for (var period in results[staffList[0].accountNum]) {
+                    periods.push(period);
+                }
+                
+                res.set({
+                    'Content-type': 'application/vnd.ms-excel; charset=utf-8',
+                    'Content-disposition': 'attachment; filename="mpd-dashboard-data.xls"',
+                });
+                res.view(
+                    'opstool-mpdReport/nsdashboard/datareport',
+                    {
+                        periods: periods, 
+                        staffList: staffList,
+                        data: results,
+                        pageTitle: 'NS MPD Dashboard Data',
+                        layout: false
+                    }
+                );
+                //res.send(results);
+            }
+        });
     }
+        
 
 };
