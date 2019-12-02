@@ -1,51 +1,226 @@
-<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+<!DOCTYPE html>
+<html>
     <head>
         <title><%- pageTitle %></title>
-        <meta http-equiv="Content-Type" content="application/vnd.ms-excel; charset=utf-8" />
+        <link rel="stylesheet" href="/solo-mpdReport/css/datatables.min.css" />
         <style>
-            .num { msp-number-format: General; }
-            .currency { mso-number-format: "\#\,\#\#0\.\00_ \;\[Red\]\-\#\,\#\#0\.00\ "; }
-            .text { mso-number-format: "\@"; }
+            body {
+                font-family: sans-serif;
+                padding: 1em;
+            }
+            button {
+                margin: 1em 0;
+            }
+            table th, table td {
+                padding: 3px;
+            }
+            #chart {
+                width: 90vw;
+                height: 20em;
+                margin: 0 auto;
+            }
+            table th.staff-name {
+                cursor: pointer;
+                text-decoration: underline;
+            }
+            table th.date {
+                font-size: .8em;
+                white-space: nowrap;
+            }
         </style>
     </head>
     
     <body>
-        <table>
-            <tr>
-                <th rowspan="2">Name</th>
-                <th rowspan="2">Account</th>
-                <th colspan="13">Local support</th>
-                <th colspan="13">Foreign support</th>
-                <th colspan="13">Expenses</th>
-            </tr>
-            <tr>
-                <% [1,2,3].forEach((i) => { %>
-                    <% periods.forEach((period) => { %>
-                        <th><%- period %></th>
-                    <% }) %>
-                <% }) %>
-            </tr>
-            
-            <% staffList.forEach((staff) => { %>
+        <h1>
+            <%- pageTitle %>
+            <button id="download">Download as Excel file</button>
+        </h1>
+        
+        <h3>Select a name from the table to display chart</h3>
+        <div id="chart"></div>
+        
+        <table id="mpd-data">
+            <thead>
                 <tr>
-                    <th><%- staff.name %></th>
-                    <th><%- staff.accountNum %></th>
-                    <% periods.forEach((period) => { %>
-                        <% 
-                            data[staff.accountNum] = data[staff.accountNum] || {};
-                            data[staff.accountNum][period] = data[staff.accountNum][period] || {};
-                        %>
-                        <td class="currency"><%- Math.round(data[staff.accountNum][period]['localIncome']) %></td>
-                    <% }) %>
-                    <% periods.forEach((period) => { %>
-                        <td class="currency"><%- Math.round(data[staff.accountNum][period]['foreignIncome']) %></td>
-                    <% }) %>
-                    <% periods.forEach((period) => { %>
-                        <td class="currency"><%- Math.round(data[staff.accountNum][period]['expenses']) %></td>
+                    <th rowspan="2">Name</th>
+                    <th rowspan="2">Account</th>
+                    <th rowspan="2">Estimated Balance</th>
+                    <th colspan="13" style="border: solid black 1px; background-color: lightgreen">Local support</th>
+                    <th colspan="13" style="border: solid black 1px; background-color: lightgrey">Foreign support</th>
+                    <th colspan="13" style="border: solid black 1px; background-color: red">Expenses</th>
+                </tr>
+                <tr>
+                    <% [1,2,3].forEach((i) => { %>
+                        <% periodLabels.forEach((period) => { %>
+                            <th class="date"><%- period %></th>
+                        <% }) %>
                     <% }) %>
                 </tr>
-            <% }) %>
+            </thead>
+            
+            <tbody>
+                <% staffList.forEach((staff) => { %>
+                    <tr>
+                        <th class="text staff-name" account="<%- staff.accountNum %>"><%- staff.name %></th>
+                        <th class="text"><%- staff.accountNum %></th>
+                        <td class="currency"><%- staff.estimatedAccountBalance %></td>
+                        <% periods.forEach((period) => { %>
+                            <% 
+                                data[staff.accountNum] = data[staff.accountNum] || {};
+                                data[staff.accountNum][period] = data[staff.accountNum][period] || {};
+                            %>
+                            <td class="currency"><%- Math.round(data[staff.accountNum][period]['localIncome']) %></td>
+                        <% }) %>
+                        <% periods.forEach((period) => { %>
+                            <td class="currency"><%- Math.round(data[staff.accountNum][period]['foreignIncome']) %></td>
+                        <% }) %>
+                        <% periods.forEach((period) => { %>
+                            <td class="currency"><%- Math.round(data[staff.accountNum][period]['expenses']) %></td>
+                        <% }) %>
+                    </tr>
+                <% }) %>
+            </tbody>
         </table>
         
+        
+        <script src="/js/jquery.min.js"></script>
+        <script src="/js/xlsx.mini.min.js"></script>
+        <script src="/js/highcharts.js"></script>
+        <script src="/solo-mpdReport/datatables.min.js"></script>
+        <script>
+            var table = document.getElementById('mpd-data');
+            
+            $('#download').on('click', () => {
+                var wb = XLSX.utils.table_to_book(table, {sheet: '<%- pageTitle %>'});
+                XLSX.writeFile(wb, 'mpd-dashboard-data.xlsx');
+            });
+            
+            try {
+                $(table).DataTable({
+                    order: [[ 1, 'asc' ]],
+                    paging: false
+                });
+            } catch(err) {
+                console.log(err);
+            };
+            
+            $(table).on('click', '.staff-name', (event) => {
+                var account = $(event.target).attr('account');
+                var name = $(event.target).text();
+                
+                $('h3').text(name + ' - ' + account);
+                
+                $.ajax({
+                    method: 'GET',
+                    url: '/opstool-mpdReport/NSDashboard/adminThirteenMonthIandE',
+                    headers: {
+                        account: account
+                    }
+                })
+                .done((data) => {
+                    // This Highcharts call is copied & pasted from Stewardwise.
+                    // app_NSSPayRoll/templates/mpdDashboard.php
+                    Highcharts.chart('chart', {
+                        
+                      chart: {
+                        type: 'column',
+                        styledMode: false
+                      },
+                      
+                      title: {
+                        text: 'MPD' //'MPD Dashboard'
+                      },
+                      
+                      xAxis: {
+                        categories: data.periods
+                      },
+                      
+                      yAxis: {
+                        title: {
+                          text: 'RMB'
+                        },
+                        plotLines: [{
+                          value: 0,
+                          width: 2,
+                          color: 'black',
+                          dashStyle: 'solid'
+                        }],
+                        stackLabels: {
+                          enabled: false,
+                        }
+                      },
+                      
+                      legend: {
+                        align: 'right',
+                        x: -30,
+                        verticalAlign: 'top',
+                        y: 25,
+                        floating: true,
+                        backgroundColor:
+                          Highcharts.defaultOptions.legend.backgroundColor || 'white',
+                        borderColor: '#CCC',
+                        borderWidth: 1,
+                        shadow: false
+                      },
+                      
+                      tooltip: {
+                        formatter: function() {
+                            // Trend
+                            if (this.series.name == '趋势') {
+                                return `
+                                    <b>${this.key}</b><br/>
+                                    <span style="color:blue">${this.series.name}</span>: ${this.point.y}<br/>
+                                    <i>(<span style="color:lightgreen">当地收入</span> - <span style="color:red">花费</span>)</i>
+                                `
+                            }
+                            // All others
+                            else {
+                                return `
+                                    <b>${this.key}</b><br/>
+                                    ${this.series.name}: ${this.point.y}
+                                `;
+                            }
+                        }
+                        
+                      },
+                      
+                      plotOptions: {
+                        column: {
+                          stacking: 'normal',
+                          dataLabels: {
+                            enabled: false
+                          }
+                        }
+                      },
+                      
+                      series: [{
+                        type: 'column',
+                        name: '国外收入', //' Foreign',
+                        data: data.foreignIncome,
+                        color: 'lightgray'
+                      }, {
+                        type: 'column',
+                        name: '当地收入', // 'Local',
+                        data: data.localIncome,
+                        color: 'lightgreen'
+                      }, {
+                        type: 'column',
+                        name: '花费', // 'Expenses',
+                        data: data.expenses,
+                        color: 'red'
+                      }, {
+                        type: 'spline',
+                        name: '趋势', // 'Trend',
+                        data: data.trend,
+                        color: 'blue'
+                      }]
+                    });
+                                
+                })
+                .fail((err) => {
+                    alert('Error');
+                });
+            });
+        </script>
     </body>
 </html>

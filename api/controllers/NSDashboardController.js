@@ -9,10 +9,27 @@ var AD = require('ad-utils');
 
 module.exports = {
 
-
+    
+    /**
+     * Same as below, except user must be CAS authenticated on the OpsPortal
+     * site. Requested account number is specified through a HTTP header.
+     *
+     * GET /opstool-mpdReport/NSDashboard/adminThirteenMonthIandE
+     */
+    adminThirteenMonthIandE: function(req, res) {
+        req.stewardwise = {
+            nssren: {
+                account_number: req.headers.account
+            }
+        };
+        
+        return this.thirteenMonthIandE(req, res);
+    },
+    
     /**
      * GET /opstool-mpdReport/NSDashboard/thirteenMonthIandE
      *
+     * User is authenticated via a unique token generated from Stewardwise.
      * Delivers a basic object with arrays of values:
      * { 
      *     period: [<string>, ...],
@@ -121,6 +138,21 @@ module.exports = {
                 .fail(next);
             },
             
+            // Get cached estimated account balances
+            (next) => {
+                LNSSRen.cachedEstimatedBalances()
+                .then((data) => {
+                    staffList.forEach((staff) => {
+                        var nssRenID = staff.nssren_id;
+                        if (data[nssRenID]) {
+                            staff.estimatedAccountBalance = data[nssRenID];
+                        }
+                    });
+                    next();
+                })
+                .catch(next);
+            },
+            
             // Get I&E for each staff
             (next) => {
                 async.eachSeries(
@@ -145,18 +177,23 @@ module.exports = {
             else {
                 // Get list of calendar periods
                 var periods = [];
+                var periodLabels = [];
                 for (var period in results[staffList[0].accountNum]) {
                     periods.push(period);
+                    periodLabels.push(period.substr(0, 4) + '年' + period.substr(4, 2) + '月');
                 }
                 
+                /*
                 res.set({
                     'Content-type': 'application/vnd.ms-excel; charset=utf-8',
                     'Content-disposition': 'attachment; filename="mpd-dashboard-data.xls"',
                 });
+                */
                 res.view(
                     'opstool-mpdReport/nsdashboard/datareport',
                     {
                         periods: periods, 
+                        periodLabels: periodLabels,
                         staffList: staffList,
                         data: results,
                         pageTitle: 'NS MPD Dashboard Data',
