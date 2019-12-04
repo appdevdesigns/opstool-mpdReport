@@ -15,9 +15,11 @@
                 padding: 3px;
             }
             #chart {
+                padding: 0 1em;
                 width: 90vw;
                 height: 20em;
-                margin: 0 auto;
+                margin: 0 auto 1em;
+                display: none;
             }
             table th.staff-name {
                 cursor: pointer;
@@ -108,8 +110,6 @@
                 var account = $(event.target).attr('account');
                 var name = $(event.target).text();
                 
-                $('h3').text(name + ' - ' + account);
-                
                 $.ajax({
                     method: 'GET',
                     url: '/opstool-mpdReport/NSDashboard/adminThirteenMonthIandE',
@@ -118,8 +118,11 @@
                     }
                 })
                 .done((data) => {
+                    $('h3').text(name + ' - ' + account);
+                    $('#chart').show();
+                    
                     // This Highcharts call is copied & pasted from Stewardwise.
-                    // app_NSSPayRoll/templates/mpdDashboard.php
+                    // see app_NSSPayRoll/templates/mpdDashboard.php
                     Highcharts.chart('chart', {
                         
                       chart: {
@@ -215,10 +218,11 @@
                         color: 'blue'
                       }]
                     });
-                                
+                    
+                    $(document).scrollTop(0);
                 })
                 .fail((err) => {
-                    alert('Error');
+                    alert('Error. Maybe try refreshing the page?');
                 });
             });
         </script>
