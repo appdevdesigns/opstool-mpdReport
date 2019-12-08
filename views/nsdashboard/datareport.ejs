@@ -21,6 +21,27 @@
                 margin: 0 auto 1em;
                 display: none;
             }
+            #chart.fixed {
+                position: fixed;
+                top: 0;
+                
+            }
+            #chart-close {
+                display: none;
+                position: fixed;
+                top: 5px;
+                right: 5px;
+                background: black;
+                color: white;
+                border: solid 1px black;
+                border-radius: 20px;
+                box-shadow: 1px 1px 2px gray;
+                width: 25px;
+                height: 22px;
+                padding-top: 3px;
+                text-align: center;
+                cursor: pointer;
+            }
             table th.staff-name {
                 cursor: pointer;
                 text-decoration: underline;
@@ -40,6 +61,7 @@
         
         <h3>Select a name from the table to display chart</h3>
         <div id="chart"></div>
+        <div id="chart-close">x</div>
         
         <table id="mpd-data">
             <thead>
@@ -90,15 +112,22 @@
         <script src="/js/highcharts.js"></script>
         <script src="/solo-mpdReport/datatables.min.js"></script>
         <script>
-            var table = document.getElementById('mpd-data');
+            var $window = $(window);
+            var $table = $('#mpd-data');
+            var $chart = $('#chart');
+            var $chartClose = $('#chart-close');
+            
+            $chart.show();
+            var chartTop = $chart.position().top;
+            $chart.hide();
             
             $('#download').on('click', () => {
-                var wb = XLSX.utils.table_to_book(table, {sheet: '<%- pageTitle %>'});
+                var wb = XLSX.utils.table_to_book($table.get(0), {sheet: '<%- pageTitle %>'});
                 XLSX.writeFile(wb, 'mpd-dashboard-data.xlsx');
             });
             
             try {
-                $(table).DataTable({
+                $table.DataTable({
                     order: [[ 1, 'asc' ]],
                     paging: false
                 });
@@ -106,7 +135,7 @@
                 console.log(err);
             };
             
-            $(table).on('click', '.staff-name', (event) => {
+            $table.on('click', '.staff-name', (event) => {
                 var account = $(event.target).attr('account');
                 var name = $(event.target).text();
                 
@@ -219,11 +248,27 @@
                       }]
                     });
                     
-                    $(document).scrollTop(0);
                 })
                 .fail((err) => {
                     alert('Error. Maybe try refreshing the page?');
                 });
+            });
+            
+            
+            $window.on('scroll', () => {
+                if ($chart.is(':visible') && $window.scrollTop() >= chartTop) {
+                    $chart.addClass('fixed');
+                    $chartClose.show();
+                }
+                else {
+                    $chart.removeClass('fixed');
+                    $chartClose.hide();
+                }
+            });
+            
+            $chartClose.on('click', () => {
+                $chart.hide();
+                $chartClose.hide();
             });
         </script>
     </body>
