@@ -127,9 +127,17 @@
             });
             
             try {
+                // Name, Account, Balance
+                var columns = [{ type: 'string'}, { type: 'string' }, { type: 'num' }];
+                // 13 month x 3
+                for (var i=0; i<(13*3); i++) {
+                    columns.push({ type: 'num' });
+                }
+                
                 $table.DataTable({
                     order: [[ 1, 'asc' ]],
-                    paging: false
+                    paging: false,
+                    columns: columns,
                 });
             } catch(err) {
                 console.log(err);
