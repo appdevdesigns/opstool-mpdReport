@@ -12,7 +12,7 @@ module.exports = {
     
     /**
      * Same as below, except user must be CAS authenticated on the OpsPortal
-     * site. Requested account number is specified through a HTTP header.
+     * site. Requested account number is specified through an HTTP header.
      *
      * GET /opstool-mpdReport/NSDashboard/adminThirteenMonthIandE
      */
@@ -183,12 +183,18 @@ module.exports = {
                     periodLabels.push(period.substr(0, 4) + '年' + period.substr(4, 2) + '月');
                 }
                 
-                /*
-                res.set({
-                    'Content-type': 'application/vnd.ms-excel; charset=utf-8',
-                    'Content-disposition': 'attachment; filename="mpd-dashboard-data.xls"',
+                // Tidy up results
+                periods.forEach((period) => {
+                    staffList.forEach((staff) => {
+                        let account = staff.accountNum;
+                        results[account] = results[account] || {};
+                        results[account][period] = results[account][period] || {};
+                        results[account][period].localIncome = Math.round(results[account][period].localIncome) || 0;
+                        results[account][period].foreignIncome = Math.round(results[account][period].foreignIncome) || 0;
+                        results[account][period].expenses = Math.round(results[account][period].expenses) || 0;
+                    });
                 });
-                */
+                
                 res.view(
                     'opstool-mpdReport/nsdashboard/datareport',
                     {
@@ -200,7 +206,6 @@ module.exports = {
                         layout: false
                     }
                 );
-                //res.send(results);
             }
         });
     }

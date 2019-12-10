@@ -14,6 +14,9 @@
             table th, table td {
                 padding: 3px;
             }
+            h3 {
+                display: none;
+            }
             #chart {
                 padding: 0 1em;
                 width: 90vw;
@@ -27,6 +30,7 @@
                 
             }
             #chart-close {
+                box-sizing: border-box;
                 display: none;
                 position: fixed;
                 top: 5px;
@@ -37,8 +41,8 @@
                 border-radius: 20px;
                 box-shadow: 1px 1px 2px gray;
                 width: 25px;
-                height: 22px;
-                padding-top: 3px;
+                height: 25px;
+                padding-top: 2px;
                 text-align: center;
                 cursor: pointer;
             }
@@ -89,17 +93,13 @@
                         <th class="text"><%- staff.accountNum %></th>
                         <td class="currency"><%- staff.estimatedAccountBalance %></td>
                         <% periods.forEach((period) => { %>
-                            <% 
-                                data[staff.accountNum] = data[staff.accountNum] || {};
-                                data[staff.accountNum][period] = data[staff.accountNum][period] || {};
-                            %>
-                            <td class="currency"><%- Math.round(data[staff.accountNum][period]['localIncome']) %></td>
+                            <td class="currency"><%- data[staff.accountNum][period]['localIncome'] %></td>
                         <% }) %>
                         <% periods.forEach((period) => { %>
-                            <td class="currency"><%- Math.round(data[staff.accountNum][period]['foreignIncome']) %></td>
+                            <td class="currency"><%- data[staff.accountNum][period]['foreignIncome'] %></td>
                         <% }) %>
                         <% periods.forEach((period) => { %>
-                            <td class="currency"><%- Math.round(data[staff.accountNum][period]['expenses']) %></td>
+                            <td class="currency"><%- data[staff.accountNum][period]['expenses'] %></td>
                         <% }) %>
                     </tr>
                 <% }) %>
@@ -120,6 +120,7 @@
             $chart.show();
             var chartTop = $chart.position().top;
             $chart.hide();
+            $('h3').show();
             
             $('#download').on('click', () => {
                 var wb = XLSX.utils.table_to_book($table.get(0), {sheet: '<%- pageTitle %>'});
@@ -155,7 +156,7 @@
                     }
                 })
                 .done((data) => {
-                    $('h3').text(name + ' - ' + account);
+                    $('h3').hide();
                     $('#chart').show();
                     
                     // This Highcharts call is copied & pasted from Stewardwise.
@@ -168,7 +169,7 @@
                       },
                       
                       title: {
-                        text: 'MPD' //'MPD Dashboard'
+                        text: name + ' - ' + account //'MPD Dashboard'
                       },
                       
                       xAxis: {
