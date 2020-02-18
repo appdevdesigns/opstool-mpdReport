@@ -150,7 +150,7 @@ module.exports = {
                         return valueA - valueB;
                     });
                     
-                    EmailNotifications.trigger('mpdreports.us.region.all', {
+                    EmailNotifications.trigger('mpdreport.us.region.all', {
                         variables: {
                             people: comboData,
                             extra: extra
