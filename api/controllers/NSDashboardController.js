@@ -62,7 +62,7 @@ module.exports = {
                     // END
                 }
                 else {
-                    account = String(account).replace(/\D/g, '');
+                    //account = String(account).replace(/\D/g, '');
                     next();
                 }
             },
