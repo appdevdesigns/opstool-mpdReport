@@ -162,7 +162,7 @@ module.exports= {
                         // Combine info of married couples who share the same
                         // account number.
                         for (var i=0; i<list.length; i++) {
-                            // accounts[] is indexed by primary account number
+                            // accounts{} is indexed by primary account number
                             var num = list[i].accountNum;
                             accounts[num] = accounts[num] || {};
                             
@@ -223,7 +223,7 @@ module.exports= {
                     LNSSRen.currentTransactions({ nssrenID: ren.nssren_id })
                     .fail(next)
                     .done(function(transactions) {
-                        var num = parseInt(ren.accountNum);
+                        var num = ren.accountNum;
                         accounts[num] = accounts[num] || {};
                         accounts[num].currentDebit = accounts[num].currentDebit || 0;
                         accounts[num].currentCredit = accounts[num].currentCredit || 0;
@@ -239,12 +239,14 @@ module.exports= {
                 }, function(err) {
                     if (err) next(err);
                     else next();
+                    /*
                     var end = new Date();
                     console.log(
                         'Time taken to get estimated balances' 
                         + ' (' + region + '): '
                         + (end - start) + 'ms'
                     );
+                    */
                 });
             },
             
@@ -279,7 +281,7 @@ module.exports= {
                         accounts[i].localPercent = accounts[i].avgLocalContrib / accounts[i].avgExpenditure * 100;
                         accounts[i].foreignPercent = accounts[i].avgForeignContrib / accounts[i].avgExpenditure * 100;
                     }
-                    
+                    next();
                 })
                 .catch(next);
             },
