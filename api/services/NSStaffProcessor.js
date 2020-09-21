@@ -162,7 +162,8 @@ module.exports= {
                         // Combine info of married couples who share the same
                         // account number.
                         for (var i=0; i<list.length; i++) {
-                            var num = parseInt(list[i].accountNum);
+                            // accounts[] is indexed by primary account number
+                            var num = list[i].accountNum;
                             accounts[num] = accounts[num] || {};
                             
                             // Sum their base salaries
@@ -197,6 +198,15 @@ module.exports= {
                                 );
                                 accounts[num].months = Math.max(1, 12 - offset);
                             }
+                            
+                            // Set of alt account numbers
+                            accounts[num].altAccounts = accounts[num].altAccounts || [];
+                            list[i].allAccountNums.forEach((altNum) => {
+                                //if (altNum == num) return;
+                                if (accounts[num].altAccounts.indexOf(altNum) < 0) {
+                                    accounts[num].altAccounts.push(altNum);
+                                }
+                            });
                         }
                         
                         // Will be used in further calculations below
@@ -206,7 +216,7 @@ module.exports= {
                 });
             },
             
-            // Get current transaction totals
+            // Get current (not yet in GL) transaction totals
             function(next) {
                 var start = new Date();
                 async.forEachLimit(staff, 1, function(ren, ok) {
@@ -238,88 +248,40 @@ module.exports= {
                 });
             },
             
-            // Get GL average salary info
+            // Salary, income, expenses
             function(next) {
-                LNSSCoreGLTrans.sumSalary(fiscalPeriod)
-                .fail(next)
-                .done(function(results) {
-                    for (var accountNum in results) {
-                        var num = parseInt(accountNum);
-                        accounts[num] = accounts[num] || {};
-                        accounts[num].avgSalary = results[accountNum] / accounts[num].months;
+                LNSSCoreGLTrans.categorizedSumsByAccount(fiscalPeriod)
+                .then((results) => {
+                    for (var i in accounts) {
+                        accounts[i].sumSalary = 0;
+                        accounts[i].sumExpenditure = 0;
+                        accounts[i].sumLocalIncome = 0;
+                        accounts[i].sumForeignIncome = 0;
+                        accounts[i].sumIncome = 0;
+                        
+                        // Include all alternate accounts also
+                        accounts[i].altAccounts.forEach((accountNum) => {
+                            accounts[i].sumSalary += (results.salary[accountNum] || 0);
+                            accounts[i].sumExpenditure += (results.expenditure[accountNum] || 0);
+                            accounts[i].sumLocalIncome += (results.localIncome[accountNum] || 0);
+                            accounts[i].sumForeignIncome += (results.foreignIncome[accountNum] || 0);
+                            accounts[i].sumIncome += (results.income[accountNum] || 0);
+                        });
+                        
+                        // Averages
+                        accounts[i].avgSalary = accounts[i].sumSalary / accounts[i].months;
+                        accounts[i].avgExpenditure = accounts[i].sumExpenditure / accounts[i].months;
+                        accounts[i].avgLocalContrib = accounts[i].sumLocalIncome / accounts[i].months;
+                        accounts[i].avgForeignContrib = accounts[i].sumForeignIncome / accounts[i].months;
+                        accounts[i].avgIncome = accounts[i].sumIncome / accounts[i].months;
+                        
+                        // Percentages
+                        accounts[i].localPercent = accounts[i].avgLocalContrib / accounts[i].avgExpenditure * 100;
+                        accounts[i].foreignPercent = accounts[i].avgForeignContrib / accounts[i].avgExpenditure * 100;
                     }
-                    next();
-                });
-            },
-            
-            // Get GL expenditure info
-            function(next) {
-                LNSSCoreGLTrans.sumExpenditure(fiscalPeriod)
-                .fail(next)
-                .done(function(results) {
-                    for (var accountNum in results) {
-                        var num = parseInt(accountNum);
-                        accounts[num] = accounts[num] || {};
-                        accounts[num].avgExpenditure = results[accountNum] / accounts[num].months;
-                    }
-                    next();
-                });
-            },
-            
-            /*
-            // NOT USED. INSTEAD: avgIncome = avgLocalContrib + avgForeignContrib
-            // Get GL income info
-            function(next) {
-                LNSSCoreGLTrans.sumIncome(fiscalPeriod)
-                .fail(next)
-                .done(function(results) {
-                    for (var accountNum in results) {
-                        var num = parseInt(accountNum);
-                        accounts[num] = accounts[num] || {};
-                        accounts[num].avgIncome = (
-                            results[accountNum] / accounts[num].months
-                        );
-                    }
-                    next();
-                });
-            },
-            */
-            
-            // Get GL contribution info
-            function(next) {
-                LNSSCoreGLTrans.sumLocalContrib(fiscalPeriod)
-                .fail(next)
-                .done(function(results) {
-                    for (var accountNum in results) {
-                        var num = parseInt(accountNum);
-                        accounts[num] = accounts[num] || {};
-                        accounts[num].avgLocalContrib = results[accountNum] / accounts[num].months;
-                        accounts[num].localPercent = accounts[num].avgLocalContrib / accounts[num].avgExpenditure * 100;
-                    }
-                    next();
-                });
-            },
-            function(next) {
-                LNSSCoreGLTrans.sumForeignContrib(fiscalPeriod)
-                .fail(next)
-                .done(function(results) {
-                    for (var accountNum in results) {
-                        var num = parseInt(accountNum);
-                        accounts[num] = accounts[num] || {};
-                        accounts[num].avgForeignContrib = results[accountNum] / accounts[num].months;
-                        accounts[num].foreignPercent = accounts[num].avgForeignContrib / accounts[num].avgExpenditure * 100;
-                    }
-                    next();
-                });
-            },
-            function(next) {
-                for (var num in accounts) {
-                    // Income is the sum of all contributions
-                    accounts[num].avgIncome = 
-                        (accounts[num].avgLocalContrib || 0) + 
-                        (accounts[num].avgForeignContrib || 0);
-                }
-                next();
+                    
+                })
+                .catch(next);
             },
             
             // Get short pay periods
@@ -328,9 +290,14 @@ module.exports= {
                 LNSSCoreGLTrans.shortPayPeriods(fiscalPeriod)
                 .fail(next)
                 .done(function(results) {
-                    for (var accountNum in results) {
-                        var num = parseInt(accountNum);
-                        accounts[num].shortPayPeriods = results[accountNum];
+                    // Include all alternate accounts also
+                    for (var i in accounts) {
+                        accounts[i].shortPayPeriods = [];
+                        accounts[i].altAccounts.forEach((accountNum) => {
+                            if (results[accountNum]) {
+                                accounts[i].shortPayPeriods = accounts[i].shortPayPeriods.concat(results[accountNum]);
+                            }
+                        });
                     }
                     next();
                 });
@@ -364,13 +331,10 @@ module.exports= {
                 LNSSCoreAccountHistory.balanceForPeriods(periods)
                 .fail(next)
                 .done(function(results) {
-                    for (var accountNum in results) {
-                        var num = parseInt(accountNum);
-                        var balances = results[accountNum];
-                        accounts[num] = accounts[num] || {};
-                        accounts[num].monthsInDeficit = 0;
-                        
-                        accounts[num].deficits = {
+                    for (var i in accounts) {
+                        accounts[i].balanceHistory = {}; // merged balances
+                        accounts[i].monthsInDeficit = 0;
+                        accounts[i].deficits = {
                         /*
                             <period>: <balance>,
                             '201505': 12345,
@@ -378,16 +342,27 @@ module.exports= {
                         */
                         };
                         
-                        var shortPeriods = accounts[num].shortPayPeriods || [];
+                        // Merge balances from alternate accounts into the primary
+                        accounts[i].altAccounts.forEach((accountNum) => {
+                            if (results[accountNum]) {
+                                let balancesForAccount = results[accountNum];
+                                for (var period in balancesForAccount) {
+                                    if (period < accounts[i].periodJoined) {
+                                        continue;
+                                    }
+                                    accounts[i].balanceHistory[period] = accounts[i].balanceHistory[period] || 0;
+                                    accounts[i].balanceHistory[period] += balancesForAccount[period];
+                                }
+                            }
+                        });
+                        
+                        var shortPeriods = accounts[i].shortPayPeriods;
                         var periodCount = 0;
                         var total = 0;
                         
-                        for (var period in balances) {
-                            if (accounts[num].periodJoined > period) {
-                                continue;
-                            }
-                            
-                            var thisBalance = balances[period];
+                        // Compute based on merged balances
+                        for (var period in accounts[i].balanceHistory) {
+                            var thisBalance = accounts[i].balanceHistory[period];
                             periodCount += 1;
                             total += thisBalance;
                             
@@ -395,17 +370,15 @@ module.exports= {
                             // Either balance is below 10
                             var isLowBalance = thisBalance < 10;
                             // Or balance is below 500 and short pay was taken
-                            var isShortPay = (thisBalance < 500 &&
-                                    shortPeriods.indexOf(period) >= 0);
+                            var isShortPay = (thisBalance < 500 && shortPeriods.indexOf(period) >= 0);
                             if (isLowBalance || isShortPay) {
-                                accounts[num].monthsInDeficit += 1;
-                                accounts[num].deficits[ period ] = thisBalance;
+                                accounts[i].monthsInDeficit += 1;
+                                accounts[i].deficits[ period ] = thisBalance;
                             }
                         }
                         
-
                         // Compute average monthly balance
-                        accounts[num].avgAccountBal = total / periodCount;
+                        accounts[i].avgAccountBal = total / periodCount;
                     }
                     next();
                 });
@@ -417,7 +390,7 @@ module.exports= {
             function(next) {
                 for (var i=0; i<staff.length; i++) {
                     var entry = staff[i];
-                    var num = parseInt(entry.accountNum);
+                    var num = entry.accountNum;
                     
                     if (accounts[num]) {
                         // Merge account GL info into staff entry

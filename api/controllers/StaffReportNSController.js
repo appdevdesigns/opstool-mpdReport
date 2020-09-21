@@ -245,16 +245,6 @@ module.exports = {
         
         async.series([
             function(next) {
-                account = account.replace(/\D/g, '')
-                if (!account.match(/^10\d\d\d\d$/)) {
-                    next(new Error('Invalid staff account number'));
-                }
-                else {
-                    next();
-                }
-            },
-            
-            function(next) {
                 // Find the starting fiscal period
                 LNSSCoreGLTrans.getPastPeriod(12)
                 .fail(next)
