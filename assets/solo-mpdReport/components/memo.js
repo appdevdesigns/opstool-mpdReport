@@ -39,7 +39,9 @@ export default class Memo extends MPDReportComponent {
 	show() {
 		super.show();
 		// Focus the editor automatically whenever the memo component is shown
-		this.quill.focus();
+		this.loadedDOM.then(() => {
+    		this.quill.focus();
+        });
 	}
 	
 	

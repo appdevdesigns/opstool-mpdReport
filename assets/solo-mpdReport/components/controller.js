@@ -52,6 +52,7 @@ export default class Controller extends EventEmitter {
 	constructor(options={}) {
 		super();
 		this.$element = $(options.element);
+		this.loadedDOM = $.Deferred();
 		
 		var templateContent, templateData;
 		
@@ -137,6 +138,7 @@ export default class Controller extends EventEmitter {
 		.then(() => {
 			this.initDOM();
 			this.emit('loadedDOM');
+			this.loadedDOM.resolve();
 		});
 		
 	}
