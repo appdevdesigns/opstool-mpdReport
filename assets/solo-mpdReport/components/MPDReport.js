@@ -1,12 +1,12 @@
 //import $ from 'jquery';
 import Controller from './controller.js';
-import Start from './start.js';
-import Upload from './upload.js';
+//import Start from './start.js';
+//import Upload from './upload.js';
 import Memo from './memo.js';
 import ReviewNS from './reviewNS.js';
-import ReviewUS from './reviewUS.js';
+//import ReviewUS from './reviewUS.js';
 import SendNS from './sendNS.js';
-import SendUS from './sendUS.js';
+//import SendUS from './sendUS.js';
 import Translate from '../translate.js';
 
 export default class MPDReport extends Controller {
@@ -16,12 +16,12 @@ export default class MPDReport extends Controller {
 		options.css = '/solo-mpdReport/css/mpdReport.css';
 		super(options);	
 		
-		// Can be '#US' or '#NATIONAL'
-		this.staffType = null;
+		// Can be '#US' or '#NS'
+		this.staffType = '#NS';
 		
 		// Current active step.
 		// "#start", "#upload", "#memo", "#reviewUS", "#reviewNS", "#sendUS", "#sendNS"
-		this.step = '#start';
+		this.step = '#memo';
 		
 		// Ensure getMemoHTML() always knows what `this` is
 		this.getMemoHTML = this.getMemoHTML.bind(this);
@@ -40,37 +40,45 @@ export default class MPDReport extends Controller {
 		
 		// Components for all steps
 		this.steps = {
+    		/*
 			'#start': new Start({
 				element: this.$('#mpd-report-start'),
 			}),
 			'#upload': new Upload({
 				element: this.$('#mpd-report-upload'),
 			}),
+			*/
 			'#memo': new Memo({
 				element: this.$('#mpd-report-memo'),
 			}),
+			/*
 			'#reviewUS': new ReviewUS({
 				element: this.$('#mpd-report-review-us'),
 				memo: this.getMemoHTML,
 			}),
+			*/
 			'#reviewNS': new ReviewNS({
 				element: this.$('#mpd-report-review-ns'),
 				memo: this.getMemoHTML,
 			}),
+			/*
 			'#sendUS': new SendUS({
 				element: this.$('#mpd-report-send-us'),
 				memo: this.getMemoHTML,
 			}),
+			*/
 			'#sendNS': new SendNS({
 				element: this.$('#mpd-report-send-ns'),
 				memo: this.getMemoHTML,
 			})
 		};
 		
+		/*
 		// After a .CSV file is uploaded, tell ReviewUS controller to reload its data
 		this.steps['#upload'].on('uploaded', () => {
 			this.steps['#reviewUS'].fetchData();
 		});
+		*/
 		
 		// User navigated to different step
 		this.$('ul.report-steps li a').on('click', function(ev) {
@@ -80,10 +88,12 @@ export default class MPDReport extends Controller {
 			self.navigateToStep();
 		});
 		
+		/*
 		// User selected a staff type
 		this.steps['#start'].on('selected', (staffType) => {
 			this.setStaffType(staffType);
 		});
+		*/
 		
 		// Handle general events from all components
 		for (var id in this.steps) {
@@ -115,6 +125,7 @@ export default class MPDReport extends Controller {
 		this.$('ul.report-steps li').hide();
 		
 		this.navigateToStep();
+		this.setStaffType('#NS');
 	}
 	
 	
