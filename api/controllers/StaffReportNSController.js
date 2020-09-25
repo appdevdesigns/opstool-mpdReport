@@ -27,7 +27,11 @@ module.exports = {
 
         if (Log == null) Log = MPDReportGen.Log;
 
-        LegacyStewardwise.regionsFromTerritories()
+        LegacyStewardwise.regionsFromTerritories({ 
+            territory_subaccount: { 
+                not: '' 
+            }
+        })
         .fail(function(err){
 
             res.AD.error(err, 500);
