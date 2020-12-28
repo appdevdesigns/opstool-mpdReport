@@ -544,46 +544,99 @@ module.exports= {
         if (Log == null) Log = MPDReportGen.Log;
         var numEmails = 0;
         
-        // Iterate over each region
-        // region == regionData[region]
-        async.forEachOfLimit(regionData, MAX_CONCURRENT, function(people, region, next) {
+        // Some staff are to be excluded from the regional group reports.
+        // They will have separate reports sent to designated address instead.
+        var specialCases = {
+        /*
+            <designated recipient email>: [ {staff data}, {staff data}, ... ],
+            <designated recipient email>: [ {staff data}, {staff data}, ... ],
+            ...
+        */
+        };
+        
+        async.series([
+            // Regional reports
+            (next) => {
+                // Iterate over each region
+                // region == regionData[region]
+                async.forEachOfLimit(regionData, MAX_CONCURRENT, function(people, region, nextPerson) {
+                    
+                    // `people` is a basic object indexed by account number. Convert it
+                    // to a flat array sorted by account balance.
+                    var sortedList = [];
+                    for (var num in people) {
+                        // Move out special cases into separate list
+                        var specialRecipient = people[num].mpdReportRecipient;
+                        if (specialRecipient) {
+                            // Special recipient report
+                            specialCases[specialRecipient] = specialCases[specialRecipient] || [];
+                            specialCases[specialRecipient].push(people[num]);
+                        }
+                        else {
+                            // Normal region report
+                            sortedList.push(people[num]);
+                        }
+                    }
+                    sortedList.sort(function(a, b) {
+                        var numericA = Number(a.estimatedBal.replace(',', ''));
+                        var numericB = Number(b.estimatedBal.replace(',', ''));
+                        return numericA - numericB;
+                    });
+                    
+                    EmailNotifications.trigger('mpdreport.ns.region.'+(region.toLowerCase()), {
+                        variables: {
+                            people: sortedList,
+                            region: region,
+                            extra: extra
+                        },
+                        to: []
+                    })
+                    .fail(function(err){
+                        Log('Error queueing NS MPD email for region: ' + region);
+                        Log(err);
+                        nextPerson();
+                    })
+                    .done(function(){
+                        numEmails += 1;
+                        Log('Queued NS MPD email for region: ' + region);
+                        nextPerson();
+                    });
+        
+                }, function(err) {
+                    next();
+                });
+            },
             
-            // `people` is a basic object indexed by account number. Convert it
-            // to a flat array sorted by account balance.
-            var sortedList = [];
-            for (var num in people) {
-                sortedList.push( people[num] );
-            }
-            sortedList.sort(function(a, b) {
-                var numericA = Number(a.estimatedBal.replace(',', ''));
-                var numericB = Number(b.estimatedBal.replace(',', ''));
-                return numericA - numericB;
-            });
-            
-            EmailNotifications.trigger('mpdreport.ns.region.'+(region.toLowerCase()), {
-                variables: {
-                    people: sortedList,
-                    extra: extra
-                },
-                to: []
-            })
-            .fail(function(err){
-                Log('Error queueing NS MPD email for region: ' + region);
-                Log(err);
-                
-                next();
-            })
-            .done(function(){
-                numEmails += 1;
-                Log('Queued NS MPD email for region: ' + region);
-                next();
-            });
-
-        }, function(err) {
+            // Special recipient reports
+            (next) => {
+                async.forEachOfLimit(specialCases, MAX_CONCURRENT, function(people, recipient, nextPerson) {
+                    EmailNotifications.trigger('mpdreport.ns.special', {
+                        variables: {
+                            people: people,
+                            extra: extra
+                        },
+                        to: [ recipient ]
+                    })
+                    .fail(function(err){
+                        Log('Error queueing NS MPD email for special recipient: ' + recipient);
+                        Log(err);
+                        nextPerson();
+                    })
+                    .done(function(){
+                        numEmails += 1;
+                        Log('Queued NS MPD email for special recipient: ' + recipient);
+                        nextPerson();
+                    });
+                    
+                }, (err) => {
+                    next();
+                });
+            },
+        ], (err) => {
             if (err) dfd.reject(err);
             else dfd.resolve(numEmails);
         });
-
+        
         return dfd;
     },
 

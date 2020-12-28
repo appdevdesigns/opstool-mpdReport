@@ -134,6 +134,7 @@ module.exports = {
             EmailNotifications.previewTrigger('mpdreport.ns.region.'+(region.toLowerCase()), {
                 variables: {
                     people: staff,
+                    region: region,
                     extra: extra
                 }
             })
