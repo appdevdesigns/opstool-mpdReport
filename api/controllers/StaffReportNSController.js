@@ -92,7 +92,10 @@ module.exports = {
             // Reformat into a flat array
             var finalResult = [];
             for (var account in list) {
-                finalResult.push( list[account] );
+                // Exclude staff with a special designated recipient for their report
+                if (!list[account].mpdReportRecipient) {
+                    finalResult.push( list[account] );
+                }
             }
             res.AD.success(finalResult);
         });
@@ -124,6 +127,12 @@ module.exports = {
             var extra = { memo: memo };
             var staff = staffData.staff;
             
+            // Exclude staff with a special designated recipient for their report
+            for (var i=staff.length-1; i>=0; i--) {
+                if (staff[i].mpdReportRecipient) {
+                    staff.splice(i, 1);
+                }
+            }
             // sort by account balance.
             staff.sort(function(a, b) {
                 var numericA = Number(a.estimatedBal.replace(',', ''));
