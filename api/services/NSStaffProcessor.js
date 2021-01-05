@@ -450,7 +450,7 @@ module.exports= {
                     
                     // Staff grouped by account number
                     // (only one staff per account number)
-                    if (!compiledData.staffByAccount[num] || entry.isPOC) {
+                    if (entry.isPOC == 1) {
                         // family point of contact takes priority
                         compiledData.staffByAccount[num] = entry;
                     }
@@ -499,7 +499,7 @@ module.exports= {
                         */
                         
                         compiledData.staffByRegion[entryRegion] = compiledData.staffByRegion[entryRegion] || {};
-                        if (!compiledData.staffByRegion[entryRegion][num] || entry.isPOC) {
+                        if (entry.isPOC == 1) { // beware the '0' string
                             // family point of contact takes priority
                             compiledData.staffByRegion[entryRegion][num] = entry;
                         }
@@ -516,7 +516,6 @@ module.exports= {
                     }
                     
                 }
-                
                 next();
             }
         

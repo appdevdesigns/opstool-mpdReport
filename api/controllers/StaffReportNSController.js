@@ -125,14 +125,15 @@ module.exports = {
         .done(function(staffData) {
             
             var extra = { memo: memo };
-            var staff = staffData.staff;
-            
-            // Exclude staff with a special designated recipient for their report
-            for (var i=staff.length-1; i>=0; i--) {
-                if (staff[i].mpdReportRecipient) {
-                    staff.splice(i, 1);
+            var staff = [];
+            for (var num in staffData.staffByRegion[region]) {
+                var thisStaff = staffData.staffByRegion[region][num];
+                // Exclude staff with special designated report recipients
+                if (!thisStaff.mpdReportRecipient) {
+                    staff.push(thisStaff);
                 }
             }
+            
             // sort by account balance.
             staff.sort(function(a, b) {
                 var numericA = Number(a.estimatedBal.replace(',', ''));
