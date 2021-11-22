@@ -474,10 +474,10 @@ module.exports= {
                         if (entryRegion) {
                                 // Expected format Q#-###
                                 entryRegion = entryRegion[0];
-                            }
-                            else {
-                                // Fallback to full territory label if unexpected format
-                                entryRegion = entry.territory;
+                        }
+                        else {
+                            // Fallback to full territory label if unexpected format
+                            entryRegion = entry.territory;
                         }
                         
                         /*
