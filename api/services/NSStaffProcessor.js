@@ -103,8 +103,10 @@ module.exports= {
         // Is region actually a territory code?
         if (region && region.match(/^C\d\d\d$/)) {
             usingTerritoryCode = true;
+            usingTerritoryDesc = false;
         }
         else if (region && region.match(/^Q\w-\d\d\d/)) {
+            usingTerritoryCode = false;
             usingTerritoryDesc = true;
         }
         
@@ -468,19 +470,14 @@ module.exports= {
                         
                         // 2020-12-11: Use beginning part of territory labels
                         // as the "Region".
-                        if (usingTerritoryDesc) {
-                            var entryRegion = entry.territory.match(/^\w\w-\d\d\d/);
-                            if (entryRegion) {
-                                    // Expected format Q#-###
-                                    entryRegion = entryRegion[0];
-                                }
-                                else {
-                                    // Fallback to full territory label if unexpected format
-                                    entryRegion = entry.territory;
+                        var entryRegion = entry.territory.match(/^\w\w-\d\d\d/);
+                        if (entryRegion) {
+                                // Expected format Q#-###
+                                entryRegion = entryRegion[0];
                             }
-                        }
-                        else {
-                            entryRegion = entry.region;
+                            else {
+                                // Fallback to full territory label if unexpected format
+                                entryRegion = entry.territory;
                         }
                         
                         /*
