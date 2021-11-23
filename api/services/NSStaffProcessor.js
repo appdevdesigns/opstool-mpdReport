@@ -563,10 +563,13 @@ module.exports= {
                     for (var num in people) {
                         // Move out special cases into separate list
                         var specialRecipient = people[num].mpdReportRecipient;
-                        if (specialRecipient) {
+                        if ((region != 'all') && specialRecipient) {
                             // Special recipient report
                             specialCases[specialRecipient] = specialCases[specialRecipient] || [];
-                            specialCases[specialRecipient].push(people[num]);
+                            if (specialCases[specialRecipient].indexOf(people[num]) < 0) {
+                                // Only add each account once
+                                specialCases[specialRecipient].push(people[num]);
+                            }
                         }
                         else {
                             // Normal region report
